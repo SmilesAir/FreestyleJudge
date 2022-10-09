@@ -1,0 +1,47 @@
+# serverless.yml
+service: freestyle-judge
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: us-west-2
+  stage: ${opt:stage, "development"}
+
+  environment:
+    DATA_TABLE: ${self:service}-${self:provider.stage}-dataTable
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DATA_TABLE}"
+
+functions:
+  testLambda:
+    handler: source/test.handler
+    events:
+      - http:
+          path: handler
+          method: post
+          cors: true
+
+resources:
+  Resources:
+    dataTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DATA_TABLE}
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
