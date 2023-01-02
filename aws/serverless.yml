@@ -21,11 +21,39 @@ provider:
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DATA_TABLE}"
 
 functions:
-  testLambda:
-    handler: source/test.handler
+  importEventFromPoolCreator:
+    handler: source/main.importEventFromPoolCreator
     events:
       - http:
-          path: handler
+          path: importEventFromPoolCreator/{eventKey}
+          method: post
+          cors: true
+  getEventData:
+    handler: source/main.getEventData
+    events:
+      - http:
+          path: getEventData/{eventKey}
+          method: get
+          cors: true
+  getImportantVersion:
+    handler: source/main.getImportantVersion
+    events:
+      - http:
+          path: getImportantVersion
+          method: get
+          cors: true
+  updateEventState:
+    handler: source/main.updateEventState
+    events:
+      - http:
+          path: updateEventState/{eventKey}
+          method: post
+          cors: true
+  updateJudgeState:
+    handler: source/main.updateJudgeState
+    events:
+      - http:
+          path: updateJudgeState/{poolKey}/judgeGuid/{judgeGuid}/teamIndex/{teamIndex}
           method: post
           cors: true
 
@@ -34,6 +62,7 @@ resources:
     dataTable:
       Type: AWS::DynamoDB::Table
       Properties:
+        BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.DATA_TABLE}
         AttributeDefinitions:
           - AttributeName: key
@@ -41,7 +70,4 @@ resources:
         KeySchema:
           - AttributeName: key
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
 
