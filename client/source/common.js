@@ -1,7 +1,8 @@
+const { runInAction } = require("mobx")
 
 const MainStore = require("./mainStore.js")
 const { fetchEx, fetchAuth } = require("./endpoints.js")
-const mainStore = require("./mainStore.js")
+const JudgeDataBase = require("./judgeDataBase.js")
 
 const poolKeyPrefix = "pool-"
 const Common = module.exports
@@ -15,7 +16,9 @@ module.exports.fetchEventData = function(eventKey) {
     }).then((response) => {
         return response.json()
     }).then((response) => {
-        MainStore.eventData = removeEmptyEventData(response.eventData)
+        runInAction(() => {
+            MainStore.eventData = removeEmptyEventData(response.eventData)
+        })
         console.log("GET_EVENT_DATA", JSON.parse(JSON.stringify(MainStore.eventData)))
     }).catch((error) => {
         console.error(`Trying to get event data "${error}"`)
@@ -24,7 +27,6 @@ module.exports.fetchEventData = function(eventKey) {
 
 function removeEmptyEventData(eventData) {
     let eventDivisionData = eventData.eventData.divisionData
-    console.log(eventDivisionData)
     for (let divisionKey in eventDivisionData) {
         let divisionData = eventDivisionData[divisionKey]
         let foundPoolInDivision = false
@@ -58,7 +60,9 @@ module.exports.fetchPlayerData = function() {
     }).then((response) => {
         return response.json()
     }).then((response) => {
-        MainStore.playerData = response.players
+        runInAction(() => {
+            MainStore.playerData = response.players
+        })
     }).catch((error) => {
         console.error(`Trying to get event data "${error}"`)
     })
@@ -75,7 +79,7 @@ module.exports.updateEventState = function(eventState, controllerState) {
         console.error("Failed to update event state because no event is downloaded yet")
     }
 
-    return fetchEx("UPDATE_EVENT_STATE", { eventKey: mainStore.eventData.key }, undefined, {
+    return fetchEx("UPDATE_EVENT_STATE", { eventKey: MainStore.eventData.key }, undefined, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -101,4 +105,25 @@ module.exports.isPoolActive = function(poolKey) {
     }
 
     return MainStore.eventData.eventState.activePoolKey === poolKey
+}
+
+module.exports.getJudgeDataDetailedWidget = function(judgeData) {
+    let judgeDataExport = undefined
+    for (let categoryType in JudgeDataBase.judgeDataExports) {
+        let jde = JudgeDataBase.judgeDataExports[categoryType]
+        if (jde.categoryType === judgeData.categoryType) {
+            judgeDataExport = jde
+            break
+        }
+    }
+
+    if (judgeDataExport !== undefined) {
+        let judgeDataObj = new judgeDataExport.JudgeDataClass(180, judgeData)
+
+        return judgeDataObj.getJudgeWidgetDetailed()
+    } else {
+        console.error(`Can't find judge data for "${judgeData.categoryType}"`)
+    }
+
+    return null
 }

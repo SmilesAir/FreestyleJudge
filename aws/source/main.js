@@ -119,8 +119,6 @@ async function parseEventDataFromPoolCreator(eventKey, eventName, request) {
                         teamData: teamData
                     }
 
-                    newEventData.eventData.poolMap[poolKey] = newPoolData
-
                     let putNewPoolParams = {
                         TableName : process.env.DATA_TABLE,
                         Item: newPoolData
@@ -263,8 +261,8 @@ module.exports.getEventData = (e, c, cb) => { Common.handler(e, c, cb, async (ev
     }
 
     let poolKeysToFetch = []
-    for (let divisionName in eventData.divisionData) {
-        let divisionData = eventData.divisionData[divisionName]
+    for (let divisionName in eventData.eventData.divisionData) {
+        let divisionData = eventData.eventData.divisionData[divisionName]
         for (let roundName in divisionData.roundData) {
             let roundData = divisionData.roundData[roundName]
             for (let poolName of roundData.poolNames) {
@@ -273,14 +271,12 @@ module.exports.getEventData = (e, c, cb) => { Common.handler(e, c, cb, async (ev
         }
     }
 
-    let poolMap = eventData.poolMap
-    let poolFetchPromises = poolKeysToFetch.map((poolKey) => {
+    let poolMap = eventData.eventData.poolMap
+    let poolFetchPromises = poolKeysToFetch.map(async(poolKey) => {
         return getPoolData(poolKey, poolMap)
     })
 
-    Promise.all(poolKeysToFetch, poolFetchPromises)
-
-    console.log(eventData)
+    await Promise.all(poolFetchPromises)
 
     return {
         eventData: eventData
