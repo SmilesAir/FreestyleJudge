@@ -108,6 +108,10 @@ module.exports.isPoolActive = function(poolKey) {
 }
 
 module.exports.getJudgeDataDetailedWidget = function(judgeData) {
+    if (judgeData === undefined) {
+        return null
+    }
+
     let judgeDataExport = undefined
     for (let categoryType in JudgeDataBase.judgeDataExports) {
         let jde = JudgeDataBase.judgeDataExports[categoryType]
@@ -126,4 +130,90 @@ module.exports.getJudgeDataDetailedWidget = function(judgeData) {
     }
 
     return null
+}
+
+module.exports.calcJudgeScoreCategoryOnly = function(judgeData) {
+    if (judgeData === undefined) {
+        return 0
+    }
+
+    let judgeDataExport = undefined
+    for (let categoryType in JudgeDataBase.judgeDataExports) {
+        let jde = JudgeDataBase.judgeDataExports[categoryType]
+        if (jde.categoryType === judgeData.categoryType) {
+            judgeDataExport = jde
+            break
+        }
+    }
+
+    if (judgeDataExport !== undefined) {
+        let judgeDataObj = new judgeDataExport.JudgeDataClass(180, judgeData)
+
+        return judgeDataObj.calcJudgeScoreCategoryOnly()
+    } else {
+        console.error(`Can't find judge data for "${judgeData.categoryType}"`)
+    }
+
+    return null
+}
+
+module.exports.calcJudgeScoreGeneral = function(judgeData) {
+    if (judgeData === undefined) {
+        return 0
+    }
+
+    let judgeDataExport = undefined
+    for (let categoryType in JudgeDataBase.judgeDataExports) {
+        let jde = JudgeDataBase.judgeDataExports[categoryType]
+        if (jde.categoryType === judgeData.categoryType) {
+            judgeDataExport = jde
+            break
+        }
+    }
+
+    if (judgeDataExport !== undefined) {
+        let judgeDataObj = new judgeDataExport.JudgeDataClass(180, judgeData)
+
+        return judgeDataObj.calcJudgeScoreGeneral()
+    } else {
+        console.error(`Can't find judge data for "${judgeData.categoryType}"`)
+    }
+
+    return null
+}
+
+module.exports.getPlayerNameString = function(playerKey) {
+    if (MainStore.playerData === undefined) {
+        return "Unknown"
+    }
+
+    let playerData = MainStore.playerData[playerKey]
+    let name = "Unknown"
+    if (playerData !== undefined) {
+        name = `${playerData.firstName} ${playerData.lastName}`
+    }
+
+    return name
+}
+
+module.exports.getPlayerNamesString = function(playerKeyArray) {
+    if (MainStore.playerData === undefined) {
+        return ""
+    }
+
+    return playerKeyArray.map((key) => {
+        return Common.getPlayerNameString(key)
+    }).join(" - ")
+}
+
+module.exports.round2Decimals = function(num) {
+    return Math.round(num * 100) / 100
+}
+
+module.exports.makePoolName = function(divisionName, roundName, poolName) {
+    if (roundName === "Finals") {
+        return `${divisionName} ${roundName}`
+    } else {
+        return `${divisionName} ${roundName} ${poolName}`
+    }
 }

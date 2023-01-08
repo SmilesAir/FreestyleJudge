@@ -151,7 +151,8 @@ Keeps a list of all the events
         players: [guid, ...]
         judgeData: {
             [guid]: {
-                judgeGuid: guid,
+                judgeKey: guid,
+                categoryType: string,
                 rawScores: {
                     ...
                 },

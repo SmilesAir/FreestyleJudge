@@ -1,5 +1,7 @@
 const MainStore = require("./mainStore.js")
 
+require("./judgeDataBase.less")
+
 const JudgeDataBase = module.exports
 
 module.exports.categoryType = "Base"
@@ -22,7 +24,8 @@ module.exports.JudgeDataBase = class {
 
         this.routineLengthSeconds = routineLengthSeconds
         this.data = {
-            general: judgeData.general
+            judgeKey: judgeData.judgeKey,
+            general: judgeData.rawScores.general
         }
     }
 

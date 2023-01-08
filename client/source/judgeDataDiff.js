@@ -1,8 +1,8 @@
 const React = require("react")
 
 const MainStore = require("./mainStore.js")
-
 const JudgeDataBase = require("./judgeDataBase.js")
+const Common = require("./common.js")
 
 const epsilon = .01
 
@@ -50,7 +50,7 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
     constructor(routineLengthSeconds, judgeData) {
         super(routineLengthSeconds, judgeData)
 
-        this.data.diffScores = judgeData.diffScores
+        this.data.diffScores = judgeData.rawScores.diffScores
     }
 
     calcJudgeScoreTotal() {
@@ -71,7 +71,7 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
         for (let i = 0; i < count; ++i) {
             for (let line of MainStore.constants.Diff.gradientLines) {
                 let sX = line.sCountPerSecond * this.routineLengthSeconds - epsilon
-                let eX = line.eCountPerSecond * this.routineLengthSeconds + epsilon
+                let eX = line.eCountPerSecond * this.routineLengthSeconds - epsilon
                 if (i >= sX && i < eX) {
                     let dx = i - sX
                     let slope = (line.eY - line.sY) / (eX - sX)
@@ -87,6 +87,15 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
     getAdjustedScore(score) {
         let constants = MainStore.constants.Diff
         return Math.pow(Math.max(0, score + constants.offset), constants.power) * constants.scale
+    }
+
+    getAverage(scores, adjusted) {
+        let avg = 0
+        for (let score of scores) {
+            avg += adjusted ? this.getAdjustedScore(score) : score
+        }
+
+        return avg / Math.max(1, scores.length)
     }
 
     getGradientScore(diffScores, adjusted, reportTier1Only) {
@@ -108,20 +117,104 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
         return score
     }
 
+    getSortedTier1Scores() {
+        let sortedScores = this.sortScores(this.data.diffScores)
+        let gradientArray = this.generateGradientArray(sortedScores.length)
+        for (let gradient of gradientArray) {
+            if (gradient < .9) {
+                sortedScores.splice(sortedScores.length - 1, 1)
+            }
+        }
+
+        return sortedScores
+    }
+
     getJudgeWidgetDetailed() {
+        let phrases = []
+        let sortedTier1Scores = this.getSortedTier1Scores()
+        let tier1Avg = Common.round2Decimals(sortedTier1Scores.reduce((a, b) => a + b) / sortedTier1Scores.length)
+        for (let phrase of this.data.diffScores) {
+            let tier1ScoreIndex = sortedTier1Scores.findIndex((score) => score === phrase)
+            if (tier1ScoreIndex >= 0) {
+                sortedTier1Scores.splice(tier1ScoreIndex, 1)
+
+                phrases.push(<div key={Math.random()} className="markTier1">{phrase}</div>)
+            } else {
+                phrases.push(<div key={Math.random()} className="mark">{phrase}</div>)
+            }
+        }
+
+        let categoryOnlyScore = this.calcJudgeScoreCategoryOnly()
+        let tier1Score = this.getGradientScore(this.data.diffScores, true, true)
+
         return (
-            <div key={Math.random()}>
-                Detailed
+            <div key={Math.random()} className="judgeDataDetailed">
+                <div className="rawScores">
+                    <div className="judgeName">
+                        {`${JudgeData.categoryType} - ${Common.getPlayerNameString(this.data.judgeKey)}`}
+                    </div>
+                    <div className="line">
+                        <label>
+                            Marks
+                        </label>
+                        <div className="phrases">
+                            {phrases}
+                        </div>
+                    </div>
+                    <div className="line">
+                        <label>
+                            Phrases
+                        </label>
+                        <div className="value">
+                            {phrases.length}
+                        </div>
+                    </div>
+                    <div className="line">
+                        <label>
+                            Details
+                        </label>
+                        <div className="subLine">
+                            <div className="subLabel">
+                                Raw Avg
+                            </div>
+                            <div className="value">
+                                {this.getAverage(this.data.diffScores)}
+                            </div>
+                            <div className="subLabel">
+                                Tier 1 Avg
+                            </div>
+                            <div className="value">
+                                {tier1Avg}
+                            </div>
+                            <div className="subLabel">
+                                Tier 1
+                            </div>
+                            <div className="value">
+                                {Common.round2Decimals(tier1Score)}
+                            </div>
+                            <div className="subLabel">
+                                Tail
+                            </div>
+                            <div className="value">
+                                {Common.round2Decimals(categoryOnlyScore - tier1Score)}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="line">
+                        <label>
+                            General
+                        </label>
+                        <div className="value">
+                            {this.data.general}
+                        </div>
+                    </div>
+                </div>
+                <div className="categoryOnlyScore">
+                    {Common.round2Decimals(categoryOnlyScore)}
+                </div>
             </div>
         )
     }
 }
 
-setTimeout(() => {
-    let diff = new module.exports.JudgeDataClass(180, {
-        diffScores: [ 5, 5, 5, 5 ],
-        general: 5
-    })
-
-    console.log("3", diff.calcJudgeScoreCategoryOnly(), diff.calcJudgeScoreGeneral(), diff.calcJudgeScoreTotal())
-}, 100)
+const JudgeData = module.exports

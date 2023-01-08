@@ -6,9 +6,9 @@ module.exports = Mobx.observable({
     eventData: undefined,
     playerData: undefined,
     constants: {},
-    selectedDivision: null,
-    selectedRound: null,
-    selectedPool: null,
-    topTabsSelectedIndex: 0,
-    controlsTabsSelectedIndex: 0
+    selectedDivision: { value: "Open Pairs", label: "Open Pairs" },
+    selectedRound: { value: "Finals", label: "Finals" },
+    selectedPool: { value: "A", label: "A" },
+    topTabsSelectedIndex: 1,
+    controlsTabsSelectedIndex: 1
 })
