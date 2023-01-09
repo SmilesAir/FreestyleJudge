@@ -376,10 +376,6 @@ require("./index.less")
 
             MainStore.topTabsSelectedIndex = 1
             MainStore.controlsTabsSelectedIndex = 1
-
-            Common.updateEventState({
-                activePoolKey: Common.getSelectedPoolKey()
-            })
         })
     }
 
@@ -397,7 +393,7 @@ require("./index.less")
 
             widgets.push(
                 <div key={poolName} className={`poolWidget ${isActive ? "poolWidgetActive" : ""}`}>
-                    <button onClick={() => Common.setActivePool(poolKey)} disabled={isActive}>Set Active Pool</button>
+                    <button onClick={() => Common.setActivePool(poolKey)} disabled={isActive || Common.isRoutinePlaying()}>Set Active Pool</button>
                     <h4>
                         Pool {poolName}
                     </h4>
@@ -455,10 +451,14 @@ require("./index.less")
     constructor() {
         super()
 
-        this.state = { }
+        this.state = {
+            routineTimeString: "0:00"
+        }
         this.categoryOrder = [ "Diff", "Variety", "ExAi" ]
 
-        Common.fetchEventData("8c14255f-9a96-45f1-b843-74e2a00d06cc")
+        Common.fetchEventData("8c14255f-9a96-45f1-b843-74e2a00d06cc").then(() => {
+            this.runUpdateRoutineTimeString()
+        })
         Common.fetchPlayerData()
     }
 
@@ -481,9 +481,11 @@ require("./index.less")
         runInAction(() => {
             MainStore.selectedPool = selected
 
-            Common.updateEventState({
-                activePoolKey: Common.getSelectedPoolKey()
-            })
+            if (MainStore.controlsTabsSelectedIndex === 0) {
+                Common.updateEventState({
+                    activePoolKey: Common.getSelectedPoolKey()
+                })
+            }
         })
     }
 
@@ -547,6 +549,7 @@ require("./index.less")
     onControlsTabsSelectedIndexChanged(index) {
         runInAction(() => {
             MainStore.controlsTabsSelectedIndex = index
+            Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
         })
     }
 
@@ -614,16 +617,50 @@ require("./index.less")
         )
     }
 
+    onStartClicked() {
+        runInAction(() => {
+            MainStore.eventData.controllerState.routineStartTime = Date.now()
+            Common.updateEventState(undefined, MainStore.eventData.controllerState)
+            this.runUpdateRoutineTimeString()
+        })
+    }
+
+    onCancelClicked() {
+        runInAction(() => {
+            MainStore.eventData.controllerState.routineStartTime = undefined
+            Common.updateEventState(undefined, MainStore.eventData.controllerState)
+            this.runUpdateRoutineTimeString()
+        })
+    }
+
+    runUpdateRoutineTimeString() {
+        this.updateRoutineTimeString()
+
+        if (Common.getRoutineTimeSeconds() < 15 * 60) {
+            setTimeout(() => {
+                this.runUpdateRoutineTimeString()
+            }, 1000)
+        } else {
+            this.state.routineTimeString = "0:00"
+            this.setState(this.state)
+        }
+    }
+
+    updateRoutineTimeString() {
+        this.state.routineTimeString = Common.getRoutineTimeString(Common.getRoutineTimeSeconds())
+        this.setState(this.state)
+    }
+
     getRunControls() {
         return (
             <div className="runControls">
                 <h2>
-                    {`Time: ${Common.getRoutineTimeString(Common.getRoutineTimeSeconds())} / ${Common.getRoutineTimeString(Common.getSelectedPoolRoutineSeconds())} | `}
+                    {`Time: ${this.state.routineTimeString} / ${Common.getRoutineTimeString(Common.getSelectedPoolRoutineSeconds())} | `}
                     {`Playing: ${Common.getSelectedTeamNameString()}`}
                 </h2>
                 <div className="buttons">
-                    <button>Start</button>
-                    <button>Cancel</button>
+                    <button onClick={() => this.onStartClicked()} disabled={Common.isRoutinePlaying()}>Click on First Throw</button>
+                    <button onClick={() => this.onCancelClicked()} disabled={!Common.isRoutinePlaying()}>Cancel Routine</button>
                 </div>
                 <div className="details">
                     <div className="teams">
@@ -654,6 +691,8 @@ require("./index.less")
             return <h1>No Player Data</h1>
         }
 
+        let selectDisabled = MainStore.controlsTabsSelectedIndex === 0 && Common.isRoutinePlaying()
+
         return (
             <div className="headJudgeInterface">
                 <Tabs selectedIndex={MainStore.topTabsSelectedIndex} onSelect={(index) => this.onTopTabsSelectedIndexChanged(index)}>
@@ -667,9 +706,9 @@ require("./index.less")
                     <TabPanel>
                         <Tabs selectedIndex={MainStore.controlsTabsSelectedIndex} onSelect={(index) => this.onControlsTabsSelectedIndexChanged(index)}>
                             <div className="poolSelectContainer">
-                                <ReactSelect value={MainStore.selectedDivision} onChange={(e) => this.onSelectDivision(e)} options={this.getDivisionOptions()} placeholder="Choose Division" isLoading={MainStore.eventData === undefined} />
-                                <ReactSelect value={MainStore.selectedRound} onChange={(e) => this.onSelectRound(e)} options={this.getRoundOptions()} placeholder="Choose Round" isLoading={MainStore.eventData === undefined} />
-                                <ReactSelect value={MainStore.selectedPool} onChange={(e) => this.onSelectPool(e)} options={this.getPoolOptions()} placeholder="Choose Pool" isLoading={MainStore.eventData === undefined} />
+                                <ReactSelect value={MainStore.selectedDivision} onChange={(e) => this.onSelectDivision(e)} options={this.getDivisionOptions()} placeholder="Choose Division" isLoading={MainStore.eventData === undefined} isDisabled={selectDisabled} />
+                                <ReactSelect value={MainStore.selectedRound} onChange={(e) => this.onSelectRound(e)} options={this.getRoundOptions()} placeholder="Choose Round" isLoading={MainStore.eventData === undefined} isDisabled={selectDisabled} />
+                                <ReactSelect value={MainStore.selectedPool} onChange={(e) => this.onSelectPool(e)} options={this.getPoolOptions()} placeholder="Choose Pool" isLoading={MainStore.eventData === undefined} isDisabled={selectDisabled} />
                             </div>
                             <TabList>
                                 <Tab>Run Pool</Tab>

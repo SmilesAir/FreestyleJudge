@@ -18,7 +18,7 @@ module.exports.fetchEventData = function(eventKey) {
     }).then((response) => {
         runInAction(() => {
             MainStore.eventData = removeEmptyEventData(response.eventData)
-            this.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
+            Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
             document.title = MainStore.eventData.eventName
         })
         console.log("GET_EVENT_DATA", JSON.parse(JSON.stringify(MainStore.eventData)))
@@ -91,9 +91,13 @@ module.exports.fetchPlayerData = function() {
 }
 
 module.exports.setActivePool = function(poolKey) {
+    MainStore.eventData.eventState.activePoolKey = poolKey
+    MainStore.topTabsSelectedIndex = 1
+    MainStore.controlsTabsSelectedIndex = 0
+
     return Common.updateEventState({
         activePoolKey: poolKey
-    }, undefined)
+    }, {})
 }
 
 module.exports.updateEventState = function(eventState, controllerState) {
@@ -152,7 +156,12 @@ module.exports.getSelectedPoolRoutineSeconds = function() {
 }
 
 module.exports.getRoutineTimeSeconds = function() {
-    return 0
+    if (MainStore.eventData === undefined ||
+        MainStore.eventData.controllerState.routineStartTime === undefined) {
+        return 0
+    }
+
+    return Math.floor((Date.now() - MainStore.eventData.controllerState.routineStartTime) / 1000)
 }
 
 module.exports.getRoutineTimeString = function(seconds) {
@@ -295,4 +304,8 @@ module.exports.getSelectedTeamNameString = function() {
     }
 
     return Common.getPlayerNamesString(teamData.players)
+}
+
+module.exports.isRoutinePlaying = function() {
+    return MainStore.eventData && MainStore.eventData.controllerState.routineStartTime && Common.getRoutineTimeSeconds() <= Common.getSelectedPoolRoutineSeconds()
 }
