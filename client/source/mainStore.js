@@ -9,6 +9,6 @@ module.exports = Mobx.observable({
     selectedDivision: null,
     selectedRound: null,
     selectedPool: null,
-    topTabsSelectedIndex: 1,
+    topTabsSelectedIndex: 0,
     controlsTabsSelectedIndex: 0
 })

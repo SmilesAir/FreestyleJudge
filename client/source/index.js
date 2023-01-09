@@ -379,6 +379,12 @@ require("./index.less")
         })
     }
 
+    onSetActivePool(poolKey) {
+        runInAction(() => {
+            Common.setActivePool(poolKey)
+        })
+    }
+
     getPoolWidgets(divisionData, roundData) {
         let widgets = []
         for (let poolName of roundData.poolNames) {
@@ -393,7 +399,7 @@ require("./index.less")
 
             widgets.push(
                 <div key={poolName} className={`poolWidget ${isActive ? "poolWidgetActive" : ""}`}>
-                    <button onClick={() => Common.setActivePool(poolKey)} disabled={isActive || Common.isRoutinePlaying()}>Set Active Pool</button>
+                    <button onClick={() => this.onSetActivePool(poolKey)} disabled={isActive || Common.isRoutinePlaying()}>Set Active Pool</button>
                     <h4>
                         Pool {poolName}
                     </h4>
@@ -450,6 +456,11 @@ require("./index.less")
 @MobxReact.observer class HeadJudgeInterface extends React.Component {
     constructor() {
         super()
+
+        runInAction(() => {
+            MainStore.topTabsSelectedIndex = parseInt(window.localStorage.getItem("topTabsSelectedIndex"), 10) || 0
+            MainStore.controlsTabsSelectedIndex = parseInt(window.localStorage.getItem("controlsTabsSelectedIndex"), 10) || 0
+        })
 
         this.state = {
             routineTimeString: "0:00"
@@ -543,6 +554,7 @@ require("./index.less")
     onTopTabsSelectedIndexChanged(index) {
         runInAction(() => {
             MainStore.topTabsSelectedIndex = index
+            window.localStorage.setItem("topTabsSelectedIndex", index)
         })
     }
 
@@ -550,6 +562,7 @@ require("./index.less")
         runInAction(() => {
             MainStore.controlsTabsSelectedIndex = index
             Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
+            window.localStorage.setItem("controlsTabsSelectedIndex", index)
         })
     }
 

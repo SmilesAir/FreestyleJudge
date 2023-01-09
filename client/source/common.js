@@ -50,6 +50,10 @@ function removeEmptyEventData(eventData) {
 }
 
 module.exports.setSelectedPoolFromPoolKey = function(poolKey) {
+    if (poolKey === undefined) {
+        return
+    }
+
     let parts = poolKey.split("|")
     if (parts.length !== 5) {
         return
@@ -165,7 +169,11 @@ module.exports.getRoutineTimeSeconds = function() {
 }
 
 module.exports.getRoutineTimeString = function(seconds) {
-    return new Date(seconds * 1000).toISOString().substring(15, 19)
+    if (seconds >= 10 * 60) {
+        return new Date(seconds * 1000).toISOString().substring(14, 19)
+    } else {
+        return new Date(seconds * 1000).toISOString().substring(15, 19)
+    }
 }
 
 module.exports.getJudgeDataDetailedWidget = function(judgeData) {

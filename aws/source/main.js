@@ -21,24 +21,89 @@ module.exports.importEventFromPoolCreator = (e, c, cb) => { Common.handler(e, c,
 
     updateManifest(eventKey, eventName)
 
-    let newEventData = await parseEventDataFromPoolCreator(eventKey, eventName, request)
+    let parsedData = await parseEventDataFromPoolCreator(eventKey, eventName, request)
+    let newEventData = parsedData.eventData
+    let newPoolMap = parsedData.poolMap
 
-    let currentEventData = await getEventData(eventKey)
+    let currentEventData = await getEventDataWithPoolData(eventKey)
 
     // conditionally update the event data
+    if (currentEventData !== undefined) {
+        newEventData.importantVersion = currentEventData.importantVersion + 1
 
+        // merge the pools
+        for (let poolKey in newPoolMap) {
+            let newPoolData = newPoolMap[poolKey]
+            let currentPoolData = currentEventData.eventData.poolMap[poolKey]
+            if (currentPoolData !== undefined) {
+                for (let currentTeam of currentPoolData.teamData) {
+                    if (hasTeamResults(currentTeam)) {
+                        let found = false
+                        for (let newTeamIndex = 0; newTeamIndex < newPoolData.teamData.length; ++newTeamIndex) {
+                            let newTeam = newPoolData.teamData[newTeamIndex]
+                            if (hasSamePlayers(currentTeam, newTeam)) {
+                                found = true
+                                newPoolData.teamData[newTeamIndex] = currentTeam
+                                break
+                            }
+                        }
+
+                        if (!found) {
+                            newPoolData.teamData.push(currentTeam)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    console.log(JSON.stringify(newPoolMap))
+    console.log(JSON.stringify(newEventData))
+
+    let putPromises = []
     let putNewEventParams = {
         TableName : process.env.DATA_TABLE,
         Item: newEventData
     }
-    await docClient.put(putNewEventParams).promise().catch((error) => {
+    putPromises.push(docClient.put(putNewEventParams).promise().catch((error) => {
         throw error
-    })
+    }))
+
+    for (let poolKey in newPoolMap) {
+        let newPoolData = newPoolMap[poolKey]
+        let putNewPoolParams = {
+            TableName : process.env.DATA_TABLE,
+            Item: newPoolData
+        }
+        putPromises.push(docClient.put(putNewPoolParams).promise().catch((error) => {
+            throw error
+        }))
+    }
+
+    await Promise.all(putPromises)
 
     return {
         message: `"${eventName}" Imported Succesfully to V3`
     }
 })}
+
+function hasTeamResults(teamData) {
+    return Object.keys(teamData.judgeData).length > 0
+}
+
+function hasSamePlayers(teamData1, teamData2) {
+    if (teamData1.players.length !== teamData2.players.length) {
+        return false
+    }
+
+    for (let i = 0; i < teamData1.players.length; ++i) {
+        if (teamData1.players[i] !== teamData2.players[i]) {
+            return false
+        }
+    }
+
+    return true
+}
 
 function validateEventKey(eventKey) {
     if (eventKey === undefined || eventKey.length < 10) {
@@ -60,6 +125,7 @@ async function parseEventDataFromPoolCreator(eventKey, eventName, request) {
         controllerState: {},
         judgesState: {}
     }
+    let poolMap = {}
 
     for (let player of request.registeredPlayers) {
         newEventData.eventData.playerData[player.key] = {
@@ -119,13 +185,7 @@ async function parseEventDataFromPoolCreator(eventKey, eventName, request) {
                         teamData: teamData
                     }
 
-                    let putNewPoolParams = {
-                        TableName : process.env.DATA_TABLE,
-                        Item: newPoolData
-                    }
-                    await docClient.put(putNewPoolParams).promise().catch((error) => {
-                        throw error
-                    })
+                    poolMap[poolKey] = newPoolData
                 }
             }
         }
@@ -133,7 +193,10 @@ async function parseEventDataFromPoolCreator(eventKey, eventName, request) {
         newEventData.eventData.divisionData[divisionName] = newDivisionData
     }
 
-    return newEventData
+    return {
+        eventData: newEventData,
+        poolMap: poolMap
+    }
 }
 
 function getPoolCreatorJudgeCategory(judgeCategory) {
@@ -255,6 +318,12 @@ module.exports.getEventData = (e, c, cb) => { Common.handler(e, c, cb, async (ev
 
     validateEventKey(eventKey)
 
+    return {
+        eventData: await getEventDataWithPoolData(eventKey)
+    }
+})}
+
+async function getEventDataWithPoolData(eventKey) {
     let eventData = await getEventData(eventKey)
     if (eventData === undefined) {
         throw `Can't find event for key "${eventKey}"`
@@ -278,10 +347,8 @@ module.exports.getEventData = (e, c, cb) => { Common.handler(e, c, cb, async (ev
 
     await Promise.all(poolFetchPromises)
 
-    return {
-        eventData: eventData
-    }
-})}
+    return eventData
+}
 
 function makePoolKey(eventKey, divisionName, roundName, poolName) {
     return `${poolKeyPrefix}${eventKey}|${divisionName}|${roundName}|${poolName}`
@@ -326,10 +393,11 @@ module.exports.updateEventState = (e, c, cb) => { Common.handler(e, c, cb, async
     let updateParams = {
         TableName: process.env.DATA_TABLE,
         Key: {"key": eventKey},
-        UpdateExpression: "set " + expressions.join(", "),
+        UpdateExpression: "set importantVersion = importantVersion + :one, " + expressions.join(", "),
         ExpressionAttributeValues: {
             ":eventState": request.eventState,
-            ":controllerState": request.controllerState
+            ":controllerState": request.controllerState,
+            ":one": 1
         },
         ReturnValues: "NONE"
     }
