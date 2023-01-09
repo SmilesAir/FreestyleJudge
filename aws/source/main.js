@@ -6,7 +6,7 @@ const uuid = AWS.util.uuid
 const Common = require("./common.js")
 
 const eventManifestKey = "eventManifest"
-const poolKeyPrefix = "pool-"
+const poolKeyPrefix = "pool|"
 
 module.exports.importEventFromPoolCreator = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
     let eventKey = decodeURIComponent(event.pathParameters.eventKey)
@@ -284,7 +284,7 @@ module.exports.getEventData = (e, c, cb) => { Common.handler(e, c, cb, async (ev
 })}
 
 function makePoolKey(eventKey, divisionName, roundName, poolName) {
-    return `${poolKeyPrefix}${eventKey}-${divisionName}-${roundName}-${poolName}`
+    return `${poolKeyPrefix}${eventKey}|${divisionName}|${roundName}|${poolName}`
 }
 
 function getPoolData(poolKey, poolMap) {

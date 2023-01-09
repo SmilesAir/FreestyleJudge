@@ -4,7 +4,7 @@ const MainStore = require("./mainStore.js")
 const { fetchEx, fetchAuth } = require("./endpoints.js")
 const JudgeDataBase = require("./judgeDataBase.js")
 
-const poolKeyPrefix = "pool-"
+const poolKeyPrefix = "pool|"
 const Common = module.exports
 
 module.exports.fetchEventData = function(eventKey) {
@@ -18,6 +18,8 @@ module.exports.fetchEventData = function(eventKey) {
     }).then((response) => {
         runInAction(() => {
             MainStore.eventData = removeEmptyEventData(response.eventData)
+            this.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
+            document.title = MainStore.eventData.eventName
         })
         console.log("GET_EVENT_DATA", JSON.parse(JSON.stringify(MainStore.eventData)))
     }).catch((error) => {
@@ -47,8 +49,28 @@ function removeEmptyEventData(eventData) {
     return eventData
 }
 
+module.exports.setSelectedPoolFromPoolKey = function(poolKey) {
+    let parts = poolKey.split("|")
+    if (parts.length !== 5) {
+        return
+    }
+
+    MainStore.selectedDivision = {
+        label: parts[2],
+        value: parts[2]
+    }
+    MainStore.selectedRound = {
+        label: parts[3],
+        value: parts[3]
+    }
+    MainStore.selectedPool = {
+        label: parts[4],
+        value: parts[4]
+    }
+}
+
 module.exports.makePoolKey = function(eventKey, divisionName, roundName, poolName) {
-    return `${poolKeyPrefix}${eventKey}-${divisionName}-${roundName}-${poolName}`
+    return `${poolKeyPrefix}${eventKey}|${divisionName}|${roundName}|${poolName}`
 }
 
 module.exports.fetchPlayerData = function() {
@@ -107,6 +129,36 @@ module.exports.isPoolActive = function(poolKey) {
     return MainStore.eventData.eventState.activePoolKey === poolKey
 }
 
+module.exports.getSelectedPoolKey = function() {
+    if (MainStore.eventData === undefined ||
+        MainStore.selectedDivision === null ||
+        MainStore.selectedRound === null ||
+        MainStore.selectedPool === null) {
+        return undefined
+    }
+
+    return Common.makePoolKey(MainStore.eventData.key, MainStore.selectedDivision.value, MainStore.selectedRound.value, MainStore.selectedPool.value)
+}
+
+module.exports.getSelectedPoolRoutineSeconds = function() {
+    if (MainStore.eventData === undefined ||
+        MainStore.selectedDivision === null ||
+        MainStore.selectedRound === null) {
+        return 0
+    }
+
+    let roundData = MainStore.eventData.eventData.divisionData[MainStore.selectedDivision.value].roundData[MainStore.selectedRound.value]
+    return roundData.lengthSeconds
+}
+
+module.exports.getRoutineTimeSeconds = function() {
+    return 0
+}
+
+module.exports.getRoutineTimeString = function(seconds) {
+    return new Date(seconds * 1000).toISOString().substring(15, 19)
+}
+
 module.exports.getJudgeDataDetailedWidget = function(judgeData) {
     if (judgeData === undefined) {
         return null
@@ -122,7 +174,7 @@ module.exports.getJudgeDataDetailedWidget = function(judgeData) {
     }
 
     if (judgeDataExport !== undefined) {
-        let judgeDataObj = new judgeDataExport.JudgeDataClass(180, judgeData)
+        let judgeDataObj = new judgeDataExport.JudgeDataClass(Common.getSelectedPoolRoutineSeconds(), judgeData)
 
         return judgeDataObj.getJudgeWidgetDetailed()
     } else {
@@ -147,7 +199,7 @@ module.exports.calcJudgeScoreCategoryOnly = function(judgeData) {
     }
 
     if (judgeDataExport !== undefined) {
-        let judgeDataObj = new judgeDataExport.JudgeDataClass(180, judgeData)
+        let judgeDataObj = new judgeDataExport.JudgeDataClass(Common.getSelectedPoolRoutineSeconds(), judgeData)
 
         return judgeDataObj.calcJudgeScoreCategoryOnly()
     } else {
@@ -172,7 +224,7 @@ module.exports.calcJudgeScoreGeneral = function(judgeData) {
     }
 
     if (judgeDataExport !== undefined) {
-        let judgeDataObj = new judgeDataExport.JudgeDataClass(180, judgeData)
+        let judgeDataObj = new judgeDataExport.JudgeDataClass(Common.getSelectedPoolRoutineSeconds(), judgeData)
 
         return judgeDataObj.calcJudgeScoreGeneral()
     } else {
@@ -216,4 +268,31 @@ module.exports.makePoolName = function(divisionName, roundName, poolName) {
     } else {
         return `${divisionName} ${roundName} ${poolName}`
     }
+}
+
+module.exports.getSelectedPoolData = function() {
+    let poolKey = Common.getSelectedPoolKey()
+    if (poolKey === undefined) {
+        return undefined
+    }
+
+    return MainStore.eventData.eventData.poolMap[poolKey]
+}
+
+module.exports.getSelectedTeamData = function() {
+    let poolData = Common.getSelectedPoolData()
+    if (poolData === undefined || MainStore.eventData.controllerState.selectedTeamIndex === undefined) {
+        return undefined
+    }
+
+    return poolData.teamData[MainStore.eventData.controllerState.selectedTeamIndex]
+}
+
+module.exports.getSelectedTeamNameString = function() {
+    let teamData = Common.getSelectedTeamData()
+    if (teamData === undefined) {
+        return "No Team Selected"
+    }
+
+    return Common.getPlayerNamesString(teamData.players)
 }

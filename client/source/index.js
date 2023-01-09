@@ -117,12 +117,18 @@ require("./index.less")
         let scores = {
             teamCategoryScores: [],
             teamSumScores: [],
+            teamTotalScores: [],
+            teamRanks: [],
             maxSumScores: [ 0, 0, 0, -Infinity, 0 ]
         }
 
         for (let teamData of poolData.teamData) {
             let teamCategoryScores = []
             let categorySums = {
+                Diff: 0,
+                Variety: 0,
+                ExAi: 0,
+                Ex: 0,
                 General: 0
             }
 
@@ -163,6 +169,27 @@ require("./index.less")
                 categorySums.Ex,
                 categorySums.General
             ])
+            scores.teamTotalScores.push(categorySums.Diff +
+                categorySums.Variety +
+                categorySums.ExAi +
+                categorySums.Ex +
+                categorySums.General)
+            scores.teamRanks.push(0)
+        }
+
+        // Should handle ties. Like 1, 3, 3, 4, ...
+        let sortedTotals = scores.teamTotalScores.slice(0).sort((a, b) => b - a)
+        let rank = 1
+        for (let i = 0; i < sortedTotals.length; ++i) {
+            let sortedTotal = sortedTotals[i]
+            for (let j = 0; j < scores.teamRanks.length; ++j) {
+                let total = scores.teamTotalScores[j]
+                if (sortedTotal === total) {
+                    scores.teamRanks[j] = rank
+                }
+            }
+
+            ++rank
         }
 
         return scores
@@ -214,10 +241,10 @@ require("./index.less")
                     </div>
                     <div className="totals">
                         <div className="total">
-                            0
+                            {Common.round2Decimals(summaryScoreData.teamTotalScores[teamIndex])}
                         </div>
                         <div className="rank">
-                            0
+                            {summaryScoreData.teamRanks[teamIndex]}
                         </div>
                     </div>
                 </div>
@@ -315,7 +342,7 @@ require("./index.less")
             )
         }
 
-        let poolKey = Common.makePoolKey(MainStore.eventData.key, MainStore.selectedDivision.value, MainStore.selectedRound.value, MainStore.selectedPool.value)
+        let poolKey = Common.getSelectedPoolKey()
         let poolName = Common.makePoolName(MainStore.selectedDivision.value, MainStore.selectedRound.value, MainStore.selectedPool.value)
 
         return (
@@ -349,6 +376,10 @@ require("./index.less")
 
             MainStore.topTabsSelectedIndex = 1
             MainStore.controlsTabsSelectedIndex = 1
+
+            Common.updateEventState({
+                activePoolKey: Common.getSelectedPoolKey()
+            })
         })
     }
 
@@ -425,6 +456,7 @@ require("./index.less")
         super()
 
         this.state = { }
+        this.categoryOrder = [ "Diff", "Variety", "ExAi" ]
 
         Common.fetchEventData("8c14255f-9a96-45f1-b843-74e2a00d06cc")
         Common.fetchPlayerData()
@@ -448,6 +480,10 @@ require("./index.less")
     onSelectPool(selected) {
         runInAction(() => {
             MainStore.selectedPool = selected
+
+            Common.updateEventState({
+                activePoolKey: Common.getSelectedPoolKey()
+            })
         })
     }
 
@@ -514,6 +550,101 @@ require("./index.less")
         })
     }
 
+    onTeamClicked(teamIndex) {
+        runInAction(() => {
+            MainStore.eventData.controllerState.selectedTeamIndex = teamIndex
+
+            Common.updateEventState(undefined, {
+                selectedTeamIndex: teamIndex
+            })
+        })
+    }
+
+    getTeamsWidget() {
+        let poolData = Common.getSelectedPoolData()
+        if (poolData === undefined) {
+            return null
+        }
+
+        let widgets = []
+        let teamNumber = 1
+        for (let teamData of poolData.teamData) {
+            let selected = teamNumber - 1 === MainStore.eventData.controllerState.selectedTeamIndex
+            let cn = `team ${selected ? "selected" : ""}`
+            let teamIndex = teamNumber - 1
+            widgets.push(
+                <div key={teamNumber} className={cn} onClick={() => this.onTeamClicked(teamIndex)}>
+                    {`${teamNumber}. ${Common.getPlayerNamesString(teamData.players)}`}
+                </div>
+            )
+            ++teamNumber
+        }
+
+        return widgets
+    }
+
+    getJudgeWidget(judgeKey, categoryType) {
+        return (
+            <div key={judgeKey} className="judge">
+                {`${categoryType}: ${Common.getPlayerNameString(judgeKey)}`}
+            </div>
+        )
+    }
+
+    getJudgesWidget() {
+        let poolData = Common.getSelectedPoolData()
+        if (poolData === undefined) {
+            return null
+        }
+
+        let widgets = []
+        for (let categoryType of this.categoryOrder) {
+            for (let judgeKey in poolData.judges) {
+                let judgeType = poolData.judges[judgeKey]
+                if (judgeType === categoryType) {
+                    widgets.push(this.getJudgeWidget(judgeKey, categoryType))
+                }
+            }
+        }
+
+        return (
+            <div className="judges">
+                {widgets}
+            </div>
+        )
+    }
+
+    getRunControls() {
+        return (
+            <div className="runControls">
+                <h2>
+                    {`Time: ${Common.getRoutineTimeString(Common.getRoutineTimeSeconds())} / ${Common.getRoutineTimeString(Common.getSelectedPoolRoutineSeconds())} | `}
+                    {`Playing: ${Common.getSelectedTeamNameString()}`}
+                </h2>
+                <div className="buttons">
+                    <button>Start</button>
+                    <button>Cancel</button>
+                </div>
+                <div className="details">
+                    <div className="teams">
+                        <h3>
+                            Teams
+                        </h3>
+                        {this.getTeamsWidget()}
+                    </div>
+                    <div className="judges">
+                        <h3>
+                            Judges
+                        </h3>
+                        {this.getJudgesWidget()}
+                    </div>
+                </div>
+                <hr/>
+                <Results2020Widget />
+            </div>
+        )
+    }
+
     render() {
         if (MainStore.eventData === undefined) {
             return <h1>No Event Data</h1>
@@ -525,9 +656,6 @@ require("./index.less")
 
         return (
             <div className="headJudgeInterface">
-                <h1>
-                    {MainStore.eventData.eventName}
-                </h1>
                 <Tabs selectedIndex={MainStore.topTabsSelectedIndex} onSelect={(index) => this.onTopTabsSelectedIndexChanged(index)}>
                     <TabList>
                         <Tab>Event Info</Tab>
@@ -548,7 +676,7 @@ require("./index.less")
                                 <Tab>Results</Tab>
                             </TabList>
                             <TabPanel>
-                                <h2>Pool A</h2>
+                                {this.getRunControls()}
                             </TabPanel>
                             <TabPanel>
                                 <Results2020Widget />

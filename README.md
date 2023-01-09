@@ -121,6 +121,8 @@ Keeps a list of all the events
     }
     // This data is transient
     controllerState: {
+        selectedTeamIndex: int,
+        routineStartTime: int64
         ...
     },
     // Only used for current pool judges state. This data is transient
@@ -137,7 +139,7 @@ Keeps a list of all the events
 ## Pool Object
 | Key | Data Blob |
 | --- | --- |
-| pool-\<Event Key>-\<Division Name>-\<Round Name>-\<Pool Name> | JSON blob containing team list and judge scores |
+| pool|\<Event Key>|\<Division Name>|\<Round Name>|\<Pool Name> | JSON blob containing team list and judge scores |
 
 ### Schema
 ```
