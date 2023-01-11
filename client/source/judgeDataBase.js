@@ -25,12 +25,8 @@ module.exports.JudgeDataBase = class {
         this.routineLengthSeconds = routineLengthSeconds
         this.data = {
             judgeKey: judgeData.judgeKey,
-            general: judgeData.rawScores.general
+            general: judgeData.rawScores.general || 0
         }
-    }
-
-    calcJudgeScoreTotal() {
-        throw new Error("calcJudgeScoreTotal is not implemented in child")
     }
 
     calcJudgeScoreCategoryOnly() {
@@ -43,6 +39,18 @@ module.exports.JudgeDataBase = class {
 
     getJudgeWidgetDetailed() {
         throw new Error("getJudgeWidgetDetailed is not implemented in child")
+    }
+
+    addJudgePreProcessData(preProcessData) {
+        throw new Error("addJudgePreProcessData is not implemented in child")
+    }
+
+    calcJudgeScoreTotal() {
+        return this.calcJudgeScoreCategoryOnly() + this.calcJudgeScoreGeneral()
+    }
+
+    calcJudgeScoreEx(judgePreProcessData) {
+        throw new Error("calcJudgeScoreEx is not implemented in child")
     }
 }
 

@@ -176,76 +176,97 @@ module.exports.getRoutineTimeString = function(seconds) {
     }
 }
 
-module.exports.getJudgeDataDetailedWidget = function(judgeData) {
-    if (judgeData === undefined) {
+module.exports.initJudgeDataForTeamData = function(teamData) {
+    if (teamData === undefined || teamData.judgePreProcessData !== undefined && teamData.judgeInstances !== undefined) {
+        return
+    }
+
+    teamData.judgePreProcessData = {}
+    teamData.judgeInstances = {}
+
+    for (let judgeKey in teamData.judgeData) {
+        let judgeData = teamData.judgeData[judgeKey]
+
+        let judgeDataExport = undefined
+        for (let categoryType in JudgeDataBase.judgeDataExports) {
+            let jde = JudgeDataBase.judgeDataExports[categoryType]
+            if (jde.categoryType === judgeData.categoryType) {
+                judgeDataExport = jde
+                break
+            }
+        }
+
+        if (judgeDataExport !== undefined) {
+            let judgeDataObj = new judgeDataExport.JudgeDataClass(Common.getSelectedPoolRoutineSeconds(), judgeData)
+            judgeDataObj.addJudgePreProcessData(teamData.judgePreProcessData)
+            teamData.judgeInstances[judgeKey] = judgeDataObj
+        }
+    }
+}
+
+module.exports.getJudgeDataDetailedWidget = function(judgeKey, teamData) {
+    if (judgeKey === undefined || teamData === undefined) {
         return null
     }
 
-    let judgeDataExport = undefined
-    for (let categoryType in JudgeDataBase.judgeDataExports) {
-        let jde = JudgeDataBase.judgeDataExports[categoryType]
-        if (jde.categoryType === judgeData.categoryType) {
-            judgeDataExport = jde
-            break
-        }
-    }
+    Common.initJudgeDataForTeamData(teamData)
 
-    if (judgeDataExport !== undefined) {
-        let judgeDataObj = new judgeDataExport.JudgeDataClass(Common.getSelectedPoolRoutineSeconds(), judgeData)
-
-        return judgeDataObj.getJudgeWidgetDetailed()
+    let judgeDataObj = teamData.judgeInstances[judgeKey]
+    if (judgeDataObj !== undefined) {
+        return judgeDataObj.getJudgeWidgetDetailed(teamData.judgePreProcessData)
     } else {
-        console.error(`Can't find judge data for "${judgeData.categoryType}"`)
+        console.error(`Can't find judge data for "${judgeKey}"`)
     }
 
     return null
 }
 
-module.exports.calcJudgeScoreCategoryOnly = function(judgeData) {
-    if (judgeData === undefined) {
-        return 0
+module.exports.calcJudgeScoreCategoryOnly = function(judgeKey, teamData) {
+    if (judgeKey === undefined || teamData === undefined) {
+        return null
     }
 
-    let judgeDataExport = undefined
-    for (let categoryType in JudgeDataBase.judgeDataExports) {
-        let jde = JudgeDataBase.judgeDataExports[categoryType]
-        if (jde.categoryType === judgeData.categoryType) {
-            judgeDataExport = jde
-            break
-        }
-    }
+    Common.initJudgeDataForTeamData(teamData)
 
-    if (judgeDataExport !== undefined) {
-        let judgeDataObj = new judgeDataExport.JudgeDataClass(Common.getSelectedPoolRoutineSeconds(), judgeData)
-
-        return judgeDataObj.calcJudgeScoreCategoryOnly()
+    let judgeDataObj = teamData.judgeInstances[judgeKey]
+    if (judgeDataObj !== undefined) {
+        return judgeDataObj.calcJudgeScoreCategoryOnly(teamData.judgePreProcessData)
     } else {
-        console.error(`Can't find judge data for "${judgeData.categoryType}"`)
+        console.error(`Can't find judge data for "${judgeKey}"`)
     }
 
     return null
 }
 
-module.exports.calcJudgeScoreGeneral = function(judgeData) {
-    if (judgeData === undefined) {
-        return 0
+module.exports.calcJudgeScoreGeneral = function(judgeKey, teamData) {
+    if (judgeKey === undefined || teamData === undefined) {
+        return null
     }
 
-    let judgeDataExport = undefined
-    for (let categoryType in JudgeDataBase.judgeDataExports) {
-        let jde = JudgeDataBase.judgeDataExports[categoryType]
-        if (jde.categoryType === judgeData.categoryType) {
-            judgeDataExport = jde
-            break
-        }
-    }
+    Common.initJudgeDataForTeamData(teamData)
 
-    if (judgeDataExport !== undefined) {
-        let judgeDataObj = new judgeDataExport.JudgeDataClass(Common.getSelectedPoolRoutineSeconds(), judgeData)
-
+    let judgeDataObj = teamData.judgeInstances[judgeKey]
+    if (judgeDataObj !== undefined) {
         return judgeDataObj.calcJudgeScoreGeneral()
     } else {
-        console.error(`Can't find judge data for "${judgeData.categoryType}"`)
+        console.error(`Can't find judge data for "${judgeKey}"`)
+    }
+
+    return null
+}
+
+module.exports.calcJudgeScoreEx = function(judgeKey, teamData) {
+    if (judgeKey === undefined || teamData === undefined) {
+        return null
+    }
+
+    Common.initJudgeDataForTeamData(teamData)
+
+    let judgeDataObj = teamData.judgeInstances[judgeKey]
+    if (judgeDataObj !== undefined) {
+        return judgeDataObj.calcJudgeScoreEx(teamData.judgePreProcessData)
+    } else {
+        console.error(`Can't find judge data for "${judgeKey}"`)
     }
 
     return null

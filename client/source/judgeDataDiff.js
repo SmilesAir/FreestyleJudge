@@ -53,10 +53,6 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
         this.data.diffScores = judgeData.rawScores.diffScores
     }
 
-    calcJudgeScoreTotal() {
-        return this.calcJudgeScoreCategoryOnly() + this.calcJudgeScoreGeneral()
-    }
-
     sortScores(inScores) {
         let scores = inScores.slice(0)
         scores.sort((a, b) => {
@@ -200,7 +196,7 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
                             </div>
                         </div>
                     </div>
-                    <div className="line">
+                    <div className="lastLine">
                         <label>
                             General
                         </label>
@@ -214,6 +210,14 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
                 </div>
             </div>
         )
+    }
+
+    addJudgePreProcessData(preProcessData) {
+        if (preProcessData.phraseCount === undefined) {
+            preProcessData.phraseCount = [ this.data.diffScores.length ]
+        } else {
+            preProcessData.phraseCount.push(this.data.diffScores.length)
+        }
     }
 }
 

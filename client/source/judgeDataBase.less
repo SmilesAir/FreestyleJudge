@@ -25,7 +25,7 @@
             label {
                 background-color: beige;
                 border-right: 1px solid gray;
-                width: 4em;
+                width: 4.5em;
             }
 
             .value {
@@ -37,6 +37,9 @@
             .phrases {
                 display: flex;
                 flex-direction: row;
+                border-right: 1px solid gray;
+                padding-right: .5em;
+                padding-left: .5em;
             }
 
             .mark {
@@ -61,15 +64,20 @@
                 }
             }
         }
+
+        .lastLine {
+            .line;
+            border-bottom: none;
+        }
     }
 
     .categoryOnlyScore {
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-content: center;
+        align-items: center;
         font-size: 2.5em;
         border-left: 1px solid gray;
-        padding: 10px;
+        width: 3.3em;
     }
 }

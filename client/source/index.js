@@ -138,9 +138,9 @@ require("./index.less")
                     let judgeType = poolData.judges[judgeKey]
                     if (categoryType === judgeType) {
                         let judge = judgeData[judgeKey]
-                        let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judge) : 0
+                        let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
                         categorySums[categoryType] = categorySums[categoryType] || 0 + score
-                        categorySums.General += Common.calcJudgeScoreGeneral(judge)
+                        categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
                         teamCategoryScores.push(score)
                     }
                 }
@@ -150,7 +150,7 @@ require("./index.less")
                 let judgeType = poolData.judges[judgeKey]
                 if (judgeType === "ExAi") {
                     let judge = judgeData[judgeKey]
-                    let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judge) : 0
+                    let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
                     categorySums.Ex = categorySums.Ex || 0 + score
                     teamCategoryScores.push(score)
                 }
@@ -191,6 +191,8 @@ require("./index.less")
 
             ++rank
         }
+
+        console.log(scores)
 
         return scores
     }
@@ -300,8 +302,7 @@ require("./index.less")
         for (let teamData of poolData.teamData) {
             let detailedWidgets = []
             for (let judgeKey in teamData.judgeData) {
-                let judgeData = teamData.judgeData[judgeKey]
-                detailedWidgets.push(Common.getJudgeDataDetailedWidget(judgeData))
+                detailedWidgets.push(Common.getJudgeDataDetailedWidget(judgeKey, teamData))
             }
 
             let teanNames = Common.getPlayerNamesString(teamData.players)
