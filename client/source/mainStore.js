@@ -10,5 +10,8 @@ module.exports = Mobx.observable({
     selectedRound: null,
     selectedPool: null,
     topTabsSelectedIndex: 0,
-    controlsTabsSelectedIndex: 0
+    controlsTabsSelectedIndex: 0,
+    currentWidgetName: "headJudge",
+    judgeTabsSelectedIndex: 0,
+    judgeIndex: undefined
 })

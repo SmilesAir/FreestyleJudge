@@ -1,0 +1,76 @@
+
+.headJudgeWidget {
+    li {
+        font-size: 1.5em;
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+    }
+
+    li:hover {
+        color: gray;
+    }
+
+    .poolSelectContainer {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .poolWidget {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .poolWidgetActive {
+        background-color: rgb(70, 224, 230);
+    }
+
+    .runControls {
+        .buttons {
+            display: flex;
+            flex-direction: row;
+            height: 5em;
+
+            button {
+                flex-grow: 1;
+                font-size: 1.3em;
+            }
+        }
+
+        .details {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            .teams {
+                .team {
+                    font-size: 1.5em;
+                    cursor: pointer;
+                    border: 1px lightgray dashed;
+                    padding-left: 1em;
+                    padding-right: 1em;
+                    margin-bottom: 5px;
+                    background-color:rgb(248, 248, 248);
+                }
+
+                .team:hover {
+                    color: rgb(114, 114, 114);
+                }
+
+                .selected {
+                    .team;
+                    font-weight: bold;
+                    border: 2px black solid;
+                    background-color:rgb(186, 255, 169);
+                }
+            }
+
+            .judges {
+                padding-right: 1em;
+            }
+        }
+    }
+}

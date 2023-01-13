@@ -1,0 +1,119 @@
+
+.results2020 {
+    .resultsSummary {
+        .title {
+            display: flex;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+
+        .results {
+            border: 2px solid gray;
+            border-radius: 2px;
+
+            .header {
+                display: flex;
+                flex-direction: row;
+                border-bottom: 1px solid gray;
+
+                .subHeaderDescriptions {
+                    border-right: 1px solid gray;
+                    flex-grow: 1;
+
+                    .subHeaderTeam {
+                        font-weight: bold;
+                        border-bottom: 1px solid gray;
+                    }
+                }
+
+                .subHeaderCategories {
+                    display: flex;
+                    flex-direction: row;
+
+                    .subHeaderCategory {
+                        display: flex;
+                        justify-content: center;
+                        border-right: 1px solid gray;
+                        width: 3em;
+                    }
+
+                    .subHeaderCategoryBold {
+                        .subHeaderCategory;
+                        font-weight: bold;
+                    }
+                }
+
+                .subHeaderRank {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: center;
+                    font-weight: bold;
+                    font-size: 2em;
+                    width: 3em;
+                }
+
+                .subHeaderTotal {
+                    .subHeaderRank;
+                    border-right: 1px solid gray;
+                    width: 3.5em;
+                }
+            }
+
+            .scores {
+                display: flex;
+                flex-direction: row;
+
+                .score {
+                    display: flex;
+                    justify-content: center;
+                    border-right: 1px solid gray;
+                    width: 3em;
+                }
+
+                .scoreHighest {
+                    font-weight: bold;
+                }
+            }
+
+            .teams {
+
+                .team {
+                    display: flex;
+                    flex-direction: row;
+                    flex-grow: 1;
+                    justify-content: space-between;
+                    border-bottom: 1px solid gray;
+
+                    .teamDetails {
+                        flex-grow: 1;
+
+                        .teamName {
+                            font-weight: bold;
+                            border-bottom: 1px solid gray;
+                        }
+                    }
+
+                    .totals {
+                        display: flex;
+                        flex-direction: row;
+
+                        .rank {
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: center;
+                            font-size: 2em;
+                            width: 3em;
+                        }
+
+                        .total {
+                            .rank;
+                            border-left: 1px solid gray;
+                            border-right: 1px solid gray;
+                            width: 3.5em;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

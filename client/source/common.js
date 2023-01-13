@@ -338,3 +338,35 @@ module.exports.getSelectedTeamNameString = function() {
 module.exports.isRoutinePlaying = function() {
     return MainStore.eventData && MainStore.eventData.controllerState.routineStartTime && Common.getRoutineTimeSeconds() <= Common.getSelectedPoolRoutineSeconds()
 }
+
+module.exports.getSortedJudgeKeyArray = function(poolData) {
+    let judges = []
+    for (let judgeKey in poolData.judges) {
+        judges.push({
+            judgeKey: judgeKey,
+            categoryType: poolData.judges[judgeKey]
+        })
+    }
+
+    judges.sort((a, b) => {
+        if (a.categoryType === b.categoryType) {
+            return a.judgeKey.localeCompare(b.judgeKey)
+        } else {
+            return a.categoryType.localeCompare(b.categoryType)
+        }
+    })
+
+    return judges.map((data) => data.judgeKey)
+}
+
+module.exports.getCategoryTypeForJudgeIndex = function(index) {
+    if (index === undefined || MainStore.eventData === undefined) {
+        return undefined
+    }
+
+    let poolData = Common.getSelectedPoolData()
+    let sortedJudgeKeys = Common.getSortedJudgeKeyArray(poolData)
+    let judgeKey = sortedJudgeKeys[index]
+
+    return poolData.judges[judgeKey]
+}
