@@ -25,7 +25,7 @@ module.exports.JudgeDataBase = class {
         this.routineLengthSeconds = routineLengthSeconds
         this.data = {
             judgeKey: judgeData.judgeKey,
-            general: judgeData.rawScores.general || 0
+            general: judgeData.rawScores && judgeData.rawScores.general || 0
         }
     }
 
@@ -51,6 +51,14 @@ module.exports.JudgeDataBase = class {
 
     calcJudgeScoreEx(judgePreProcessData) {
         throw new Error("calcJudgeScoreEx is not implemented in child")
+    }
+
+    updateJudgeData(teamIndex) {
+        throw new Error("updateJudgeData is not implemented in child")
+    }
+
+    updateJudgeState(judgeState) {
+        Common.updateJudgeState(judgeState)
     }
 }
 

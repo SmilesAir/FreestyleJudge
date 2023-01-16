@@ -97,14 +97,15 @@ Keeps a list of all the events
             [poolKey]: {
                 key: string,
                 judges: {
-                    [judgeGuid]: string, // Category
+                    [judgeKey]: string, // Category
                     ...
                 }
                 teamData: [{
                     players: [guid, ...]
                     judgeData: {
                         [guid]: {
-                            judgeGuid: guid,
+                            judgeKey: guid,
+                            categoryType: string, // Diff, Variety, ExAi, ...
                             rawScores: {
                                 ...
                             },
@@ -127,8 +128,8 @@ Keeps a list of all the events
     },
     // Only used for current pool judges state. This data is transient
     judgesState: {
-        [judgeGuid]: {
-            judgeGuid: guid,
+        [judgeKey]: {
+            judgeKey: guid,
             isFinished: bool,
             isEditing: bool
         }
@@ -146,7 +147,7 @@ Keeps a list of all the events
 {
     key: string,
     judges: {
-        [judgeGuid]: string, // Category: Variety, Diff, ExAi
+        [judgeKey]: string, // Category: Variety, Diff, ExAi
         ...
     },
     teamData: [{

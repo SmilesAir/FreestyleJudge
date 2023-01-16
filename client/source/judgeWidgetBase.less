@@ -1,5 +1,6 @@
 
 .judgeWidgetBase {
+    position: relative;
     height: 100%;
     overflow: hidden;
 
@@ -16,13 +17,111 @@
     li:hover {
         color: gray;
     }
+
+    .infoWidget {
+        display: flex;
+        flex-direction: row;
+        position: absolute;
+        cursor: none;
+        right: 2px;
+        top: 2px;
+        width: 12em;
+        background-color: aliceblue;
+        border: 1px solid gray;
+
+        .teamNames {
+            flex-grow: 1;
+            font-size: .9em;
+        }
+
+        .time {
+            font-size: 1.5em;
+        }
+    }
+
+    .generalWidget {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        z-index: 1;
+        background-color: aliceblue;
+
+        @keyframes glowing {
+            0% {
+                background-color: #b1b1b1;
+                box-shadow: 0 0 5px #b1b1b1;
+            }
+            50% {
+                background-color: #cfcfcf;
+                box-shadow: 0 0 20px #cfcfcf;
+            }
+            100% {
+                background-color: #b1b1b1;
+                box-shadow: 0 0 5px #b1b1b1;
+            }
+        }
+
+        .generalInputNumberWidget {
+            width: 100%;
+            height: 50%;
+        }
+
+        .teams {
+            margin: 5px;
+            .team {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                font-size: 1.25em;
+                border: 1px gray solid;
+                margin-bottom: -1px;
+                cursor: pointer;
+
+                .names {
+                    padding-left: 5px;
+                }
+
+                .general {
+                    padding-right: 5px;
+                }
+            }
+
+            button {
+                width: 100%;
+                font-size: 2em;
+                animation: glowing 1300ms infinite;
+                background-color: gray;
+            }
+        }
+    }
+
+    .finishedWidget {
+        position: absolute;
+        width: 100%;
+        height: 8%;
+        z-index: 1;
+
+        button {
+            width: 100%;
+            height: 100%;
+            font-size: 2em;
+            animation: glowing 1300ms infinite;
+            background-color: gray;
+        }
+    }
+}
+
+.expired {
+    opacity: .25;
 }
 
 .inputNumberWidget {
     display: flex;
     flex-direction: column;
-    width: 98%;
-    height: 50%;
+    //height: 50%;
     background-color: rgba(248, 248, 248, 0.8);
 
     .row {
@@ -44,10 +143,72 @@
                 width: 90%;
                 height: 90%;
 
-                font-size: 10vh;
+                font-size: 9vh;
                 font-weight: bold;
             }
         }
+    }
+}
+
+.inputIncrementWidget {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+
+    button {
+        flex-grow: 1;
+        font-size: 3em;
+        margin: 5px;
+    }
+}
+
+.judgeWidgetVariety {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 90%;
+
+    .numbers {
+        width: 100%;
+        .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+
+            label {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                flex-grow: 1;
+                font-size: 2em;
+            }
+        }
+
+        .varietyInputs {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 4em;
+
+            .number {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                flex-grow: 1;
+                background-color: aliceblue;
+                margin: 5px;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .input {
+        width: 100%;
+        height: 60%;
     }
 }
 
@@ -55,9 +216,12 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    align-items: center;
     height: 90%;
 
     .diffInputNumberWidget {
+        width: 100%;
+        height: 50%;
     }
 
     .phrasesWidget {
@@ -68,6 +232,8 @@
         margin-bottom: 1em;
         border: 1px gray solid;
         padding: 2px;
+        width: 100%;
+        min-height: 2em;
 
         .block {
             display: flex;
@@ -96,5 +262,101 @@
 
     button {
         font-size: 2em;
+    }
+}
+
+.scoresWidget {
+    .header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        .judgeName {
+            font-size: 2em;
+        }
+    }
+}
+
+.scoreTeams {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 80%;
+
+    .teams {
+        overflow-y: scroll;
+        width: 100%;
+        min-height: 5em;
+
+        .team {
+            user-select: none;
+
+            .header {
+                font-size: 1.25em;
+
+                .names {
+                    padding-left: 5px;
+                }
+
+                .selected {
+                    font-weight: bold;
+                }
+
+                .general {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: center;
+                    background-color: lavender;
+                    width: 2.2em;
+                    cursor: pointer;
+                }
+
+                .total {
+                    margin-right: 5px;
+                }
+            }
+
+            .marks {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+
+                .mark {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: center;
+                    width: 1.5em;
+                    font-size: 1.8em;
+                    background-color: lavender;
+                    margin: 2px;
+                    cursor: pointer;
+                }
+
+                .newMark {
+                    .mark;
+                    background-color: lightblue;
+                }
+            }
+
+            .varietyInputs {
+                display: flex;
+                flex-direction: row;
+                font-size: 2em;
+
+                .input {
+                    margin: 2px;
+                    padding-left: 2px;
+                    padding-right: 2px;
+                    background-color: lavender;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+
+    .scoresInput {
+        width: 100%;
+        height: 50%;
     }
 }

@@ -169,11 +169,30 @@ module.exports.getRoutineTimeSeconds = function() {
 }
 
 module.exports.getRoutineTimeString = function(seconds) {
-    if (seconds >= 10 * 60) {
+    if (seconds > 59 * 60) {
+        return "---"
+    } else if (seconds >= 10 * 60) {
         return new Date(seconds * 1000).toISOString().substring(14, 19)
     } else {
         return new Date(seconds * 1000).toISOString().substring(15, 19)
     }
+}
+
+function getJudgeDataObj(judgeData) {
+    let judgeDataExport = undefined
+    for (let categoryType in JudgeDataBase.judgeDataExports) {
+        let jde = JudgeDataBase.judgeDataExports[categoryType]
+        if (jde.categoryType === judgeData.categoryType) {
+            judgeDataExport = jde
+            break
+        }
+    }
+
+    if (judgeDataExport !== undefined) {
+        return new judgeDataExport.JudgeDataClass(Common.getSelectedPoolRoutineSeconds(), judgeData)
+    }
+
+    return undefined
 }
 
 module.exports.initJudgeDataForTeamData = function(teamData) {
@@ -187,17 +206,8 @@ module.exports.initJudgeDataForTeamData = function(teamData) {
     for (let judgeKey in teamData.judgeData) {
         let judgeData = teamData.judgeData[judgeKey]
 
-        let judgeDataExport = undefined
-        for (let categoryType in JudgeDataBase.judgeDataExports) {
-            let jde = JudgeDataBase.judgeDataExports[categoryType]
-            if (jde.categoryType === judgeData.categoryType) {
-                judgeDataExport = jde
-                break
-            }
-        }
-
-        if (judgeDataExport !== undefined) {
-            let judgeDataObj = new judgeDataExport.JudgeDataClass(Common.getSelectedPoolRoutineSeconds(), judgeData)
+        let judgeDataObj = getJudgeDataObj(judgeData)
+        if (judgeDataObj !== undefined) {
             judgeDataObj.addJudgePreProcessData(teamData.judgePreProcessData)
             teamData.judgeInstances[judgeKey] = judgeDataObj
         }
@@ -300,6 +310,10 @@ module.exports.round2Decimals = function(num) {
     return Math.round(num * 100) / 100
 }
 
+module.exports.round1Decimals = function(num) {
+    return Math.round(num * 10) / 10
+}
+
 module.exports.makePoolName = function(divisionName, roundName, poolName) {
     if (roundName === "Finals") {
         return `${divisionName} ${roundName}`
@@ -335,8 +349,33 @@ module.exports.getSelectedTeamNameString = function() {
     return Common.getPlayerNamesString(teamData.players)
 }
 
+module.exports.getPlayerFirstNamesString = function(playerKeyArray) {
+    if (MainStore.playerData === undefined) {
+        return ""
+    }
+
+    return playerKeyArray.map((key) => {
+        return MainStore.playerData[key].firstName
+    }).join(" - ")
+}
+
+module.exports.getSelectedTeamFirstNameString = function() {
+    let teamData = Common.getSelectedTeamData()
+    if (teamData === undefined || MainStore.playerData === undefined) {
+        return "No Team Selected"
+    }
+
+    return teamData.players.map((key) => {
+        return MainStore.playerData[key].firstName
+    }).join(" - ")
+}
+
 module.exports.isRoutinePlaying = function() {
     return MainStore.eventData && MainStore.eventData.controllerState.routineStartTime && Common.getRoutineTimeSeconds() <= Common.getSelectedPoolRoutineSeconds()
+}
+
+module.exports.isRoutineFinished = function() {
+    return MainStore.eventData && MainStore.eventData.controllerState.routineStartTime && Common.getRoutineTimeSeconds() > Common.getSelectedPoolRoutineSeconds()
 }
 
 module.exports.getSortedJudgeKeyArray = function(poolData) {
@@ -369,4 +408,107 @@ module.exports.getCategoryTypeForJudgeIndex = function(index) {
     let judgeKey = sortedJudgeKeys[index]
 
     return poolData.judges[judgeKey]
+}
+
+module.exports.getPlayerNameForCurrentJudgeIndex = function() {
+    if (MainStore.judgeIndex === undefined || MainStore.eventData === undefined) {
+        return "unknown"
+    }
+
+    let poolData = Common.getSelectedPoolData()
+    let sortedJudgeKeys = Common.getSortedJudgeKeyArray(poolData)
+    let judgeKey = sortedJudgeKeys[MainStore.judgeIndex]
+
+    return Common.getPlayerNameString(judgeKey)
+}
+
+module.exports.getJudgeDataArrayForCurrentJudgeIndex = function() {
+    if (MainStore.judgeIndex === undefined || MainStore.eventData === undefined) {
+        return []
+    }
+
+    let poolData = Common.getSelectedPoolData()
+    let sortedJudgeKeys = Common.getSortedJudgeKeyArray(poolData)
+    let judgeKey = sortedJudgeKeys[MainStore.judgeIndex]
+
+    return poolData.teamData.map((teamData) => {
+        let judgeData = teamData.judgeData[judgeKey]
+        return getJudgeDataObj(judgeData || {
+            judgeKey: judgeKey,
+            categoryType: poolData.judges[judgeKey]
+        })
+    })
+}
+
+module.exports.updateJudgeData = function(teamIndex, judgeData) {
+    if (MainStore.eventData === undefined) {
+        console.error("Failed to update judge data because no event is downloaded yet")
+    }
+
+    return fetchEx("UPDATE_JUDGE_DATA", {
+        poolKey: Common.getSelectedPoolKey(),
+        judgeKey: judgeData.judgeKey,
+        teamIndex: teamIndex
+    }, undefined, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(judgeData)
+    }).then((response) => {
+        return response.json()
+    }).then((response) => {
+        console.log(response)
+    }).catch((error) => {
+        console.error(`Trying to update judge data "${error}"`)
+    })
+}
+
+module.exports.updateJudgeState = function(judgeState) {
+    if (MainStore.eventData === undefined) {
+        console.error("Failed to update judge state because no event is downloaded yet")
+    }
+
+    return fetchEx("UPDATE_JUDGE_STATE", {
+        eventKey: MainStore.eventData.key,
+        judgeKey: judgeData.judgeKey
+    }, undefined, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(judgeState)
+    }).then((response) => {
+        return response.json()
+    }).then((response) => {
+        console.log(response)
+    }).catch((error) => {
+        console.error(`Trying to update judge state "${error}"`)
+    })
+}
+
+module.exports.incrementalUpdate = function() {
+    if (MainStore.eventData === undefined) {
+        console.error("Failed to update judge state because no event is downloaded yet")
+    }
+
+    return fetchEx("GET_IMPORTANT_VERSION", { eventKey: MainStore.eventData.key }, undefined, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then((response) => {
+        return response.json()
+    }).then((response) => {
+        if (response.importantVersion !== undefined && response.importantVersion !== MainStore.eventData.importantVersion) {
+            console.log("GET_IMPORTANT_VERSION", response.importantVersion, MainStore.eventData.importantVersion)
+            return Common.fetchEventData(MainStore.eventData.key).then(() => {
+                return true
+            })
+        }
+
+        return false
+    }).catch((error) => {
+        console.error(`Trying to get event data "${error}"`)
+    })
 }

@@ -18,3 +18,27 @@ body {
                       user-select: none; /* Non-prefixed version, currently
                                             supported by Chrome, Edge, Opera and Firefox */
 }
+
+.disabled {
+    opacity: .5;
+}
+
+@keyframes editGlowing {
+    0% {
+        background-color: salmon;
+        box-shadow: 0 0 5px salmon;
+    }
+    50% {
+        background-color: rgb(255, 202, 202);
+        box-shadow: 0 0 20px #cfcfcf;
+    }
+    100% {
+        background-color: salmon;
+        box-shadow: 0 0 5px #b1b1b1;
+    }
+}
+
+.editing {
+    animation: editGlowing 2000ms infinite;
+    background-color: salmon;
+}

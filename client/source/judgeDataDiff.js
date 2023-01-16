@@ -50,7 +50,7 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
     constructor(routineLengthSeconds, judgeData) {
         super(routineLengthSeconds, judgeData)
 
-        this.data.diffScores = judgeData.rawScores.diffScores
+        this.data.diffScores = judgeData.rawScores && judgeData.rawScores.diffScores || []
     }
 
     sortScores(inScores) {
@@ -218,6 +218,19 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
         } else {
             preProcessData.phraseCount.push(this.data.diffScores.length)
         }
+    }
+
+    updateJudgeData(teamIndex) {
+        let judgeData = {
+            judgeKey: this.data.judgeKey,
+            categoryType: JudgeData.categoryType,
+            rawScores: {
+                diffScores: this.data.diffScores,
+                general: this.data.general
+            }
+        }
+
+        Common.updateJudgeData(teamIndex, judgeData)
     }
 }
 

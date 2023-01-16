@@ -411,17 +411,45 @@ module.exports.updateEventState = (e, c, cb) => { Common.handler(e, c, cb, async
 })}
 
 module.exports.updateJudgeState = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+    let eventKey = decodeURIComponent(event.pathParameters.eventKey)
+    let judgeKey = decodeURIComponent(event.pathParameters.judgeKey)
+    let request = JSON.parse(event.body) || {}
+
+    let updateParams = {
+        TableName: process.env.DATA_TABLE,
+        Key: {"key": eventKey},
+        UpdateExpression: "set judgesState.#judgeKey = :judgeState",
+        ExpressionAttributeNames: {
+            "#judgeKey": judgeKey
+        },
+        ExpressionAttributeValues: {
+            ":judgeState": request
+        },
+        ReturnValues: "NONE"
+    }
+    await docClient.update(updateParams).promise().catch((error) => {
+        throw error
+    })
+
+    return {
+        message: `Updated "${eventKey}" Successful`
+    }
+})}
+
+module.exports.updateJudgeData = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
     let poolKey = decodeURIComponent(event.pathParameters.poolKey)
-    let judgeGuid = decodeURIComponent(event.pathParameters.judgeGuid)
+    let judgeKey = decodeURIComponent(event.pathParameters.judgeKey)
     let teamIndex = parseInt(decodeURIComponent(event.pathParameters.teamIndex))
+    let request = JSON.parse(event.body) || {}
 
     let updateParams = {
         TableName: process.env.DATA_TABLE,
         Key: {"key": poolKey},
-        UpdateExpression: "set teamData[:teamIndex].judgeData[:judgeGuid] = :judgeData",
+        UpdateExpression: `set teamData[${teamIndex}].judgeData.#judgeKey = :judgeData`,
+        ExpressionAttributeNames: {
+            "#judgeKey": judgeKey
+        },
         ExpressionAttributeValues: {
-            ":teamIndex": teamIndex,
-            ":judgeGuid": judgeGuid,
             ":judgeData": request
         },
         ReturnValues: "NONE"
@@ -429,4 +457,8 @@ module.exports.updateJudgeState = (e, c, cb) => { Common.handler(e, c, cb, async
     await docClient.update(updateParams).promise().catch((error) => {
         throw error
     })
+
+    return {
+        message: `Updated "${poolKey}" Successful`
+    }
 })}

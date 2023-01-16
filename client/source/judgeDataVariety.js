@@ -72,6 +72,20 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
     addJudgePreProcessData(preProcessData) {
         // Do nothing
     }
+
+    updateJudgeData(teamIndex) {
+        let judgeData = {
+            judgeKey: this.data.judgeKey,
+            categoryType: JudgeData.categoryType,
+            rawScores: {
+                quantity: this.data.quantity,
+                quality: this.data.quality,
+                general: this.data.general
+            }
+        }
+
+        Common.updateJudgeData(teamIndex, judgeData)
+    }
 }
 
 const JudgeData = module.exports

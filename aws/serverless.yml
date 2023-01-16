@@ -39,7 +39,7 @@ functions:
     handler: source/main.getImportantVersion
     events:
       - http:
-          path: getImportantVersion
+          path: getImportantVersion/{eventKey}
           method: get
           cors: true
   updateEventState:
@@ -53,7 +53,14 @@ functions:
     handler: source/main.updateJudgeState
     events:
       - http:
-          path: updateJudgeState/{poolKey}/judgeGuid/{judgeGuid}/teamIndex/{teamIndex}
+          path: updateJudgeState/{judgeKey}
+          method: post
+          cors: true
+  updateJudgeData:
+    handler: source/main.updateJudgeData
+    events:
+      - http:
+          path: updateJudgeData/{poolKey}/judgeKey/{judgeKey}/teamIndex/{teamIndex}
           method: post
           cors: true
 

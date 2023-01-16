@@ -10,6 +10,7 @@ const Common = require("./common.js")
 const HeadJudgeWidget = require("./headJudgeWidget.js")
 const JudgeWidgetBase = require("./judgeWidgetBase.js")
 const JudgeWidgetDiff = require("./judgeWidgetDiff.js")
+const JudgeWidgetVariety = require("./judgeWidgetVariety.js")
 require("./judgeDataBase.js")
 
 require("react-tabs/style/react-tabs.css")
@@ -50,6 +51,9 @@ require("./index.less")
                 switch (judgeCategoryType) {
                 case "Diff":
                     widget = <JudgeWidgetDiff />
+                    break
+                case "Variety":
+                    widget = <JudgeWidgetVariety />
                     break
                 default:
                     widget = <JudgeWidgetBase />

@@ -224,6 +224,10 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
     }
 
     onTeamClicked(teamIndex) {
+        if (Common.isRoutinePlaying()) {
+            return
+        }
+
         runInAction(() => {
             MainStore.eventData.controllerState.selectedTeamIndex = teamIndex
 
@@ -243,7 +247,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         let teamNumber = 1
         for (let teamData of poolData.teamData) {
             let selected = teamNumber - 1 === MainStore.eventData.controllerState.selectedTeamIndex
-            let cn = `team ${selected ? "selected" : ""}`
+            let cn = `team ${selected ? "selected" : ""} ${Common.isRoutinePlaying() ? "disabled" : ""}`
             let teamIndex = teamNumber - 1
             widgets.push(
                 <div key={teamNumber} className={cn} onClick={() => this.onTeamClicked(teamIndex)}>
@@ -306,7 +310,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
     runUpdateRoutineTimeString() {
         this.updateRoutineTimeString()
 
-        if (Common.getRoutineTimeSeconds() < 15 * 60) {
+        let routineTimeSeconds = Common.getRoutineTimeSeconds()
+        if (routineTimeSeconds > 0 && routineTimeSeconds < 15 * 60) {
             setTimeout(() => {
                 this.runUpdateRoutineTimeString()
             }, 1000)
