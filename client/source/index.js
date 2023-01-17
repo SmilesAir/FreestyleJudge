@@ -11,6 +11,7 @@ const HeadJudgeWidget = require("./headJudgeWidget.js")
 const JudgeWidgetBase = require("./judgeWidgetBase.js")
 const JudgeWidgetDiff = require("./judgeWidgetDiff.js")
 const JudgeWidgetVariety = require("./judgeWidgetVariety.js")
+const JudgeWidgetExAi = require("./judgeWidgetExAi.js")
 require("./judgeDataBase.js")
 
 require("react-tabs/style/react-tabs.css")
@@ -54,6 +55,9 @@ require("./index.less")
                     break
                 case "Variety":
                     widget = <JudgeWidgetVariety />
+                    break
+                case "ExAi":
+                    widget = <JudgeWidgetExAi />
                     break
                 default:
                     widget = <JudgeWidgetBase />
