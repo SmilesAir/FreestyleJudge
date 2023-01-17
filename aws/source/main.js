@@ -116,6 +116,7 @@ async function parseEventDataFromPoolCreator(eventKey, eventName, request) {
         key: eventKey,
         eventName: eventName,
         importantVersion: 0,
+        minorVersion: 0,
         eventData: {
             playerData: {},
             divisionData: {},
@@ -300,7 +301,7 @@ async function getEventData(eventKey) {
     })
 }
 
-module.exports.getImportantVersion = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+module.exports.getEventDataVersion = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
     let eventKey = decodeURIComponent(event.pathParameters.eventKey)
 
     validateEventKey(eventKey)
@@ -308,7 +309,8 @@ module.exports.getImportantVersion = (e, c, cb) => { Common.handler(e, c, cb, as
     let eventData = await getEventData(eventKey)
 
     return {
-        importantVersion: eventData.importantVersion
+        importantVersion: eventData.importantVersion,
+        minorVersion: eventData.minorVersion
     }
 })}
 
@@ -431,6 +433,8 @@ module.exports.updateJudgeState = (e, c, cb) => { Common.handler(e, c, cb, async
         throw error
     })
 
+    await incrementMinorVersion(poolKey)
+
     return {
         message: `Updated "${eventKey}" Successful`
     }
@@ -458,7 +462,24 @@ module.exports.updateJudgeData = (e, c, cb) => { Common.handler(e, c, cb, async 
         throw error
     })
 
+    await incrementMinorVersion(poolKey)
+
     return {
         message: `Updated "${poolKey}" Successful`
     }
 })}
+
+function incrementMinorVersion(poolKey) {
+    let updateParams = {
+        TableName: process.env.DATA_TABLE,
+        Key: {"key": poolKey.split("|")[1]},
+        UpdateExpression: `set minorVersion = minorVersion + :one`,
+        ExpressionAttributeValues: {
+            ":one": 1
+        },
+        ReturnValues: "NONE"
+    }
+    return docClient.update(updateParams).promise().catch((error) => {
+        throw error
+    })
+}

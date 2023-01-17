@@ -18,8 +18,8 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
     constructor(routineLengthSeconds, judgeData) {
         super(routineLengthSeconds, judgeData)
 
-        this.data.quantity = judgeData.rawScores.quantity || 0
-        this.data.quality = judgeData.rawScores.quality || 0
+        this.data.quantity = judgeData.rawScores && judgeData.rawScores.quantity || 0
+        this.data.quality = judgeData.rawScores && judgeData.rawScores.quality || 0
     }
 
     calcJudgeScoreCategoryOnly() {

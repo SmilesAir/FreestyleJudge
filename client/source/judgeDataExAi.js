@@ -23,12 +23,12 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
     constructor(routineLengthSeconds, judgeData) {
         super(routineLengthSeconds, judgeData)
 
-        this.data.point1 = judgeData.rawScores.point1 || 0
-        this.data.point2 = judgeData.rawScores.point2 || 0
-        this.data.point3 = judgeData.rawScores.point3 || 0
-        this.data.music = judgeData.rawScores.music || 0
-        this.data.teamwork = judgeData.rawScores.teamwork || 0
-        this.data.form = judgeData.rawScores.form || 0
+        this.data.point1 = judgeData.rawScores && judgeData.rawScores.point1 || 0
+        this.data.point2 = judgeData.rawScores && judgeData.rawScores.point2 || 0
+        this.data.point3 = judgeData.rawScores && judgeData.rawScores.point3 || 0
+        this.data.music = judgeData.rawScores && judgeData.rawScores.music || 0
+        this.data.teamwork = judgeData.rawScores && judgeData.rawScores.teamwork || 0
+        this.data.form = judgeData.rawScores && judgeData.rawScores.form || 0
     }
 
     calcJudgeScoreCategoryOnly() {

@@ -35,11 +35,11 @@ functions:
           path: getEventData/{eventKey}
           method: get
           cors: true
-  getImportantVersion:
-    handler: source/main.getImportantVersion
+  getEventDataVersion:
+    handler: source/main.getEventDataVersion
     events:
       - http:
-          path: getImportantVersion/{eventKey}
+          path: getEventDataVersion/{eventKey}
           method: get
           cors: true
   updateEventState:

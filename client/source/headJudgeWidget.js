@@ -125,9 +125,24 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         this.categoryOrder = [ "Diff", "Variety", "ExAi" ]
 
         Common.fetchEventData("8c14255f-9a96-45f1-b843-74e2a00d06cc").then(() => {
-            this.runUpdateRoutineTimeString()
+            this.onEventDataUpdated()
         })
         Common.fetchPlayerData()
+
+        this.eventDataUpdater = new Common.EventDataUpdateHelper(10, 1, true, () => this.onEventDataUpdated(), () => this.onUpdateExpired())
+    }
+
+    onUpdateExpired() {
+        this.setState(this.state)
+    }
+
+    onEventDataUpdated() {
+        runInAction(() => {
+            this.runUpdateRoutineTimeString()
+            this.eventDataUpdater.extendUpdateDeadline()
+
+            this.setState(this.state)
+        })
     }
 
     onSelectDivision(selected) {
@@ -311,8 +326,10 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         this.updateRoutineTimeString()
 
         let routineTimeSeconds = Common.getRoutineTimeSeconds()
-        if (routineTimeSeconds > 0 && routineTimeSeconds < 15 * 60) {
+        if (this.updateTimeStringInProgress !== true && Common.isRoutinePlaying() && routineTimeSeconds < 15 * 60) {
+            this.updateTimeStringInProgress = true
             setTimeout(() => {
+                this.updateTimeStringInProgress = false
                 this.runUpdateRoutineTimeString()
             }, 1000)
         } else {
@@ -322,6 +339,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
     }
 
     updateRoutineTimeString() {
+        console.log(2)
         this.state.routineTimeString = Common.getRoutineTimeString(Common.getRoutineTimeSeconds())
         this.setState(this.state)
     }
@@ -367,9 +385,10 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         }
 
         let selectDisabled = MainStore.controlsTabsSelectedIndex === 0 && Common.isRoutinePlaying()
-
+        let headJudgeWidgetCN = `headJudgeWidget ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
         return (
-            <div className="headJudgeWidget">
+            <div className={headJudgeWidgetCN}>
+                {Common.getExpiredWidget(this.eventDataUpdater)}
                 <Tabs selectedIndex={MainStore.topTabsSelectedIndex} onSelect={(index) => this.onTopTabsSelectedIndexChanged(index)}>
                     <TabList>
                         <Tab>Event Info</Tab>

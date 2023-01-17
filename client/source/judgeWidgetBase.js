@@ -26,22 +26,26 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
         this.state = {
             routineTimeString: "0:00",
             teamIndex: undefined,
-            editGeneralIndex: undefined,
-            updateDeadlineTime: undefined,
-            isIncrementalVersionCheckEnabled: false
+            editGeneralIndex: undefined
         }
 
         Common.fetchEventData("8c14255f-9a96-45f1-b843-74e2a00d06cc").then(() => {
             this.onEventDataUpdatedBase()
         })
         Common.fetchPlayerData()
+
+        this.eventDataUpdater = new Common.EventDataUpdateHelper(10, 1, false, () => this.onEventDataUpdatedBase(), () => this.onUpdateExpired())
+    }
+
+    onUpdateExpired() {
+        this.setState(this.state)
     }
 
     onEventDataUpdatedBase() {
         runInAction(() => {
             Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
             this.runUpdateRoutineTimeString()
-            this.extendDeadline()
+            this.eventDataUpdater.extendUpdateDeadline()
 
             this.judgeDataArray = Common.getJudgeDataArrayForCurrentJudgeIndex()
             this.state.teamIndex = MainStore.eventData.controllerState.selectedTeamIndex
@@ -138,8 +142,10 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
         this.updateRoutineTimeString()
 
         let routineTimeSeconds = Common.getRoutineTimeSeconds()
-        if (routineTimeSeconds > 0 && routineTimeSeconds < 15 * 60) {
+        if (this.updateTimeStringInProgress !== true && Common.isRoutinePlaying() && routineTimeSeconds < 15 * 60) {
+            this.updateTimeStringInProgress = true
             setTimeout(() => {
+                this.updateTimeStringInProgress = false
                 this.runUpdateRoutineTimeString()
             }, 1000)
         } else {
@@ -151,34 +157,6 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
     updateRoutineTimeString() {
         this.state.routineTimeString = Common.getRoutineTimeString(Common.getRoutineTimeSeconds())
         this.setState(this.state)
-    }
-
-    extendDeadline() {
-        if (this.constructor.name === "JudgeWidgetBase") {
-            return
-        }
-
-        this.state.updateDeadlineTime = Date.now() + 1000 * 60 * 10
-
-        this.runIncrementalVersionCheck()
-    }
-
-    runIncrementalVersionCheck() {
-        Common.incrementalUpdate().then((fullyUpdated) => {
-            if (fullyUpdated) {
-                this.onEventDataUpdatedBase()
-            }
-        })
-
-        if (this.state.isIncrementalVersionCheckEnabled === false && Date.now() < this.state.updateDeadlineTime) {
-            this.state.isIncrementalVersionCheckEnabled = true
-            this.incrementalVersionCheckId = setTimeout(() => {
-                this.state.isIncrementalVersionCheckEnabled = false
-                this.runIncrementalVersionCheck()
-            }, 1000)
-        } else {
-            this.setState(this.state)
-        }
     }
 
     gotoJudgeSelect() {
@@ -279,7 +257,7 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
             this.judgeDataArray[this.state.scoresEditIndexTeam].updateJudgeData(this.state.scoresEditIndexTeam)
         }
 
-        this.extendDeadline()
+        this.eventDataUpdater.extendUpdateDeadline()
     }
 
     onInputGeneralNumber(value) {
@@ -387,9 +365,10 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
         if (MainStore.judgeIndex === undefined) {
             return this.getJudgeButtonsWidget()
         } else {
-            let cn = `judgeWidgetBase kindleTest ${Date.now() > this.state.updateDeadlineTime ? "expired" : ""}`
+            let cn = `judgeWidgetBase kindleTest ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
             return (
                 <div className={cn}>
+                    {Common.getExpiredWidget(this.eventDataUpdater)}
                     {this.getFinishedWidget()}
                     {this.getGeneralWidget()}
                     {this.getInfoWidget()}

@@ -1,4 +1,5 @@
 const { runInAction } = require("mobx")
+const React = require("react")
 
 const MainStore = require("./mainStore.js")
 const { fetchEx, fetchAuth } = require("./endpoints.js")
@@ -487,12 +488,12 @@ module.exports.updateJudgeState = function(judgeState) {
     })
 }
 
-module.exports.incrementalUpdate = function() {
+module.exports.incrementalUpdate = function(includeMinorUpdates, forced) {
     if (MainStore.eventData === undefined) {
         console.error("Failed to update judge state because no event is downloaded yet")
     }
 
-    return fetchEx("GET_IMPORTANT_VERSION", { eventKey: MainStore.eventData.key }, undefined, {
+    return fetchEx("GET_EVENT_DATA_VERSION", { eventKey: MainStore.eventData.key }, undefined, {
         method: "GET",
         headers: {
             "Content-Type": "application/json"
@@ -500,8 +501,10 @@ module.exports.incrementalUpdate = function() {
     }).then((response) => {
         return response.json()
     }).then((response) => {
-        if (response.importantVersion !== undefined && response.importantVersion !== MainStore.eventData.importantVersion) {
-            console.log("GET_IMPORTANT_VERSION", response.importantVersion, MainStore.eventData.importantVersion)
+        let importantVersionUpdated = response.importantVersion !== undefined && response.importantVersion !== MainStore.eventData.importantVersion
+        let minorVersionUpdated = response.minorVersion !== undefined && response.minorVersion !== MainStore.eventData.minorVersion
+        if (forced || importantVersionUpdated || (includeMinorUpdates && minorVersionUpdated)) {
+            console.log("GET_EVENT_DATA_VERSION", response.importantVersion, MainStore.eventData.importantVersion, response.minorVersion, MainStore.eventData.minorVersion)
             return Common.fetchEventData(MainStore.eventData.key).then(() => {
                 return true
             })
@@ -511,4 +514,54 @@ module.exports.incrementalUpdate = function() {
     }).catch((error) => {
         console.error(`Trying to get event data "${error}"`)
     })
+}
+
+module.exports.getExpiredWidget = function(eventDataUpdater) {
+    if (eventDataUpdater === undefined || !eventDataUpdater.isExpired()) {
+        return null
+    }
+
+    return (
+        <div className="expiredWidget" onClick={() => eventDataUpdater.extendUpdateDeadline(true)} />
+    )
+}
+
+module.exports.EventDataUpdateHelper = class {
+    constructor(extendMinutes, updateIntervalSeconds, includeMinorUpdates, onUpdateCallback, onExpiredCallback) {
+        this.extendMinutes = extendMinutes
+        this.updateIntervalSeconds = updateIntervalSeconds
+        this.includeMinorUpdates = includeMinorUpdates
+        this.onUpdateCallback = onUpdateCallback
+        this.onExpiredCallback = onExpiredCallback
+        this.isChecking = false
+        this.updateDeadlineAt = 0
+    }
+
+    extendUpdateDeadline(forced) {
+        this.updateDeadlineAt = Date.now() + 1000 * 60 * this.extendMinutes
+
+        this.runVersionCheck(forced)
+    }
+
+    runVersionCheck(forced) {
+        Common.incrementalUpdate(this.includeMinorUpdates, forced).then((updated) => {
+            if (updated) {
+                this.onUpdateCallback()
+            }
+        })
+
+        if (this.isChecking !== true && Date.now() < this.updateDeadlineAt) {
+            this.isChecking = true
+            setTimeout(() => {
+                this.isChecking = false
+                this.runVersionCheck()
+            }, 1000 * this.updateIntervalSeconds)
+        } else {
+            this.onExpiredCallback()
+        }
+    }
+
+    isExpired() {
+        return Date.now() > this.updateDeadlineAt
+    }
 }

@@ -120,6 +120,15 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetBase {
         this.setState(this.state)
     }
 
+    onScoresInputIncrementClicked(value) {
+        let judgeData = this.judgeDataArray[this.state.scoresEditIndexTeam]
+        let quantity = judgeData.data.quantity
+        judgeData.data.quantity = Math.max(0, quantity + value)
+
+        this.updateJudgeData()
+        this.setState(this.state)
+    }
+
     onScoresInputNumberClicked(value) {
         runInAction(() => {
             if (this.state.scoresEditGeneral) {

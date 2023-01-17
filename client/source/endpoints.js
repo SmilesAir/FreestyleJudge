@@ -2,7 +2,7 @@
 let urls = {
     GET_EVENT_DATA: "{path}/getEventData/{eventKey}",
     GET_PLAYER_DATA: "https://4wnda3jb78.execute-api.us-west-2.amazonaws.com/production/getAllPlayers",
-    GET_IMPORTANT_VERSION: "{path}/getImportantVersion/{eventKey}",
+    GET_EVENT_DATA_VERSION: "{path}/getEventDataVersion/{eventKey}",
     UPDATE_EVENT_STATE: "{path}/updateEventState/{eventKey}",
     UPDATE_JUDGE_STATE: "{path}/updateJudgeState/{judgeKey}",
     UPDATE_JUDGE_DATA: "{path}/updateJudgeData/{poolKey}/judgeKey/{judgeKey}/teamIndex/{teamIndex}"
