@@ -65,6 +65,14 @@ module.exports = class JudgeWidgetDiff extends JudgeWidgetBase {
     }
 
     getJudgeWidget() {
+        if (this.state.teamIndex === undefined) {
+            return (
+                <h2>
+                    No team selected by Head Judge
+                </h2>
+            )
+        }
+
         return (
             <div className="judgeWidgetDiff">
                 {this.getPhrasesWidget()}

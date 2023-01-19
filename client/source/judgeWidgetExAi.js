@@ -55,7 +55,11 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetBase {
     getJudgeWidget() {
         let judgeData = this.getJudgeData()
         if (judgeData === undefined) {
-            return null
+            return (
+                <h2>
+                    No team selected by Head Judge
+                </h2>
+            )
         }
 
         let inputNumberWidget = this.state.editingPropName !== undefined ? (

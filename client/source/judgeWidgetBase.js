@@ -13,12 +13,6 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
     constructor() {
         super()
 
-        let url = new URL(window.location.href)
-        let judgeIndexParam = url.searchParams.get("judgeIndex")
-        if (judgeIndexParam !== null) {
-            MainStore.judgeIndex = parseInt(judgeIndexParam, 10)
-        }
-
         runInAction(() => {
             MainStore.judgeTabsSelectedIndex = parseInt(window.localStorage.getItem("judgeTabsSelectedIndex"), 10) || 0
         })
@@ -35,6 +29,15 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
         Common.fetchPlayerData()
 
         this.eventDataUpdater = new Common.EventDataUpdateHelper(10, 1, false, () => this.onEventDataUpdatedBase(), () => this.onUpdateExpired())
+        this.timeUpdater = new Common.TimeUpdateHelper(() => {
+            let routineTimeSeconds = Common.getRoutineTimeSeconds()
+            if (!Common.isRoutinePlaying() || routineTimeSeconds > 15 * 60) {
+                this.timeUpdater.stopUpdate()
+            }
+
+            this.state.routineTimeString = Common.getRoutineTimeString(routineTimeSeconds)
+            this.setState(this.state)
+        })
     }
 
     onUpdateExpired() {
@@ -44,14 +47,13 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
     onEventDataUpdatedBase() {
         runInAction(() => {
             Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
-            this.runUpdateRoutineTimeString()
-            this.eventDataUpdater.extendUpdateDeadline()
-
             this.judgeDataArray = Common.getJudgeDataArrayForCurrentJudgeIndex()
             this.state.teamIndex = MainStore.eventData.controllerState.selectedTeamIndex
-            this.setState(this.state)
+            this.eventDataUpdater.extendUpdateDeadline()
 
             this.postInitFectchEventData()
+
+            this.timeUpdater.startUpdate()
         })
     }
 
@@ -123,40 +125,16 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
     }
 
     getInfoWidget() {
-        let namesString = Common.getSelectedTeamFirstNameString()
-        let timeString = Common.getRoutineTimeString(Common.getRoutineTimeSeconds())
-
         return (
             <div className="infoWidget">
                 <div className="teamNames">
-                    {namesString}
+                    {Common.getSelectedTeamFirstNameString()}
                 </div>
                 <div className="time">
-                    {timeString}
+                    {this.state.routineTimeString}
                 </div>
             </div>
         )
-    }
-
-    runUpdateRoutineTimeString() {
-        this.updateRoutineTimeString()
-
-        let routineTimeSeconds = Common.getRoutineTimeSeconds()
-        if (this.updateTimeStringInProgress !== true && Common.isRoutinePlaying() && routineTimeSeconds < 15 * 60) {
-            this.updateTimeStringInProgress = true
-            setTimeout(() => {
-                this.updateTimeStringInProgress = false
-                this.runUpdateRoutineTimeString()
-            }, 1000)
-        } else {
-            this.state.routineTimeString = "0:00"
-            this.setState(this.state)
-        }
-    }
-
-    updateRoutineTimeString() {
-        this.state.routineTimeString = Common.getRoutineTimeString(Common.getRoutineTimeSeconds())
-        this.setState(this.state)
     }
 
     gotoJudgeSelect() {

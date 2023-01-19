@@ -26,6 +26,15 @@ require("./index.less")
         if (startupParam !== null) {
             MainStore.currentWidgetName = startupParam
         }
+
+        let judgeIndexParam = url.searchParams.get("judgeIndex")
+        if (judgeIndexParam !== null) {
+            MainStore.judgeIndex = parseInt(judgeIndexParam, 10)
+        }
+
+        Common.fetchEventData("8c14255f-9a96-45f1-b843-74e2a00d06cc").then(() => {
+            Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
+        })
     }
 
     getData(url) {
@@ -60,7 +69,10 @@ require("./index.less")
                     widget = <JudgeWidgetExAi />
                     break
                 default:
-                    widget = <JudgeWidgetBase />
+                    widget =
+                        <div>
+                            {`Can't find judge for ${judgeCategoryType}`}
+                        </div>
                 }
             } else {
                 widget = <JudgeWidgetBase />

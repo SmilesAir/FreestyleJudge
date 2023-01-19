@@ -550,18 +550,39 @@ module.exports.EventDataUpdateHelper = class {
             }
         })
 
-        if (this.isChecking !== true && Date.now() < this.updateDeadlineAt) {
-            this.isChecking = true
-            setTimeout(() => {
-                this.isChecking = false
-                this.runVersionCheck()
-            }, 1000 * this.updateIntervalSeconds)
-        } else {
-            this.onExpiredCallback()
+        if (this.isChecking !== true) {
+            if (Date.now() < this.updateDeadlineAt) {
+                this.isChecking = true
+                setTimeout(() => {
+                    this.isChecking = false
+                    this.runVersionCheck()
+                }, 1000 * this.updateIntervalSeconds)
+            } else {
+                this.onExpiredCallback()
+            }
         }
     }
 
     isExpired() {
         return Date.now() > this.updateDeadlineAt
+    }
+}
+
+module.exports.TimeUpdateHelper = class {
+    constructor(onUpdateCallback) {
+        this.onUpdateCallback = onUpdateCallback
+    }
+
+    startUpdate() {
+        if (this.intervalId === undefined) {
+            this.intervalId = setInterval(() => {
+                this.onUpdateCallback()
+            }, 1000)
+        }
+    }
+
+    stopUpdate() {
+        clearInterval(this.intervalId)
+        this.intervalId = undefined
     }
 }

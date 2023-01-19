@@ -53,6 +53,13 @@ require("./headJudgeWidget.less")
             })
             let teamsText = teamsLines.join("\n")
             let isActive = Common.isPoolActive(poolKey)
+            let sortedJudgeKeys = Common.getSortedJudgeKeyArray(poolData)
+            let judgeStrings = sortedJudgeKeys.map((judgeKey) => {
+                return `${Common.getPlayerNameString(judgeKey)} - ${poolData.judges[judgeKey]}`
+            })
+            let teamCountCN = `poolDetail ${poolData.teamData.length === 0 ? "error" : ""}`
+            let judgeCountCN = `poolDetail ${judgeStrings.length === 0 ? "error" : ""}`
+            let routineLengthCN = `${roundData.lengthSeconds === 0 ? "error" : ""}`
 
             widgets.push(
                 <div key={poolName} className={`poolWidget ${isActive ? "poolWidgetActive" : ""}`}>
@@ -60,8 +67,16 @@ require("./headJudgeWidget.less")
                     <h4>
                         Pool {poolName}
                     </h4>
-                    <div title={teamsText}>
-                        Team Count: {poolData.teamData.length}
+                    <div>
+                        <div className={teamCountCN} title={teamsText}>
+                            Team Count: {poolData.teamData.length}
+                        </div>
+                        <div className={judgeCountCN} title={judgeStrings.join("\n")}>
+                            Judge Count: {sortedJudgeKeys.length}
+                        </div>
+                        <div className={routineLengthCN}>
+                            Routine Length: {Common.getRoutineTimeString(roundData.lengthSeconds)}
+                        </div>
                     </div>
                     <button onClick={() => this.onSeeResultsClick(divisionData.name, roundData.name, poolName)}>See Results</button>
                 </div>
@@ -169,6 +184,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                     activePoolKey: Common.getSelectedPoolKey()
                 })
             }
+
+            this.eventDataUpdater.extendUpdateDeadline()
         })
     }
 
@@ -249,6 +266,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
             Common.updateEventState(undefined, {
                 selectedTeamIndex: teamIndex
             })
+
+            this.eventDataUpdater.extendUpdateDeadline()
         })
     }
 
@@ -312,6 +331,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
             Common.updateEventState(undefined, MainStore.eventData.controllerState)
             this.runUpdateRoutineTimeString()
         })
+
+        this.eventDataUpdater.extendUpdateDeadline()
     }
 
     onCancelClicked() {
@@ -320,11 +341,11 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
             Common.updateEventState(undefined, MainStore.eventData.controllerState)
             this.runUpdateRoutineTimeString()
         })
+
+        this.eventDataUpdater.extendUpdateDeadline()
     }
 
     runUpdateRoutineTimeString() {
-        this.updateRoutineTimeString()
-
         let routineTimeSeconds = Common.getRoutineTimeSeconds()
         if (this.updateTimeStringInProgress !== true && Common.isRoutinePlaying() && routineTimeSeconds < 15 * 60) {
             this.updateTimeStringInProgress = true
@@ -332,14 +353,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                 this.updateTimeStringInProgress = false
                 this.runUpdateRoutineTimeString()
             }, 1000)
-        } else {
-            this.state.routineTimeString = "0:00"
-            this.setState(this.state)
         }
-    }
 
-    updateRoutineTimeString() {
-        console.log(2)
         this.state.routineTimeString = Common.getRoutineTimeString(Common.getRoutineTimeSeconds())
         this.setState(this.state)
     }
