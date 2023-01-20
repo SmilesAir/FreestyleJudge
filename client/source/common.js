@@ -8,6 +8,24 @@ const JudgeDataBase = require("./judgeDataBase.js")
 const poolKeyPrefix = "pool|"
 const Common = module.exports
 
+module.exports.fetchEventDirectory = function() {
+    return fetchEx("GET_EVENT_DIRECTORY", undefined, undefined, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then((response) => {
+        return response.json()
+    }).then((response) => {
+        runInAction(() => {
+            MainStore.eventDirectory = response.eventDirectory
+        })
+        console.log("GET_EVENT_DIRECTORY", JSON.parse(JSON.stringify(MainStore.eventDirectory)))
+    }).catch((error) => {
+        console.error(`Trying to get event directory "${error}"`)
+    })
+}
+
 module.exports.fetchEventData = function(eventKey) {
     return fetchEx("GET_EVENT_DATA", { eventKey: eventKey }, undefined, {
         method: "GET",

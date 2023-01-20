@@ -3,9 +3,10 @@ let urls = {
     GET_EVENT_DATA: "{path}/getEventData/{eventKey}",
     GET_PLAYER_DATA: "https://4wnda3jb78.execute-api.us-west-2.amazonaws.com/production/getAllPlayers",
     GET_EVENT_DATA_VERSION: "{path}/getEventDataVersion/{eventKey}",
+    GET_EVENT_DIRECTORY: "{path}/getEventDirectory",
     UPDATE_EVENT_STATE: "{path}/updateEventState/{eventKey}",
     UPDATE_JUDGE_STATE: "{path}/updateJudgeState/{judgeKey}",
-    UPDATE_JUDGE_DATA: "{path}/updateJudgeData/{poolKey}/judgeKey/{judgeKey}/teamIndex/{teamIndex}"
+    UPDATE_JUDGE_DATA: "{path}/updateJudgeData/{poolKey}/judgeKey/{judgeKey}/teamIndex/{teamIndex}",
 }
 
 function buildUrl(isAuth, urlKey, pathParams, queryParams) {
@@ -13,7 +14,7 @@ function buildUrl(isAuth, urlKey, pathParams, queryParams) {
     if (isAuth) {
         path = __STAGE__ === "DEVELOPMENT" ? "https://odnou7cv5a.execute-api.us-west-2.amazonaws.com" : "https://jz56qku4ll.execute-api.us-west-2.amazonaws.com"
     } else {
-        path = __STAGE__ === "DEVELOPMENT" ? "https://8er0vxrmr4.execute-api.us-west-2.amazonaws.com/development" : "https://uj3vhwj8i1.execute-api.us-west-2.amazonaws.com/production"
+        path = __STAGE__ === "DEVELOPMENT" ? "https://8er0vxrmr4.execute-api.us-west-2.amazonaws.com/development" : "https://xf4cu1wy10.execute-api.us-west-2.amazonaws.com/production"
     }
 
     let pathReplaceData = {

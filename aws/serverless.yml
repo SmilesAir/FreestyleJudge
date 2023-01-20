@@ -63,6 +63,13 @@ functions:
           path: updateJudgeData/{poolKey}/judgeKey/{judgeKey}/teamIndex/{teamIndex}
           method: post
           cors: true
+  getEventDirectory:
+    handler: source/main.getEventDirectory
+    events:
+      - http:
+          path: getEventDirectory
+          method: get
+          cors: true
 
 resources:
   Resources:

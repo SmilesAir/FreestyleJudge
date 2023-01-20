@@ -139,12 +139,23 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         }
         this.categoryOrder = [ "Diff", "Variety", "ExAi" ]
 
-        Common.fetchEventData("8c14255f-9a96-45f1-b843-74e2a00d06cc").then(() => {
+        Common.fetchEventData(MainStore.eventKey).then(() => {
             this.onEventDataUpdated()
         })
         Common.fetchPlayerData()
 
         this.eventDataUpdater = new Common.EventDataUpdateHelper(10, 1, true, () => this.onEventDataUpdated(), () => this.onUpdateExpired())
+        this.timeUpdater = new Common.TimeUpdateHelper(() => this.onTimeUpdate())
+    }
+
+    onTimeUpdate() {
+        let routineTimeSeconds = Common.getRoutineTimeSeconds()
+        if (!Common.isRoutinePlaying() || routineTimeSeconds > 15 * 60) {
+            this.timeUpdater.stopUpdate()
+        }
+
+        this.state.routineTimeString = Common.getRoutineTimeString(routineTimeSeconds)
+        this.setState(this.state)
     }
 
     onUpdateExpired() {

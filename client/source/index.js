@@ -32,9 +32,18 @@ require("./index.less")
             MainStore.judgeIndex = parseInt(judgeIndexParam, 10)
         }
 
-        Common.fetchEventData("8c14255f-9a96-45f1-b843-74e2a00d06cc").then(() => {
-            Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
-        })
+        let eventKeyParam = url.searchParams.get("eventKey")
+        if (eventKeyParam !== null) {
+            MainStore.eventKey = eventKeyParam
+        }
+
+        if (MainStore.eventKey !== undefined) {
+            Common.fetchEventData(MainStore.eventKey).then(() => {
+                Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
+            })
+        } else {
+            Common.fetchEventDirectory()
+        }
     }
 
     getData(url) {
@@ -80,10 +89,7 @@ require("./index.less")
             break
         }
         default:
-            widget =
-                <div>
-                    No widget {MainStore.currentWidgetName}
-                </div>
+            widget = <EventDirectoryWidget />
         }
 
         return widget
@@ -97,3 +103,54 @@ root.render(
     <Main />
 )
 
+@MobxReact.observer class EventDirectoryWidget extends React.Component {
+    constructor() {
+        super()
+    }
+
+    setUrl(eventKey, widgetName) {
+        let url = new URL(window.location.href)
+        url.searchParams.set("eventKey", eventKey)
+        url.searchParams.set("startup", widgetName)
+        window.location.href = url.href
+    }
+
+    render() {
+        if (MainStore.eventDirectory === undefined) {
+            return <h1>No Event Directory</h1>
+        }
+
+        let widgets = MainStore.eventDirectory.map((event) => {
+            return (
+                <div key={event.eventKey}>
+                    <div>
+                        <div>
+                            <h1>
+                                {event.eventName}
+                            </h1>
+                            <h4>
+                                Last Imported: {new Date(event.modifiedAt).toISOString()}
+                            </h4>
+                        </div>
+                        <button onClick={() => this.setUrl(event.eventKey, "head")}>
+                            <h2>
+                                Head Judge
+                            </h2>
+                        </button>
+                        <button onClick={() => this.setUrl(event.eventKey, "judge")}>
+                            <h2>
+                                Judge
+                            </h2>
+                        </button>
+                    </div>
+                </div>
+            )
+        })
+
+        return (
+            <div>
+                {widgets}
+            </div>
+        )
+    }
+}

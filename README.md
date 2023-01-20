@@ -23,6 +23,8 @@ Simple backend and configurable frontend to handle Freestyle Frisbee judging nee
 
 **Get Important Version** Gets only the Important Version. This is used to check if the client needs to call the more expensive GetEventData api
 
+**Get Event Directory** Returns a list of event keys and names
+
 **Update Event State** Used to update playing pool
 1. Updates eventState
 2. Updates controllerState

@@ -1,12 +1,12 @@
 {
-    "name": "starterproject",
+    "name": "freestyle-judge",
     "version": "v0.0.1",
-    "description": "Minimal Client",
-    "homepage": "https://github.com/SmilesAir/StarterProject",
+    "description": "Judge system V3",
+    "homepage": "https://github.com/SmilesAir/FreestyleJudge",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/SmilesAir/StarterProject.git"
+        "url": "https://github.com/SmilesAir/FreestyleJudge.git"
     },
     "author": {
         "name": "Ryan Young",
@@ -15,7 +15,9 @@
     "main": "source/index.js",
     "scripts": {
         "start": "npm i && codeglue --mode=server --stage=development",
-        "deploy": "aws s3 sync ./builds/web s3://starterproject-development"
+        "start:production": "npm i && codeglue --mode=server --stage=production",
+        "build:production": "npm i && codeglue --stage=production",
+        "deploy:production": "npm run build:production && aws s3 sync ./builds/web s3://freestyle-judge-production"
     },
     "dependencies": {
         "aws-sdk": "2.316.0",

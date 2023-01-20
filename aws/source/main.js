@@ -246,19 +246,7 @@ function getPoolCreatorDivisionNameFromIndex(index) {
 }
 
 async function updateManifest(eventKey, eventName) {
-    let manifestData = undefined
-    let getManifestParams = {
-        TableName : process.env.DATA_TABLE,
-        Key: {
-            key: eventManifestKey
-        }
-    }
-    await docClient.get(getManifestParams).promise().then((response) => {
-        manifestData = response.Item
-    }).catch((error) => {
-        throw error
-    })
-
+    let manifestData = await getManifestData()
     if (manifestData === undefined) {
         manifestData = {
             key: eventManifestKey,
@@ -272,10 +260,12 @@ async function updateManifest(eventKey, eventName) {
             eventKey: eventKey,
             eventName: eventName,
             createdAt: Date.now(),
-            modifiedAt: Date.now()
+            modifiedAt: Date.now(),
+            showInDirectory: true
         }
     } else {
         eventManifestData.modifiedAt = Date.now()
+        eventManifestData.showInDirectory = true
     }
 
     let putParams = {
@@ -328,7 +318,8 @@ module.exports.getEventData = (e, c, cb) => { Common.handler(e, c, cb, async (ev
 async function getEventDataWithPoolData(eventKey) {
     let eventData = await getEventData(eventKey)
     if (eventData === undefined) {
-        throw `Can't find event for key "${eventKey}"`
+        console.warn(`Can't find event for key "${eventKey}"`)
+        return undefined
     }
 
     let poolKeysToFetch = []
@@ -480,6 +471,43 @@ function incrementMinorVersion(poolKey) {
         ReturnValues: "NONE"
     }
     return docClient.update(updateParams).promise().catch((error) => {
+        throw error
+    })
+}
+
+module.exports.getEventDirectory = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+    let manifestData = await getManifestData()
+    if (manifestData === undefined) {
+        throw "Can't find manifest data"
+    }
+
+    let directory = []
+    for (let eventKey in manifestData.events) {
+        let event = manifestData.events[eventKey]
+        if (event.showInDirectory) {
+            directory.push({
+                eventKey: eventKey,
+                eventName: event.eventName,
+                modifiedAt: event.modifiedAt
+            })
+        }
+    }
+
+    return {
+        eventDirectory: directory
+    }
+})}
+
+function getManifestData() {
+    let getManifestParams = {
+        TableName : process.env.DATA_TABLE,
+        Key: {
+            key: eventManifestKey
+        }
+    }
+    return docClient.get(getManifestParams).promise().then((response) => {
+        return response.Item
+    }).catch((error) => {
         throw error
     })
 }
