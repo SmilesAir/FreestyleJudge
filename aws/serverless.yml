@@ -9,6 +9,7 @@ provider:
 
   environment:
     DATA_TABLE: ${self:service}-${self:provider.stage}-dataTable
+    DEPLOYED_BUCKET: ${self:service}-${self:provider.stage}-deployed-bucket
 
   iamRoleStatements:
     - Effect: Allow
@@ -85,3 +86,11 @@ resources:
           - AttributeName: key
             KeyType: HASH
 
+plugins:
+  - fullstack-serverless
+
+custom:
+  fullstack:
+    bucketName: deployed-bucket
+    distributionFolder: ../client/builds/web
+    indexDocument: index.html

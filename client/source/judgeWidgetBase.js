@@ -345,7 +345,8 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
         if (MainStore.judgeIndex === undefined) {
             return this.getJudgeButtonsWidget()
         } else {
-            let cn = `judgeWidgetBase kindleTest ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
+            //let cn = `judgeWidgetBase kindleTest ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
+            let cn = `judgeWidgetBase ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
             return (
                 <div className={cn}>
                     {Common.getExpiredWidget(this.eventDataUpdater)}
