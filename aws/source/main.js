@@ -31,30 +31,7 @@ module.exports.importEventFromPoolCreator = (e, c, cb) => { Common.handler(e, c,
     if (currentEventData !== undefined) {
         newEventData.importantVersion = currentEventData.importantVersion + 1
 
-        // merge the pools
-        for (let poolKey in newPoolMap) {
-            let newPoolData = newPoolMap[poolKey]
-            let currentPoolData = currentEventData.eventData.poolMap[poolKey]
-            if (currentPoolData !== undefined) {
-                for (let currentTeam of currentPoolData.teamData) {
-                    if (hasTeamResults(currentTeam)) {
-                        let found = false
-                        for (let newTeamIndex = 0; newTeamIndex < newPoolData.teamData.length; ++newTeamIndex) {
-                            let newTeam = newPoolData.teamData[newTeamIndex]
-                            if (hasSamePlayers(currentTeam, newTeam)) {
-                                found = true
-                                newPoolData.teamData[newTeamIndex] = currentTeam
-                                break
-                            }
-                        }
-
-                        if (!found) {
-                            newPoolData.teamData.push(currentTeam)
-                        }
-                    }
-                }
-            }
-        }
+        mergePoolMap(currentEventData.eventData.poolMap, newPoolMap)
     }
 
     console.log(JSON.stringify(newPoolMap))
@@ -86,6 +63,87 @@ module.exports.importEventFromPoolCreator = (e, c, cb) => { Common.handler(e, c,
         message: `"${eventName}" Imported Succesfully to V3`
     }
 })}
+
+module.exports.importEventFromEventCreator = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+    let eventKey = decodeURIComponent(event.pathParameters.eventKey)
+    let newEventData = JSON.parse(event.body) || {}
+    let eventName = newEventData.eventName
+
+    validateEventKey(eventKey)
+
+    if (eventName === undefined || eventName.length < 1) {
+        throw `Bad Event Name "${eventName}"`
+    }
+
+    updateManifest(eventKey, eventName)
+
+    let currentEventData = await getEventDataWithPoolData(eventKey)
+    let newPoolMap = newEventData.eventData.poolMap
+
+    // conditionally update the event data
+    if (currentEventData !== undefined) {
+        newEventData.importantVersion = currentEventData.importantVersion + 1
+
+        mergePoolMap(currentEventData.eventData.poolMap, newPoolMap)
+    }
+
+    newEventData.eventData.poolMap = {}
+
+    console.log(JSON.stringify(newPoolMap))
+    console.log(JSON.stringify(newEventData))
+
+    let putPromises = []
+    let putNewEventParams = {
+        TableName : process.env.DATA_TABLE,
+        Item: newEventData
+    }
+    putPromises.push(docClient.put(putNewEventParams).promise().catch((error) => {
+        throw error
+    }))
+
+    for (let poolKey in newPoolMap) {
+        let newPoolData = newPoolMap[poolKey]
+        let putNewPoolParams = {
+            TableName : process.env.DATA_TABLE,
+            Item: newPoolData
+        }
+        putPromises.push(docClient.put(putNewPoolParams).promise().catch((error) => {
+            throw error
+        }))
+    }
+
+    await Promise.all(putPromises)
+
+    return {
+        message: `"${eventName}" Imported Succesfully to V3`
+    }
+})}
+
+function mergePoolMap(currentPoolMap, newPoolMap) {
+    for (let poolKey in newPoolMap) {
+        let newPoolData = newPoolMap[poolKey]
+        let currentPoolData = currentPoolMap[poolKey]
+        if (currentPoolData !== undefined) {
+            for (let currentTeam of currentPoolData.teamData) {
+                if (hasTeamResults(currentTeam)) {
+                    let found = false
+                    for (let newTeamIndex = 0; newTeamIndex < newPoolData.teamData.length; ++newTeamIndex) {
+                        let newTeam = newPoolData.teamData[newTeamIndex]
+                        if (hasSamePlayers(currentTeam, newTeam)) {
+                            found = true
+                            newPoolData.teamData[newTeamIndex] = currentTeam
+                            break
+                        }
+                    }
+
+                    if (!found) {
+                        newPoolData.teamData.push(currentTeam)
+                    }
+                }
+            }
+        }
+    }
+}
 
 function hasTeamResults(teamData) {
     return Object.keys(teamData.judgeData).length > 0

@@ -29,6 +29,13 @@ functions:
           path: importEventFromPoolCreator/{eventKey}
           method: post
           cors: true
+  importEventFromEventCreator:
+    handler: source/main.importEventFromEventCreator
+    events:
+      - http:
+          path: importEventFromEventCreator/{eventKey}
+          method: post
+          cors: true
   getEventData:
     handler: source/main.getEventData
     events:
