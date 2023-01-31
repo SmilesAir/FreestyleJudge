@@ -61,6 +61,9 @@ require("./index.less")
     render() {
         let widget = null
         switch(MainStore.currentWidgetName) {
+        case "eventCreator":
+            widget = <iframe src="https://d1buigy8p55ler.cloudfront.net" allow="clipboard-write"/>
+            break
         case "head":
             widget = <HeadJudgeWidget />
             break
@@ -110,8 +113,12 @@ root.render(
 
     setUrl(eventKey, widgetName) {
         let url = new URL(window.location.href)
-        url.searchParams.set("eventKey", eventKey)
-        url.searchParams.set("startup", widgetName)
+        if (eventKey !== undefined) {
+            url.searchParams.set("eventKey", eventKey)
+        }
+        if (widgetName !== undefined) {
+            url.searchParams.set("startup", widgetName)
+        }
         window.location.href = url.href
     }
 
@@ -149,6 +156,7 @@ root.render(
 
         return (
             <div>
+                <button onClick={() => this.setUrl(undefined, "eventCreator")}>Event Creator</button>
                 {widgets}
             </div>
         )
