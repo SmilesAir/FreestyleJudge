@@ -5,8 +5,9 @@ let urls = {
     GET_EVENT_DATA_VERSION: "{path}/getEventDataVersion/{eventKey}",
     GET_EVENT_DIRECTORY: "{path}/getEventDirectory",
     UPDATE_EVENT_STATE: "{path}/updateEventState/{eventKey}",
-    UPDATE_JUDGE_STATE: "{path}/updateJudgeState/{judgeKey}",
+    UPDATE_JUDGE_STATE: "{path}/updateJudgeState/{eventKey}/judgeKey/{judgeKey}",
     UPDATE_JUDGE_DATA: "{path}/updateJudgeData/{poolKey}/judgeKey/{judgeKey}/teamIndex/{teamIndex}",
+    REMOVE_EVENT_FROM_DIRECTORY: "{path}/removeEventFromDirectory/{eventKey}"
 }
 
 function buildUrl(isAuth, urlKey, pathParams, queryParams) {

@@ -1,0 +1,4 @@
+seeding using results from previous round
+judge states
+print summary button
+Better scoreboard

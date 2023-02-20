@@ -394,7 +394,7 @@ module.exports.isRoutinePlaying = function() {
 }
 
 module.exports.isRoutineFinished = function() {
-    return MainStore.eventData && MainStore.eventData.controllerState.routineStartTime && Common.getRoutineTimeSeconds() > Common.getSelectedPoolRoutineSeconds()
+    return MainStore.eventData && MainStore.eventData.controllerState.routineStartTime && Common.getRoutineTimeSeconds() > Common.getSelectedPoolRoutineSeconds() || false
 }
 
 module.exports.getSortedJudgeKeyArray = function(poolData) {
@@ -490,20 +490,37 @@ module.exports.updateJudgeState = function(judgeState) {
 
     return fetchEx("UPDATE_JUDGE_STATE", {
         eventKey: MainStore.eventData.key,
-        judgeKey: judgeData.judgeKey
+        judgeKey: judgeState.judgeKey
     }, undefined, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(judgeState)
-    }).then((response) => {
-        return response.json()
-    }).then((response) => {
-        console.log(response)
     }).catch((error) => {
         console.error(`Trying to update judge state "${error}"`)
     })
+}
+
+module.exports.removeEventFromDirectory = function(eventKey) {
+    return fetchEx("REMOVE_EVENT_FROM_DIRECTORY", {
+        eventKey: eventKey
+    }, undefined, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).catch((error) => {
+        console.error(`Trying to remove event from directory "${error}"`)
+    })
+}
+
+module.exports.getJudgeState = function(judgeKey) {
+    if (MainStore.eventData === undefined) {
+        return {}
+    }
+
+    return MainStore.eventData.judgesState[judgeKey] || {}
 }
 
 module.exports.incrementalUpdate = function(includeMinorUpdates, forced) {
@@ -522,7 +539,7 @@ module.exports.incrementalUpdate = function(includeMinorUpdates, forced) {
         let importantVersionUpdated = response.importantVersion !== undefined && response.importantVersion !== MainStore.eventData.importantVersion
         let minorVersionUpdated = response.minorVersion !== undefined && response.minorVersion !== MainStore.eventData.minorVersion
         if (forced || importantVersionUpdated || (includeMinorUpdates && minorVersionUpdated)) {
-            console.log("GET_EVENT_DATA_VERSION", response.importantVersion, MainStore.eventData.importantVersion, response.minorVersion, MainStore.eventData.minorVersion)
+            //console.log("GET_EVENT_DATA_VERSION", response.importantVersion, MainStore.eventData.importantVersion, response.minorVersion, MainStore.eventData.minorVersion)
             return Common.fetchEventData(MainStore.eventData.key).then(() => {
                 return true
             })
@@ -563,7 +580,7 @@ module.exports.EventDataUpdateHelper = class {
 
     runVersionCheck(forced) {
         Common.incrementalUpdate(this.includeMinorUpdates, forced).then((updated) => {
-            if (updated) {
+            if (updated && this.onUpdateCallback !== undefined) {
                 this.onUpdateCallback()
             }
         })
@@ -575,7 +592,7 @@ module.exports.EventDataUpdateHelper = class {
                     this.isChecking = false
                     this.runVersionCheck()
                 }, 1000 * this.updateIntervalSeconds)
-            } else {
+            } else if (this.onExpiredCallback !== undefined) {
                 this.onExpiredCallback()
             }
         }

@@ -20,6 +20,11 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetBase {
     postInitFectchEventData() {
     }
 
+    onTeamChanged() {
+        this.state.editingQuality = false
+        this.setState(this.state)
+    }
+
     onInputIncrementClicked(value) {
         let judgeData = this.getJudgeData()
         judgeData.data.quantity = Math.max(0, judgeData.data.quantity + value)

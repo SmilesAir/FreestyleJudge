@@ -1,5 +1,34 @@
+@media print {
+    @page {
+        size: portrait;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    .results2020 * {
+        visibility: visible;
+    }
+
+    .detailedContainer {
+        page-break-inside: avoid;
+    }
+
+    button * {
+        visibility: hidden;
+    }
+}
 
 .results2020 {
+    .detailedContainer {
+        .teamHeaderName {
+            margin-top: 1em;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+    }
+
     .resultsSummary {
         .title {
             display: flex;
@@ -90,6 +119,10 @@
                         .teamName {
                             font-weight: bold;
                             border-bottom: 1px solid gray;
+                        }
+
+                        .scoreboard {
+                            font-size: 3em;
                         }
                     }
 

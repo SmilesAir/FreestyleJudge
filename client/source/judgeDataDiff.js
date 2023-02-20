@@ -125,10 +125,23 @@ module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
         return sortedScores
     }
 
+    getArrayAverage(array) {
+        if (array.length === 0) {
+            return 0
+        }
+
+        let sum = 0
+        for (let n of array) {
+            sum += n
+        }
+
+        return sum / array.length
+    }
+
     getJudgeWidgetDetailed() {
         let phrases = []
         let sortedTier1Scores = this.getSortedTier1Scores()
-        let tier1Avg = Common.round2Decimals(sortedTier1Scores.reduce((a, b) => a + b) / sortedTier1Scores.length)
+        let tier1Avg = Common.round2Decimals(this.getArrayAverage(sortedTier1Scores))
         for (let phrase of this.data.diffScores) {
             let tier1ScoreIndex = sortedTier1Scores.findIndex((score) => score === phrase)
             if (tier1ScoreIndex >= 0) {

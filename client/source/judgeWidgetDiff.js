@@ -6,6 +6,7 @@ const { runInAction } = require("mobx")
 
 const Common = require("./common.js")
 const JudgeWidgetBase = require("./judgeWidgetBase.js")
+const MainStore = require("./mainStore.js")
 
 module.exports = class JudgeWidgetDiff extends JudgeWidgetBase {
     constructor() {

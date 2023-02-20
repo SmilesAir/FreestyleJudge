@@ -56,10 +56,6 @@ module.exports.JudgeDataBase = class {
     updateJudgeData(teamIndex) {
         throw new Error("updateJudgeData is not implemented in child")
     }
-
-    updateJudgeState(judgeState) {
-        Common.updateJudgeState(judgeState)
-    }
 }
 
 module.exports.judgeDataExports = {}

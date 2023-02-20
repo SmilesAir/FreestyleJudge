@@ -60,7 +60,7 @@ functions:
     handler: source/main.updateJudgeState
     events:
       - http:
-          path: updateJudgeState/{judgeKey}
+          path: updateJudgeState/{eventKey}/judgeKey/{judgeKey}
           method: post
           cors: true
   updateJudgeData:
@@ -76,6 +76,13 @@ functions:
       - http:
           path: getEventDirectory
           method: get
+          cors: true
+  removeEventFromDirectory:
+    handler: source/main.removeEventFromDirectory
+    events:
+      - http:
+          path: removeEventFromDirectory/{eventKey}
+          method: post
           cors: true
 
 resources:

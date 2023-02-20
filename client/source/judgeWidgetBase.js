@@ -20,7 +20,8 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
         this.state = {
             routineTimeString: "0:00",
             teamIndex: undefined,
-            editGeneralIndex: undefined
+            editGeneralIndex: undefined,
+            sentRoutineStartedEvent: false
         }
 
         Common.fetchEventData(MainStore.eventKey).then(() => {
@@ -30,6 +31,21 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
 
         this.eventDataUpdater = new Common.EventDataUpdateHelper(10, 1, false, () => this.onEventDataUpdatedBase(), () => this.onUpdateExpired())
         this.timeUpdater = new Common.TimeUpdateHelper(() => this.onTimeUpdate())
+    }
+
+    updateJudgeState() {
+        let judgeData = this.getJudgeData()
+        if (judgeData === undefined) {
+            return
+        }
+        judgeData = judgeData.data
+
+        Common.updateJudgeState({
+            judgeKey: judgeData.judgeKey,
+            isFinished: Common.isRoutineFinished() && judgeData.general !== 0,
+            isEditing: MainStore.judgeTabsSelectedIndex === 1,
+            updatedAt: Date.now()
+        })
     }
 
     onTimeUpdate() {
@@ -46,16 +62,40 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
         this.setState(this.state)
     }
 
+    onTeamChanged() {
+        // Do nothing
+    }
+
+    onRoutineStarted() {
+        runInAction(() => {
+            MainStore.judgeTabsSelectedIndex = 0
+        })
+    }
+
     onEventDataUpdatedBase() {
         runInAction(() => {
             Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
             this.judgeDataArray = Common.getJudgeDataArrayForCurrentJudgeIndex()
-            this.state.teamIndex = MainStore.eventData.controllerState.selectedTeamIndex
+            if (this.state.teamIndex !== MainStore.eventData.controllerState.selectedTeamIndex) {
+                this.state.teamIndex = MainStore.eventData.controllerState.selectedTeamIndex
+                this.onTeamChanged()
+            }
+            if (Common.isRoutinePlaying()) {
+                if (!this.state.sentRoutineStartedEvent) {
+                    this.state.sentRoutineStartedEvent = true
+                    this.onRoutineStarted()
+                }
+            } else {
+                this.state.sentRoutineStartedEvent = false
+            }
+
             this.eventDataUpdater.extendUpdateDeadline()
 
             this.postInitFectchEventData()
 
             this.timeUpdater.startUpdate()
+
+            this.updateJudgeState()
         })
     }
 
@@ -85,6 +125,8 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
 
             MainStore.judgeTabsSelectedIndex = index
             window.localStorage.setItem("judgeTabsSelectedIndex", index)
+
+            this.updateJudgeState()
         })
     }
 
@@ -317,6 +359,8 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
         this.state.editGeneralIndex = undefined
 
         this.setState(this.state)
+
+        this.updateJudgeState()
     }
 
     getFinishedWidget() {

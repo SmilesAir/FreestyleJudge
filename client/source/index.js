@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 /* eslint-disable no-loop-func */
 "use strict"
 
@@ -7,6 +8,7 @@ const MobxReact = require("mobx-react")
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
+const Results2020Widget = require("./results2020Widget.js")
 const HeadJudgeWidget = require("./headJudgeWidget.js")
 const JudgeWidgetBase = require("./judgeWidgetBase.js")
 const JudgeWidgetDiff = require("./judgeWidgetDiff.js")
@@ -67,6 +69,9 @@ require("./index.less")
         case "head":
             widget = <HeadJudgeWidget />
             break
+        case "scoreboard":
+            widget = <Results2020Widget scoreboardMode={true} />
+            break
         case "judge": {
             if (MainStore.judgeIndex !== undefined) {
                 let judgeCategoryType = Common.getCategoryTypeForJudgeIndex(MainStore.judgeIndex)
@@ -122,6 +127,12 @@ root.render(
         window.location.href = url.href
     }
 
+    onRemoveClick(event) {
+        if (confirm("Really remove event from Directory?")) {
+            Common.removeEventFromDirectory(event.eventKey)
+        }
+    }
+
     render() {
         if (MainStore.eventDirectory === undefined) {
             return <h1>No Event Directory</h1>
@@ -135,13 +146,21 @@ root.render(
                             <h1>
                                 {event.eventName}
                             </h1>
-                            <h4>
-                                Last Imported: {new Date(event.modifiedAt).toISOString()}
-                            </h4>
+                            <div className="line2">
+                                <button onClick={() => this.onRemoveClick(event)}>Remove</button>
+                                <div>
+                                    Last Imported: {new Date(event.modifiedAt).toISOString()}
+                                </div>
+                            </div>
                         </div>
                         <button onClick={() => this.setUrl(event.eventKey, "head")}>
                             <h2>
                                 Head Judge
+                            </h2>
+                        </button>
+                        <button onClick={() => this.setUrl(event.eventKey, "scoreboard")}>
+                            <h2>
+                                Scoreboard
                             </h2>
                         </button>
                         <button onClick={() => this.setUrl(event.eventKey, "judge")}>
@@ -155,8 +174,12 @@ root.render(
         })
 
         return (
-            <div>
-                <button onClick={() => this.setUrl(undefined, "eventCreator")}>Event Creator</button>
+            <div className="eventDirectory">
+                <button onClick={() => this.setUrl(undefined, "eventCreator")}>
+                    <h2>
+                        Event Creator
+                    </h2>
+                </button>
                 {widgets}
             </div>
         )

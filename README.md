@@ -133,7 +133,8 @@ Keeps a list of all the events
         [judgeKey]: {
             judgeKey: guid,
             isFinished: bool,
-            isEditing: bool
+            isEditing: bool,
+            updatedAt: int64
         }
     }
 }

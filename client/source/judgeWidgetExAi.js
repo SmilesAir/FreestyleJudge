@@ -18,6 +18,16 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetBase {
     postInitFectchEventData() {
     }
 
+    onTeamChanged() {
+        this.clearEditingProp()
+    }
+
+    showGeneralWidget() {
+        this.clearEditingProp()
+
+        super.showGeneralWidget()
+    }
+
     onInputIncrementPoint1Clicked(value) {
         let judgeData = this.getJudgeData()
         judgeData.data.point1 = Math.max(0, judgeData.data.point1 + value)
@@ -49,6 +59,11 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetBase {
             this.state.editingPropName = propName
         }
 
+        this.setState(this.state)
+    }
+
+    clearEditingProp() {
+        this.state.editingPropName = undefined
         this.setState(this.state)
     }
 

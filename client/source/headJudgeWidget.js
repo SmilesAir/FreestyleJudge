@@ -150,7 +150,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
 
     onTimeUpdate() {
         let routineTimeSeconds = Common.getRoutineTimeSeconds()
-        if (!Common.isRoutinePlaying() || routineTimeSeconds > 15 * 60) {
+        if (!Common.isRoutinePlaying() && !Common.isRoutineFinished() || routineTimeSeconds > 30 * 60) {
             this.timeUpdater.stopUpdate()
         }
 
@@ -166,6 +166,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         runInAction(() => {
             this.runUpdateRoutineTimeString()
             this.eventDataUpdater.extendUpdateDeadline()
+            this.timeUpdater.startUpdate()
 
             this.setState(this.state)
         })
@@ -306,9 +307,24 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
     }
 
     getJudgeWidget(judgeKey, categoryType) {
+        let status = "Disconnected"
+        let statusCN = "disconnected"
+        let judgeState = Common.getJudgeState(judgeKey)
+        if (Date.now() - judgeState.updatedAt < 5 * 60 * 1000) {
+            if (judgeState.isFinished) {
+                status = "Finished"
+                statusCN = "finished"
+            } else if (judgeState.isEditing) {
+                status = "Editing"
+                statusCN = "editingState"
+            } else {
+                status = "Connected"
+                statusCN = "connected"
+            }
+        }
         return (
-            <div key={judgeKey} className="judge">
-                {`${categoryType}: ${Common.getPlayerNameString(judgeKey)}`}
+            <div key={judgeKey} className={`judge ${statusCN}`}>
+                {`${categoryType}: ${Common.getPlayerNameString(judgeKey)} - ${status}`}
             </div>
         )
     }

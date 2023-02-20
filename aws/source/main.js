@@ -482,7 +482,7 @@ module.exports.updateJudgeState = (e, c, cb) => { Common.handler(e, c, cb, async
         throw error
     })
 
-    await incrementMinorVersion(poolKey)
+    await incrementMinorVersion(eventKey)
 
     return {
         message: `Updated "${eventKey}" Successful`
@@ -511,17 +511,21 @@ module.exports.updateJudgeData = (e, c, cb) => { Common.handler(e, c, cb, async 
         throw error
     })
 
-    await incrementMinorVersion(poolKey)
+    await incrementMinorVersionByPoolKey(poolKey)
 
     return {
         message: `Updated "${poolKey}" Successful`
     }
 })}
 
-function incrementMinorVersion(poolKey) {
+function incrementMinorVersionByPoolKey(poolKey) {
+    return incrementMinorVersion(poolKey.split("|")[1])
+}
+
+function incrementMinorVersion(eventKey) {
     let updateParams = {
         TableName: process.env.DATA_TABLE,
-        Key: {"key": poolKey.split("|")[1]},
+        Key: {"key": eventKey},
         UpdateExpression: `set minorVersion = minorVersion + :one`,
         ExpressionAttributeValues: {
             ":one": 1
@@ -553,6 +557,32 @@ module.exports.getEventDirectory = (e, c, cb) => { Common.handler(e, c, cb, asyn
 
     return {
         eventDirectory: directory
+    }
+})}
+
+module.exports.removeEventFromDirectory = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+    let eventKey = decodeURIComponent(event.pathParameters.eventKey)
+
+    let updateParams = {
+        TableName: process.env.DATA_TABLE,
+        Key: {key: eventManifestKey},
+        UpdateExpression: "set events.#eventKey.showInDirectory = :false",
+        ExpressionAttributeNames: {
+            "#eventKey": eventKey
+        },
+        ExpressionAttributeValues: {
+            ":false": false
+        },
+        ReturnValues: "NONE"
+    }
+    await docClient.update(updateParams).promise().catch((error) => {
+        throw error
+    })
+
+    await incrementMinorVersion(eventKey)
+
+    return {
+        message: `Updated "${eventKey}" Successful`
     }
 })}
 

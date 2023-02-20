@@ -8,14 +8,24 @@ const Common = require("./common.js")
 require("./results2020Widget.less")
 
 module.exports = @MobxReact.observer class Results2020Widget extends React.Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
 
         this.categoryOrder = [ "Diff", "Variety", "ExAi" ]
         this.categoryName = {
             Diff: "Diff",
             Variety: "Vty",
             ExAi: "AI"
+        }
+
+        if (this.props.scoreboardMode === true) {
+            Common.fetchEventData(MainStore.eventKey)
+            Common.fetchPlayerData()
+
+            this.eventDataUpdater = new Common.EventDataUpdateHelper(18 * 60, 5, true)
+            setTimeout(() => {
+                this.eventDataUpdater.extendUpdateDeadline()
+            }, 1000)
         }
     }
 
@@ -197,10 +207,11 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         let widgets = []
         let teamIndex = 0
         for (let teamData of poolData.teamData) {
+            let teamNameCN = `teamName ${this.props.scoreboardMode ? "scoreboard" : ""}`
             widgets.push(
                 <div key={Math.random()} className="team">
                     <div className="teamDetails">
-                        <div className="teamName">
+                        <div className={teamNameCN}>
                             {`${Common.getPlayerNamesString(teamData.players)}`}
                         </div>
                         {this.getCategoryScoreWidget(summaryScoreData, teamIndex)}
@@ -263,17 +274,20 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         let widgets = []
         let poolData = MainStore.eventData.eventData.poolMap[poolKey]
         let teamNumber = 1
+        let judgeKeys = Common.getSortedJudgeKeyArray(poolData)
         for (let teamData of poolData.teamData) {
             let detailedWidgets = []
-            for (let judgeKey in teamData.judgeData) {
-                detailedWidgets.push(Common.getJudgeDataDetailedWidget(judgeKey, teamData))
+            for (let judgeKey of judgeKeys) {
+                if (teamData.judgeData[judgeKey] !== undefined) {
+                    detailedWidgets.push(Common.getJudgeDataDetailedWidget(judgeKey, teamData))
+                }
             }
 
             let teanNames = Common.getPlayerNamesString(teamData.players)
 
             widgets.push(
-                <div key={teamNumber}>
-                    <div>
+                <div key={teamNumber} className="detailedContainer">
+                    <div className="teamHeaderName">
                         {`Team ${teamNumber}: ${teanNames}`}
                     </div>
                     {detailedWidgets}
@@ -284,6 +298,10 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         }
 
         return widgets
+    }
+
+    printFullDetails() {
+        window.print()
     }
 
     render() {
@@ -310,11 +328,24 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         let poolKey = Common.getSelectedPoolKey()
         let poolName = Common.makePoolName(MainStore.selectedDivision.value, MainStore.selectedRound.value, MainStore.selectedPool.value)
 
-        return (
-            <div className="results2020">
-                {this.getSummaryWidget(poolKey, poolName)}
-                {this.getDetailedWidget(poolKey)}
-            </div>
-        )
+        if (this.props.scoreboardMode === true) {
+            return (
+                <div>
+                    <div className="results2020">
+                        {this.getSummaryWidget(poolKey, poolName)}
+                    </div>
+                </div>
+            )
+        } else {
+            return (
+                <div>
+                    <button onClick={() => this.printFullDetails()}>Print Full Details</button>
+                    <div className="results2020">
+                        {this.getSummaryWidget(poolKey, poolName)}
+                        {this.getDetailedWidget(poolKey)}
+                    </div>
+                </div>
+            )
+        }
     }
 }
