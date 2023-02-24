@@ -41,7 +41,12 @@ require("./index.less")
 
         if (MainStore.eventKey !== undefined) {
             Common.fetchEventData(MainStore.eventKey).then(() => {
-                Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
+                let startupPoolParam = url.searchParams.get("pool")
+                if (startupPoolParam !== null) {
+                    Common.setSelectedPoolFromPoolKey(startupPoolParam)
+                } else {
+                    Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
+                }
             })
         } else {
             Common.fetchEventDirectory()
@@ -71,6 +76,9 @@ require("./index.less")
             break
         case "scoreboard":
             widget = <Results2020Widget scoreboardMode={true} />
+            break
+        case "results":
+            widget = <HeadJudgeWidget resultsMode={true} />
             break
         case "judge": {
             if (MainStore.judgeIndex !== undefined) {

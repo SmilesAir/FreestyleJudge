@@ -42,6 +42,18 @@ require("./headJudgeWidget.less")
         })
     }
 
+    getPermalink(poolKey) {
+        let url = new URL(window.location.href)
+        url.searchParams.set("startup", "results")
+        url.searchParams.set("pool", poolKey)
+
+        return url.href
+    }
+
+    copyPermalink(poolKey) {
+        navigator.clipboard.writeText(this.getPermalink(poolKey))
+    }
+
     getPoolWidgets(divisionData, roundData) {
         let widgets = []
         for (let poolName of roundData.poolNames) {
@@ -79,6 +91,7 @@ require("./headJudgeWidget.less")
                         </div>
                     </div>
                     <button onClick={() => this.onSeeResultsClick(divisionData.name, roundData.name, poolName)}>See Results</button>
+                    <button onClick={() => this.copyPermalink(poolKey)}>Copy Results Permalink</button>
                 </div>
             )
         }
@@ -116,9 +129,29 @@ require("./headJudgeWidget.less")
         return widgets
     }
 
+    copyAllPoolsForRound(roundName) {
+        let lines = []
+        for (let divisionKey in MainStore.eventData.eventData.divisionData) {
+            let divisionData = MainStore.eventData.eventData.divisionData[divisionKey]
+            for (let roundKey in divisionData.roundData) {
+                if (roundKey === roundName) {
+                    let roundData = divisionData.roundData[roundKey]
+                    for (let poolName of roundData.poolNames) {
+                        let poolKey = Common.makePoolKey(MainStore.eventData.key, divisionKey, roundKey, poolName)
+                        lines.push(`${divisionKey} ${roundKey} ${poolName}: ${this.getPermalink(poolKey)}`)
+                    }
+                }
+            }
+        }
+
+        navigator.clipboard.writeText(lines.join("\n"))
+    }
+
     render() {
         return (
             <div>
+                <button onClick={() => this.copyAllPoolsForRound("Semifinals")}>Copy All Semifinals Permalinks</button>
+                <button onClick={() => this.copyAllPoolsForRound("Finals")}>Copy All Finals Permalinks</button>
                 {this.getDivisionWidgets()}
             </div>
         )
@@ -126,8 +159,8 @@ require("./headJudgeWidget.less")
 }
 
 module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
 
         runInAction(() => {
             MainStore.topTabsSelectedIndex = parseInt(window.localStorage.getItem("topTabsSelectedIndex"), 10) || 0
@@ -144,7 +177,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         })
         Common.fetchPlayerData()
 
-        this.eventDataUpdater = new Common.EventDataUpdateHelper(10, 1, true, () => this.onEventDataUpdated(), () => this.onUpdateExpired())
+        let dataUpdaterInterval = this.props.resultsMode ? 10 : 1
+        this.eventDataUpdater = new Common.EventDataUpdateHelper(10, dataUpdaterInterval, true, () => this.onEventDataUpdated(), () => this.onUpdateExpired())
         this.timeUpdater = new Common.TimeUpdateHelper(() => this.onTimeUpdate())
     }
 
@@ -426,40 +460,55 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
             return <h1>No Player Data</h1>
         }
 
-        let selectDisabled = MainStore.controlsTabsSelectedIndex === 0 && Common.isRoutinePlaying()
-        let headJudgeWidgetCN = `headJudgeWidget ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
-        return (
-            <div className={headJudgeWidgetCN}>
-                {Common.getExpiredWidget(this.eventDataUpdater)}
-                <Tabs selectedIndex={MainStore.topTabsSelectedIndex} onSelect={(index) => this.onTopTabsSelectedIndexChanged(index)}>
-                    <TabList>
-                        <Tab>Event Info</Tab>
-                        <Tab>Pool Controls</Tab>
-                    </TabList>
-                    <TabPanel>
-                        <EventInfoWidget />
-                    </TabPanel>
-                    <TabPanel>
-                        <Tabs selectedIndex={MainStore.controlsTabsSelectedIndex} onSelect={(index) => this.onControlsTabsSelectedIndexChanged(index)}>
-                            <div className="poolSelectContainer">
-                                <ReactSelect value={MainStore.selectedDivision} onChange={(e) => this.onSelectDivision(e)} options={this.getDivisionOptions()} placeholder="Choose Division" isLoading={MainStore.eventData === undefined} isDisabled={selectDisabled} />
-                                <ReactSelect value={MainStore.selectedRound} onChange={(e) => this.onSelectRound(e)} options={this.getRoundOptions()} placeholder="Choose Round" isLoading={MainStore.eventData === undefined} isDisabled={selectDisabled} />
-                                <ReactSelect value={MainStore.selectedPool} onChange={(e) => this.onSelectPool(e)} options={this.getPoolOptions()} placeholder="Choose Pool" isLoading={MainStore.eventData === undefined} isDisabled={selectDisabled} />
-                            </div>
-                            <TabList>
-                                <Tab>Run Pool</Tab>
-                                <Tab>Results</Tab>
-                            </TabList>
-                            <TabPanel>
-                                {this.getRunControls()}
-                            </TabPanel>
-                            <TabPanel>
-                                <Results2020Widget />
-                            </TabPanel>
-                        </Tabs>
-                    </TabPanel>
-                </Tabs>
-            </div>
-        )
+        if (this.props.resultsMode) {
+            let headJudgeWidgetCN = `headJudgeWidget ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
+            return (
+                <div className={headJudgeWidgetCN}>
+                    {Common.getExpiredWidget(this.eventDataUpdater)}
+                    <div className="poolSelectContainer">
+                        <ReactSelect value={MainStore.selectedDivision} onChange={(e) => this.onSelectDivision(e)} options={this.getDivisionOptions()} placeholder="Choose Division" isLoading={MainStore.eventData === undefined} />
+                        <ReactSelect value={MainStore.selectedRound} onChange={(e) => this.onSelectRound(e)} options={this.getRoundOptions()} placeholder="Choose Round" isLoading={MainStore.eventData === undefined} />
+                        <ReactSelect value={MainStore.selectedPool} onChange={(e) => this.onSelectPool(e)} options={this.getPoolOptions()} placeholder="Choose Pool" isLoading={MainStore.eventData === undefined} />
+                    </div>
+                    <Results2020Widget />
+                </div>
+            )
+        } else {
+            let selectDisabled = MainStore.controlsTabsSelectedIndex === 0 && Common.isRoutinePlaying()
+            let headJudgeWidgetCN = `headJudgeWidget ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
+            return (
+                <div className={headJudgeWidgetCN}>
+                    {Common.getExpiredWidget(this.eventDataUpdater)}
+                    <Tabs selectedIndex={MainStore.topTabsSelectedIndex} onSelect={(index) => this.onTopTabsSelectedIndexChanged(index)}>
+                        <TabList>
+                            <Tab>Event Info</Tab>
+                            <Tab>Pool Controls</Tab>
+                        </TabList>
+                        <TabPanel>
+                            <EventInfoWidget />
+                        </TabPanel>
+                        <TabPanel>
+                            <Tabs selectedIndex={MainStore.controlsTabsSelectedIndex} onSelect={(index) => this.onControlsTabsSelectedIndexChanged(index)}>
+                                <div className="poolSelectContainer">
+                                    <ReactSelect value={MainStore.selectedDivision} onChange={(e) => this.onSelectDivision(e)} options={this.getDivisionOptions()} placeholder="Choose Division" isLoading={MainStore.eventData === undefined} isDisabled={selectDisabled} />
+                                    <ReactSelect value={MainStore.selectedRound} onChange={(e) => this.onSelectRound(e)} options={this.getRoundOptions()} placeholder="Choose Round" isLoading={MainStore.eventData === undefined} isDisabled={selectDisabled} />
+                                    <ReactSelect value={MainStore.selectedPool} onChange={(e) => this.onSelectPool(e)} options={this.getPoolOptions()} placeholder="Choose Pool" isLoading={MainStore.eventData === undefined} isDisabled={selectDisabled} />
+                                </div>
+                                <TabList>
+                                    <Tab>Run Pool</Tab>
+                                    <Tab>Results</Tab>
+                                </TabList>
+                                <TabPanel>
+                                    {this.getRunControls()}
+                                </TabPanel>
+                                <TabPanel>
+                                    <Results2020Widget />
+                                </TabPanel>
+                            </Tabs>
+                        </TabPanel>
+                    </Tabs>
+                </div>
+            )
+        }
     }
 }

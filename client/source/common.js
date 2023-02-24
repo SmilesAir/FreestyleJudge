@@ -37,8 +37,10 @@ module.exports.fetchEventData = function(eventKey) {
     }).then((response) => {
         runInAction(() => {
             MainStore.eventData = removeEmptyEventData(response.eventData)
-            Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
             document.title = MainStore.eventData.eventName
+            if (MainStore.currentWidgetName !== "results") {
+                Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
+            }
         })
         console.log("GET_EVENT_DATA", JSON.parse(JSON.stringify(MainStore.eventData)))
     }).catch((error) => {
