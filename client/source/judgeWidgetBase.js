@@ -292,7 +292,7 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
                     this.judgeDataArray[this.state.editGeneralIndex].data.general = Math.floor(score)
                 }
             }
-        } else {
+        } else if (value !== "X") {
             this.judgeDataArray[this.state.editGeneralIndex].data.general = value
         }
 
@@ -339,6 +339,9 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
         return (
             <div className="generalWidget">
                 <div className="teams">
+                    <div className="header">
+                        General Impression
+                    </div>
                     {teamWidgets}
                     <button onClick={() => this.hideGeneralWidget()}>Done</button>
                 </div>

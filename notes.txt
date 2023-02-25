@@ -2,3 +2,6 @@ seeding using results from previous round
 judge states
 print summary button
 Better scoreboard
+
+Add "cursor" for new diff block
+scoreboard not updating

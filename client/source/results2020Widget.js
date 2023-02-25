@@ -25,7 +25,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
             this.eventDataUpdater = new Common.EventDataUpdateHelper(18 * 60, 5, true)
             setTimeout(() => {
                 this.eventDataUpdater.extendUpdateDeadline()
-            }, 1000)
+            }, 5000)
         }
     }
 
@@ -304,6 +304,52 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         window.print()
     }
 
+    getJudgesListWidget() {
+        let poolData = Common.getSelectedPoolData()
+        if (poolData === undefined) {
+            return null
+        }
+
+        let sorted = {}
+        let maxRows = 0
+        let judgeCN = this.props.scoreboardMode ? "scoreboard" : ""
+        for (let categoryType of this.categoryOrder) {
+            for (let judgeKey in poolData.judges) {
+                let judgeType = poolData.judges[judgeKey]
+                if (judgeType === categoryType) {
+                    sorted[categoryType] = sorted[categoryType] || []
+                    sorted[categoryType].push(<div className={judgeCN}>
+                        {`${categoryType}: ${Common.getPlayerNameString(judgeKey)}`}
+                    </div>)
+                    maxRows = Math.max(maxRows, sorted[categoryType].length)
+                }
+            }
+        }
+
+        let lines = []
+        for (let judgePerCatIndex = 0; judgePerCatIndex < maxRows; ++judgePerCatIndex) {
+            let judgesLine = []
+            for (let categoryType of this.categoryOrder) {
+                let judges = sorted[categoryType]
+                if (judgePerCatIndex < judges.length) {
+                    judgesLine.push(judges[judgePerCatIndex])
+                } else {
+                    judgesLine.push(<div />)
+                }
+            }
+
+            lines.push(<div className="judgeListRow">
+                {judgesLine}
+            </div>)
+        }
+
+        return (
+            <div>
+                {lines}
+            </div>
+        )
+    }
+
     render() {
         if (MainStore.eventData === undefined) {
             return (
@@ -333,6 +379,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                 <div>
                     <div className="results2020">
                         {this.getSummaryWidget(poolKey, poolName)}
+                        {this.getJudgesListWidget()}
                     </div>
                 </div>
             )
@@ -342,6 +389,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                     <button onClick={() => this.printFullDetails()}>Print Full Details</button>
                     <div className="results2020">
                         {this.getSummaryWidget(poolKey, poolName)}
+                        {this.getJudgesListWidget()}
                         {this.getDetailedWidget(poolKey)}
                     </div>
                 </div>
