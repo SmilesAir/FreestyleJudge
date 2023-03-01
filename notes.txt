@@ -5,3 +5,9 @@ Better scoreboard
 
 Add "cursor" for new diff block
 scoreboard not updating
+
+event creator add team reverse order
+auto select pool if only 1 in round
+event creator colapse categories/make more space efficient
+better fuzzy sort. Need to do closest match instead of partial search
+giving .5 scores in diff
