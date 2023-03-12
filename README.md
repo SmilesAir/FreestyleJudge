@@ -85,6 +85,7 @@ Keeps a list of all the events
                 name: string,
                 headJudge: string,
                 directors: [string, ...],
+                rulesId: string, // Fpa2020, SimpleRanking
                 roundData: {
                     [roundName]: {
                         name: string,

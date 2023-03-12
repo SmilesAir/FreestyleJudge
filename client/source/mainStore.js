@@ -15,5 +15,6 @@ module.exports = Mobx.observable({
     judgeTabsSelectedIndex: 0,
     judgeIndex: undefined,
     eventDirectory: undefined,
-    eventKey: undefined
+    eventKey: undefined,
+    judgeKey: undefined
 })

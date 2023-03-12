@@ -5,10 +5,9 @@ const React = require("react")
 const { runInAction } = require("mobx")
 
 const Common = require("./common.js")
-const JudgeWidgetBase = require("./judgeWidgetBase.js")
-const MainStore = require("./mainStore.js")
+const JudgeWidgetFpaBase = require("./judgeWidgetFpaBase.js")
 
-module.exports = class JudgeWidgetDiff extends JudgeWidgetBase {
+module.exports = class JudgeWidgetDiff extends JudgeWidgetFpaBase {
     constructor() {
         super()
 

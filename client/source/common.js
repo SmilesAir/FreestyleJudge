@@ -7,6 +7,68 @@ const JudgeDataBase = require("./judgeDataBase.js")
 
 const poolKeyPrefix = "pool|"
 const Common = module.exports
+const defaultRulesId = "Fpa2020"
+
+module.exports.EventDataUpdateHelper = class {
+    constructor(extendMinutes, updateIntervalSeconds, includeMinorUpdates, onUpdateCallback, onExpiredCallback) {
+        this.extendMinutes = extendMinutes
+        this.updateIntervalSeconds = updateIntervalSeconds
+        this.includeMinorUpdates = includeMinorUpdates
+        this.onUpdateCallback = onUpdateCallback
+        this.onExpiredCallback = onExpiredCallback
+        this.isChecking = false
+        this.updateDeadlineAt = 0
+    }
+
+    extendUpdateDeadline(forced) {
+        this.updateDeadlineAt = Date.now() + 1000 * 60 * this.extendMinutes
+
+        this.runVersionCheck(forced)
+    }
+
+    runVersionCheck(forced) {
+        Common.incrementalUpdate(this.includeMinorUpdates, forced).then((updated) => {
+            if (updated && this.onUpdateCallback !== undefined) {
+                this.onUpdateCallback()
+            }
+        })
+
+        if (this.isChecking !== true) {
+            if (Date.now() < this.updateDeadlineAt) {
+                this.isChecking = true
+                setTimeout(() => {
+                    this.isChecking = false
+                    this.runVersionCheck()
+                }, 1000 * this.updateIntervalSeconds)
+            } else if (this.onExpiredCallback !== undefined) {
+                this.onExpiredCallback()
+            }
+        }
+    }
+
+    isExpired() {
+        return Date.now() > this.updateDeadlineAt
+    }
+}
+
+module.exports.TimeUpdateHelper = class {
+    constructor(onUpdateCallback) {
+        this.onUpdateCallback = onUpdateCallback
+    }
+
+    startUpdate() {
+        if (this.intervalId === undefined) {
+            this.intervalId = setInterval(() => {
+                this.onUpdateCallback()
+            }, 1000)
+        }
+    }
+
+    stopUpdate() {
+        clearInterval(this.intervalId)
+        this.intervalId = undefined
+    }
+}
 
 module.exports.fetchEventDirectory = function() {
     return fetchEx("GET_EVENT_DIRECTORY", undefined, undefined, {
@@ -461,6 +523,21 @@ module.exports.getJudgeDataArrayForCurrentJudgeIndex = function() {
     })
 }
 
+module.exports.getJudgeDataArrayByJudgeKey = function() {
+    if (MainStore.judgeKey === undefined || MainStore.eventData === undefined) {
+        return []
+    }
+
+    let poolData = Common.getSelectedPoolData()
+    return poolData.teamData.map((teamData) => {
+        let judgeData = teamData.judgeData[MainStore.judgeKey]
+        return getJudgeDataObj(judgeData || {
+            judgeKey: MainStore.judgeKey,
+            categoryType: "SimpleRanking" // This may need to be passed in if there are multiple judge types that aren't set in the EventCreator
+        })
+    })
+}
+
 module.exports.updateJudgeData = function(teamIndex, judgeData) {
     if (MainStore.eventData === undefined) {
         console.error("Failed to update judge data because no event is downloaded yet")
@@ -563,63 +640,28 @@ module.exports.getExpiredWidget = function(eventDataUpdater) {
     )
 }
 
-module.exports.EventDataUpdateHelper = class {
-    constructor(extendMinutes, updateIntervalSeconds, includeMinorUpdates, onUpdateCallback, onExpiredCallback) {
-        this.extendMinutes = extendMinutes
-        this.updateIntervalSeconds = updateIntervalSeconds
-        this.includeMinorUpdates = includeMinorUpdates
-        this.onUpdateCallback = onUpdateCallback
-        this.onExpiredCallback = onExpiredCallback
-        this.isChecking = false
-        this.updateDeadlineAt = 0
+module.exports.getActiveDivisionRulesId = function() {
+    if (MainStore.eventData === undefined || MainStore.eventData.eventState.activePoolKey === undefined) {
+        return defaultRulesId
     }
 
-    extendUpdateDeadline(forced) {
-        this.updateDeadlineAt = Date.now() + 1000 * 60 * this.extendMinutes
-
-        this.runVersionCheck(forced)
+    let parts = MainStore.eventData.eventState.activePoolKey.split("|")
+    if (parts.length !== 5) {
+        return defaultRulesId
     }
 
-    runVersionCheck(forced) {
-        Common.incrementalUpdate(this.includeMinorUpdates, forced).then((updated) => {
-            if (updated && this.onUpdateCallback !== undefined) {
-                this.onUpdateCallback()
-            }
-        })
-
-        if (this.isChecking !== true) {
-            if (Date.now() < this.updateDeadlineAt) {
-                this.isChecking = true
-                setTimeout(() => {
-                    this.isChecking = false
-                    this.runVersionCheck()
-                }, 1000 * this.updateIntervalSeconds)
-            } else if (this.onExpiredCallback !== undefined) {
-                this.onExpiredCallback()
-            }
-        }
-    }
-
-    isExpired() {
-        return Date.now() > this.updateDeadlineAt
-    }
+    return MainStore.eventData.eventData.divisionData[parts[2]].rulesId || defaultRulesId
 }
 
-module.exports.TimeUpdateHelper = class {
-    constructor(onUpdateCallback) {
-        this.onUpdateCallback = onUpdateCallback
-    }
-
-    startUpdate() {
-        if (this.intervalId === undefined) {
-            this.intervalId = setInterval(() => {
-                this.onUpdateCallback()
-            }, 1000)
-        }
-    }
-
-    stopUpdate() {
-        clearInterval(this.intervalId)
-        this.intervalId = undefined
+module.exports.getPlaceFromNumber = function(number) {
+    switch (number) {
+    case 1:
+        return "1st"
+    case 2:
+        return "2nd"
+    case 3:
+        return "3rd"
+    default:
+        return `${number}th`
     }
 }

@@ -1,0 +1,49 @@
+
+.simpleRanking {
+    .team {
+        display: flex;
+        flex-direction: row;
+        border: 2px gray solid;
+        border-radius: 5px;
+        margin-bottom: .3em;
+        justify-content: space-between;
+
+        .names {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 2em;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: row;
+
+            button {
+                font-size: 2em;
+                width: 3em;
+            }
+
+            .up {
+                background-color: lightgreen;
+            }
+
+            .down {
+                background-color: lightsalmon;
+            }
+
+            .score {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                font-size: 2em;
+                font-weight: bold;
+                width: 2.5em;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+        }
+    }
+}

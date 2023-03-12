@@ -318,7 +318,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                 let judgeType = poolData.judges[judgeKey]
                 if (judgeType === categoryType) {
                     sorted[categoryType] = sorted[categoryType] || []
-                    sorted[categoryType].push(<div className={judgeCN}>
+                    sorted[categoryType].push(<div key={judgeKey} className={judgeCN}>
                         {`${categoryType}: ${Common.getPlayerNameString(judgeKey)}`}
                     </div>)
                     maxRows = Math.max(maxRows, sorted[categoryType].length)
@@ -338,7 +338,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                 }
             }
 
-            lines.push(<div className="judgeListRow">
+            lines.push(<div key={Math.random()} className="judgeListRow">
                 {judgesLine}
             </div>)
         }

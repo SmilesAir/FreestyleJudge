@@ -7,7 +7,7 @@ const ReactSelect = require("react-select").default
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
-const Results2020Widget = require("./results2020Widget.js")
+const ResultsWidget = require("./resultsWidget.js")
 
 require("./headJudgeWidget.less")
 
@@ -446,7 +446,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                     </div>
                 </div>
                 <hr/>
-                <Results2020Widget />
+                <ResultsWidget />
             </div>
         )
     }
@@ -470,7 +470,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                         <ReactSelect value={MainStore.selectedRound} onChange={(e) => this.onSelectRound(e)} options={this.getRoundOptions()} placeholder="Choose Round" isLoading={MainStore.eventData === undefined} />
                         <ReactSelect value={MainStore.selectedPool} onChange={(e) => this.onSelectPool(e)} options={this.getPoolOptions()} placeholder="Choose Pool" isLoading={MainStore.eventData === undefined} />
                     </div>
-                    <Results2020Widget />
+                    <ResultsWidget />
                 </div>
             )
         } else {
@@ -502,7 +502,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                                     {this.getRunControls()}
                                 </TabPanel>
                                 <TabPanel>
-                                    <Results2020Widget />
+                                    <ResultsWidget />
                                 </TabPanel>
                             </Tabs>
                         </TabPanel>

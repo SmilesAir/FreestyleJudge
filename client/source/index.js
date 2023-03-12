@@ -10,10 +10,11 @@ const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
 const Results2020Widget = require("./results2020Widget.js")
 const HeadJudgeWidget = require("./headJudgeWidget.js")
-const JudgeWidgetBase = require("./judgeWidgetBase.js")
+const JudgeWidgetFpaBase = require("./judgeWidgetFpaBase.js")
 const JudgeWidgetDiff = require("./judgeWidgetDiff.js")
 const JudgeWidgetVariety = require("./judgeWidgetVariety.js")
 const JudgeWidgetExAi = require("./judgeWidgetExAi.js")
+const JudgeWidgetSimpleRanking = require("./judgeWidgetSimpleRanking.js")
 require("./judgeDataBase.js")
 
 require("react-tabs/style/react-tabs.css")
@@ -81,7 +82,9 @@ require("./index.less")
             widget = <HeadJudgeWidget resultsMode={true} />
             break
         case "judge": {
-            if (MainStore.judgeIndex !== undefined) {
+            if (Common.getActiveDivisionRulesId() === "SimpleRanking") {
+                return <JudgeWidgetSimpleRanking />
+            } else if (MainStore.judgeIndex !== undefined) {
                 let judgeCategoryType = Common.getCategoryTypeForJudgeIndex(MainStore.judgeIndex)
                 switch (judgeCategoryType) {
                 case "Diff":
@@ -100,7 +103,7 @@ require("./index.less")
                         </div>
                 }
             } else {
-                widget = <JudgeWidgetBase />
+                widget = <JudgeWidgetFpaBase />
             }
             break
         }

@@ -1,7 +1,7 @@
 const React = require("react")
 
 const MainStore = require("./mainStore.js")
-const JudgeDataBase = require("./judgeDataBase.js")
+const JudgeDataFpaBase = require("./judgeDataFpaBase.js")
 const Common = require("./common.js")
 
 module.exports.categoryType = "ExAi"
@@ -19,7 +19,7 @@ module.exports.getDefaultConstants = function() {
     }
 }
 
-module.exports.JudgeDataClass = class extends JudgeDataBase.JudgeDataBase {
+module.exports.JudgeDataClass = class extends JudgeDataFpaBase.JudgeDataFpaBase {
     constructor(routineLengthSeconds, judgeData) {
         super(routineLengthSeconds, judgeData)
 
