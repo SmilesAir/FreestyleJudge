@@ -5,6 +5,8 @@
 const React = require("react")
 const { createRoot } = require("react-dom/client")
 const MobxReact = require("mobx-react")
+const { runInAction } = require("mobx")
+const { AuthWidget } = require("react-cognito-auth-widget")
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
@@ -111,7 +113,11 @@ require("./index.less")
             widget = <EventDirectoryWidget />
         }
 
-        return widget
+        return (
+            <div>
+                {widget}
+            </div>
+        )
     }
 }
 
@@ -144,53 +150,116 @@ root.render(
         }
     }
 
+    getEventCreatorButton() {
+        if (!Common.isUserAdmin()) {
+            return null
+        }
+
+        return (
+            <button onClick={() => this.setUrl(undefined, "eventCreator")}>
+                <h2>
+                    Event Creator
+                </h2>
+            </button>
+        )
+    }
+
+    onSignIn(username) {
+        runInAction(() => {
+            MainStore.username = username
+            MainStore.isSignedIn = true
+
+            Common.getUserPermissions()
+        })
+    }
+
+    onSignOut() {
+        runInAction(() => {
+            MainStore.username = undefined
+            MainStore.isSignedIn = false
+            MainStore.userPermissions = undefined
+        })
+    }
+
     render() {
         if (MainStore.eventDirectory === undefined) {
             return <h1>No Event Directory</h1>
         }
 
         let widgets = MainStore.eventDirectory.map((event) => {
-            return (
-                <div key={event.eventKey}>
-                    <div>
+            if (Common.isUserAdmin()) {
+                return (
+                    <div key={event.eventKey}>
                         <div>
-                            <h1>
-                                {event.eventName}
-                            </h1>
-                            <div className="line2">
-                                <button onClick={() => this.onRemoveClick(event)}>Remove</button>
-                                <div>
-                                    Last Imported: {new Date(event.modifiedAt).toISOString()}
+                            <div>
+                                <h1>
+                                    {event.eventName}
+                                </h1>
+                                <div className="line2">
+                                    <button onClick={() => this.onRemoveClick(event)}>Remove</button>
+                                    <div>
+                                        Last Imported: {new Date(event.modifiedAt).toISOString()}
+                                    </div>
                                 </div>
                             </div>
+                            <button onClick={() => this.setUrl(event.eventKey, "head")}>
+                                <h2>
+                                    Head Judge
+                                </h2>
+                            </button>
+                            <button onClick={() => this.setUrl(event.eventKey, "scoreboard")}>
+                                <h2>
+                                    Scoreboard
+                                </h2>
+                            </button>
+                            <button onClick={() => this.setUrl(event.eventKey, "judge")}>
+                                <h2>
+                                    Judge
+                                </h2>
+                            </button>
                         </div>
-                        <button onClick={() => this.setUrl(event.eventKey, "head")}>
-                            <h2>
-                                Head Judge
-                            </h2>
-                        </button>
-                        <button onClick={() => this.setUrl(event.eventKey, "scoreboard")}>
-                            <h2>
-                                Scoreboard
-                            </h2>
-                        </button>
+                    </div>
+                )
+            } else {
+                return (
+                    <div key={event.eventKey}>
                         <button onClick={() => this.setUrl(event.eventKey, "judge")}>
                             <h2>
-                                Judge
+                                {`Judge ${event.eventName}`}
                             </h2>
                         </button>
                     </div>
-                </div>
-            )
+                )
+            }
         })
+
+        let userPoolId = undefined
+        let userPoolWebClientId = undefined
+        if (__STAGE__ === "DEVELOPMENT") {
+            userPoolId = "us-west-2_DnAgy1kCT"
+            userPoolWebClientId = "4onf273p233bmj82iaj04f6j8m"
+        } else {
+            // todo
+        }
+
+        let style = {
+            position: "absolute",
+            top: "5px",
+            right: "5px",
+            backgroundColor: "aliceblue"
+        }
 
         return (
             <div className="eventDirectory">
-                <button onClick={() => this.setUrl(undefined, "eventCreator")}>
-                    <h2>
-                        Event Creator
-                    </h2>
-                </button>
+                <AuthWidget
+                    region={"us-west-2"}
+                    userPoolId={userPoolId}
+                    userPoolWebClientId={userPoolWebClientId}
+                    signInCallback={(username) => this.onSignIn(username)}
+                    signOutCallback={() => this.onSignOut()}
+                    style={style}
+                />
+                {this.getEventCreatorButton()}
                 {widgets}
             </div>
         )

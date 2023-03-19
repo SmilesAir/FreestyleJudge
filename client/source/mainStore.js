@@ -16,5 +16,8 @@ module.exports = Mobx.observable({
     judgeIndex: undefined,
     eventDirectory: undefined,
     eventKey: undefined,
-    judgeKey: undefined
+    judgeKey: undefined,
+    isSignedIn: false,
+    username: undefined,
+    userPermissions: undefined
 })

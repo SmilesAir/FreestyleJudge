@@ -19,6 +19,8 @@
         "build:production": "npm i && codeglue --stage=production"
     },
     "dependencies": {
+        "react-cognito-auth-widget": "git+https://github.com/SmilesAir/AuthWidget.git#v1.0.3",
+        "aws-amplify": "^5.0.18",
         "aws-sdk": "2.316.0",
         "mobx": "^6.7.0",
         "mobx-react": "^7.6.0",
@@ -27,7 +29,8 @@
         "react-select": "^5.7.0",
         "react-tabs": "^6.0.0",
         "semantic-ui-css": "^2.5.0",
-        "semantic-ui-react": "^2.1.4"
+        "semantic-ui-react": "^2.1.4",
+        "uuid": "^3.1.0"
     },
     "devDependencies": {
         "@babel/plugin-proposal-class-properties": "^7.1.0",

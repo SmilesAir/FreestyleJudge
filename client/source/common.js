@@ -1,5 +1,6 @@
 const { runInAction } = require("mobx")
 const React = require("react")
+const { Auth } = require("aws-amplify")
 
 const MainStore = require("./mainStore.js")
 const { fetchEx, fetchAuth } = require("./endpoints.js")
@@ -582,16 +583,41 @@ module.exports.updateJudgeState = function(judgeState) {
 }
 
 module.exports.removeEventFromDirectory = function(eventKey) {
-    return fetchEx("REMOVE_EVENT_FROM_DIRECTORY", {
-        eventKey: eventKey
-    }, undefined, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        }
-    }).catch((error) => {
-        console.error(`Trying to remove event from directory "${error}"`)
+    return Auth.currentAuthenticatedUser().then((data) => {
+        return fetchAuth("REMOVE_EVENT_FROM_DIRECTORY", {
+            eventKey: eventKey
+        }, undefined, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": data.signInUserSession.accessToken.jwtToken
+            }
+        }).catch((error) => {
+            console.error(`Trying to remove event from directory "${error}"`)
+        })
     })
+}
+
+module.exports.getUserPermissions = function() {
+    return Auth.currentAuthenticatedUser().then((data) => {
+        return fetchAuth("GET_USER_PERMISSIONS", undefined, undefined, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": data.signInUserSession.accessToken.jwtToken
+            }
+        }).then((response) => {
+            return response.json()
+        }).then((response) => {
+            MainStore.userPermissions = response.permissions
+        }).catch((error) => {
+            console.error(`Trying to get user permissions "${error}"`)
+        })
+    })
+}
+
+module.exports.isUserAdmin = function() {
+    return MainStore.isSignedIn && MainStore.userPermissions && MainStore.userPermissions.admin === true
 }
 
 module.exports.getJudgeState = function(judgeKey) {

@@ -7,13 +7,14 @@ let urls = {
     UPDATE_EVENT_STATE: "{path}/updateEventState/{eventKey}",
     UPDATE_JUDGE_STATE: "{path}/updateJudgeState/{eventKey}/judgeKey/{judgeKey}",
     UPDATE_JUDGE_DATA: "{path}/updateJudgeData/{poolKey}/judgeKey/{judgeKey}/teamIndex/{teamIndex}",
-    REMOVE_EVENT_FROM_DIRECTORY: "{path}/removeEventFromDirectory/{eventKey}"
+    REMOVE_EVENT_FROM_DIRECTORY: "{path}/removeEventFromDirectory/{eventKey}",
+    GET_USER_PERMISSIONS: "{path}/getUserPermissions"
 }
 
 function buildUrl(isAuth, urlKey, pathParams, queryParams) {
     let path = undefined
     if (isAuth) {
-        path = __STAGE__ === "DEVELOPMENT" ? "https://odnou7cv5a.execute-api.us-west-2.amazonaws.com" : "https://jz56qku4ll.execute-api.us-west-2.amazonaws.com"
+        path = __STAGE__ === "DEVELOPMENT" ? "https://h3vgnn0x1j.execute-api.us-west-2.amazonaws.com" : "https://jz56qku4ll.execute-api.us-west-2.amazonaws.com"
     } else {
         path = __STAGE__ === "DEVELOPMENT" ? "https://8er0vxrmr4.execute-api.us-west-2.amazonaws.com/development" : "https://xf4cu1wy10.execute-api.us-west-2.amazonaws.com/production"
     }

@@ -9,6 +9,23 @@ provider:
 
   environment:
     DATA_TABLE: ${self:service}-${self:provider.stage}-dataTable
+    DOMAIN_SUFFIX: freestyle-judge
+
+  httpApi:
+    payload: '2.0'
+    cors: true
+    authorizers:
+      serviceAuthorizer:
+        identitySource: $request.header.Authorization
+        issuerUrl:
+          Fn::Join:
+          - ''
+          - - 'https://cognito-idp.'
+            - '${opt:region, self:provider.region}'
+            - '.amazonaws.com/'
+            - Ref: serviceUserPool
+        audience:
+          - Ref: serviceUserPoolClient
 
   iamRoleStatements:
     - Effect: Allow
@@ -80,10 +97,17 @@ functions:
   removeEventFromDirectory:
     handler: source/main.removeEventFromDirectory
     events:
-      - http:
-          path: removeEventFromDirectory/{eventKey}
+      - httpApi:
+          path: /removeEventFromDirectory/{eventKey}
           method: post
-          cors: true
+          authorizer: serviceAuthorizer
+  getUserPermissions:
+    handler: source/main.getUserPermissions
+    events:
+      - httpApi:
+          path: /getUserPermissions
+          method: get
+          authorizer: serviceAuthorizer
 
 resources:
   Resources:
@@ -98,6 +122,52 @@ resources:
         KeySchema:
           - AttributeName: key
             KeyType: HASH
+    HttpApi:
+      DependsOn: serviceUserPool
+    serviceUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-user-pool-${opt:stage, self:provider.stage}
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: false
+            RequireNumbers: false
+            RequireSymbols: false
+            RequireUppercase: false
+    serviceUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:service}-user-pool-client-${opt:stage, self:provider.stage}
+        AllowedOAuthFlows:
+          - code
+          - implicit
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthScopes:
+          - email
+          - openid
+          - profile
+          - aws.cognito.signin.user.admin
+        UserPoolId:
+          Ref: serviceUserPool
+        CallbackURLs:
+          - https://www.freestylejudge.com
+        ExplicitAuthFlows:
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        GenerateSecret: false
+        SupportedIdentityProviders:
+          - COGNITO
+    serviceUserPoolDomain:
+      Type: AWS::Cognito::UserPoolDomain
+      Properties:
+        UserPoolId:
+          Ref: serviceUserPool
+        Domain: ${self:service}-user-pool-domain-${opt:stage, self:provider.stage}-${self:provider.environment.DOMAIN_SUFFIX}
 
 plugins:
   - fullstack-serverless

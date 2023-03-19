@@ -7,6 +7,7 @@ const Common = require("./common.js")
 
 const eventManifestKey = "eventManifest"
 const poolKeyPrefix = "pool|"
+const usernameKeyPrefix = "user|"
 
 module.exports.importEventFromPoolCreator = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
     let eventKey = decodeURIComponent(event.pathParameters.eventKey)
@@ -562,6 +563,13 @@ module.exports.getEventDirectory = (e, c, cb) => { Common.handler(e, c, cb, asyn
 
 module.exports.removeEventFromDirectory = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
     let eventKey = decodeURIComponent(event.pathParameters.eventKey)
+    let username = event.requestContext.authorizer.jwt.claims.username
+
+    let userItem = await getUserData(username)
+    if (userItem === undefined || userItem.permissions === undefined || userItem.permissions.admin !== true) {
+        console.log(`Can't find permissions for user ${username}`)
+        throw `No valid permissions for ${username}`
+    }
 
     let updateParams = {
         TableName: process.env.DATA_TABLE,
@@ -586,6 +594,22 @@ module.exports.removeEventFromDirectory = (e, c, cb) => { Common.handler(e, c, c
     }
 })}
 
+module.exports.getUserPermissions = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+    let username = event.requestContext.authorizer.jwt.claims.username
+
+    let userItem = await getUserData(username)
+    if (userItem === undefined || userItem.permissions === undefined) {
+        console.log(`Can't find permissions for user ${username}`)
+        return {
+            permissions: {}
+        }
+    }
+
+    return {
+        permissions: userItem.permissions
+    }
+})}
+
 function getManifestData() {
     let getManifestParams = {
         TableName : process.env.DATA_TABLE,
@@ -594,6 +618,20 @@ function getManifestData() {
         }
     }
     return docClient.get(getManifestParams).promise().then((response) => {
+        return response.Item
+    }).catch((error) => {
+        throw error
+    })
+}
+
+async function getUserData(username) {
+    let getEventParams = {
+        TableName : process.env.DATA_TABLE,
+        Key: {
+            key: usernameKeyPrefix + username
+        }
+    }
+    return await docClient.get(getEventParams).promise().then((response) => {
         return response.Item
     }).catch((error) => {
         throw error
