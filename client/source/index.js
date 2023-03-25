@@ -239,7 +239,8 @@ root.render(
             userPoolId = "us-west-2_DnAgy1kCT"
             userPoolWebClientId = "4onf273p233bmj82iaj04f6j8m"
         } else {
-            // todo
+            userPoolId = "us-west-2_fnvBKqmuc"
+            userPoolWebClientId = "o8h8p0emlmrg3gmk07p5dgvdc"
         }
 
         let style = {

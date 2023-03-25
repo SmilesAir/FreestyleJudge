@@ -87,6 +87,13 @@ functions:
           path: updateJudgeData/{poolKey}/judgeKey/{judgeKey}/teamIndex/{teamIndex}
           method: post
           cors: true
+  updatePoolData:
+    handler: source/main.updatePoolData
+    events:
+      - http:
+          path: updatePoolData/{poolKey}
+          method: post
+          cors: true
   getEventDirectory:
     handler: source/main.getEventDirectory
     events:

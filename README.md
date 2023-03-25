@@ -71,6 +71,7 @@ Keeps a list of all the events
 ```
 {
     key: guid,
+    dataVersion: int,
     eventName: string,
     importantVersion: int,
     eventData: {
@@ -99,6 +100,7 @@ Keeps a list of all the events
         poolMap: {
             [poolKey]: {
                 key: string,
+                isLocked: bool // No changes can be made to this when true
                 judges: {
                     [judgeKey]: string, // Category
                     ...
@@ -111,10 +113,10 @@ Keeps a list of all the events
                             categoryType: string, // Diff, Variety, ExAi, ...
                             rawScores: {
                                 ...
-                            },
-                            lastCalculatedScore: float
+                            }
                         }
-                    }
+                    },
+                    teamScore: float
                 }, ...]
             }
         }

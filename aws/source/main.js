@@ -5,6 +5,7 @@ const uuid = AWS.util.uuid
 
 const Common = require("./common.js")
 
+const dataVersion = 1
 const eventManifestKey = "eventManifest"
 const poolKeyPrefix = "pool|"
 const usernameKeyPrefix = "user|"
@@ -173,6 +174,7 @@ function validateEventKey(eventKey) {
 async function parseEventDataFromPoolCreator(eventKey, eventName, request) {
     let newEventData = {
         key: eventKey,
+        dataVersion: dataVersion,
         eventName: eventName,
         importantVersion: 0,
         minorVersion: 0,
@@ -513,6 +515,27 @@ module.exports.updateJudgeData = (e, c, cb) => { Common.handler(e, c, cb, async 
     })
 
     await incrementMinorVersionByPoolKey(poolKey)
+
+    return {
+        message: `Updated "${poolKey}" Successful`
+    }
+})}
+
+module.exports.updatePoolData = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+    let poolKey = decodeURIComponent(event.pathParameters.poolKey)
+    let request = JSON.parse(event.body) || {}
+
+    if (request === undefined) {
+        throw `Can't find pool data for ${poolKey}`
+    }
+
+    let putNewPoolParams = {
+        TableName : process.env.DATA_TABLE,
+        Item: request
+    }
+    await docClient.put(putNewPoolParams).promise().catch((error) => {
+        throw error
+    })
 
     return {
         message: `Updated "${poolKey}" Successful`

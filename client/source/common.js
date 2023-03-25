@@ -563,6 +563,41 @@ module.exports.updateJudgeData = function(teamIndex, judgeData) {
     })
 }
 
+module.exports.updatePoolData = function(poolKey, poolData) {
+    if (MainStore.eventData === undefined) {
+        console.error("Failed to update pool data because no event is downloaded yet")
+    }
+
+    return fetchEx("UPDATE_POOL_DATA", {
+        poolKey: poolKey
+    }, undefined, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(sanitizePoolData(poolData))
+    }).then((response) => {
+        return response.json()
+    }).then((response) => {
+        console.log(response)
+    }).catch((error) => {
+        console.error(`Trying to update pool data "${error}"`)
+    })
+}
+
+// Removes temp data from poolData so the uploaded data remains clean
+// This needs to be updated when new temp data is added
+// In order to preseve existing functionality, this removes temp data instead of only copying valid data
+function sanitizePoolData(poolData) {
+    let newPoolData = JSON.parse(JSON.stringify(poolData))
+    for (let teamData of newPoolData.teamData) {
+        delete teamData.judgeInstances
+        delete teamData.judgePreProcessData
+    }
+
+    return newPoolData
+}
+
 module.exports.updateJudgeState = function(judgeState) {
     if (MainStore.eventData === undefined) {
         console.error("Failed to update judge state because no event is downloaded yet")
@@ -690,4 +725,12 @@ module.exports.getPlaceFromNumber = function(number) {
     default:
         return `${number}th`
     }
+}
+
+module.exports.getDataVersion = function() {
+    if (MainStore.eventData === undefined) {
+        return 0
+    }
+
+    return MainStore.eventData.dataVersion || 0
 }

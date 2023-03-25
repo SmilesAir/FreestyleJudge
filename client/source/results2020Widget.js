@@ -4,6 +4,7 @@ const MobxReact = require("mobx-react")
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
+const { runInAction } = require("mobx")
 
 require("./results2020Widget.less")
 
@@ -115,7 +116,12 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                     if (categoryType === judgeType) {
                         let judge = judgeData[judgeKey]
                         let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
-                        categorySums[categoryType] = categorySums[categoryType] || 0 + score
+                        if (Common.getDataVersion() > 0) {
+                            categorySums[categoryType] = (categorySums[categoryType] || 0) + score
+                        } else {
+                            // TODO: Remove after 2023/4/1
+                            categorySums[categoryType] = categorySums[categoryType] || 0 + score
+                        }
                         categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
                         teamCategoryScores.push(score)
                     }
@@ -127,7 +133,12 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                 if (judgeType === "ExAi") {
                     let judge = judgeData[judgeKey]
                     let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
-                    categorySums.Ex = categorySums.Ex || 0 + score
+                    if (Common.getDataVersion() > 0) {
+                        categorySums.Ex = (categorySums.Ex || 0) + score
+                    } else {
+                        // TODO: Remove after 2023/4/1
+                        categorySums.Ex = categorySums.Ex || 0 + score
+                    }
                     teamCategoryScores.push(score)
                 }
             }
@@ -350,6 +361,92 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         )
     }
 
+    unlockPool() {
+        runInAction(() => {
+            let poolKey = Common.getSelectedPoolKey()
+            let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+            poolData.isLocked = false
+
+            Common.updatePoolData(poolKey, poolData)
+        })
+    }
+
+    lockAndUploadResults() {
+        runInAction(() => {
+            let poolKey = Common.getSelectedPoolKey()
+            let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+            poolData.isLocked = true
+
+            if (Common.getDataVersion() > 0) {
+                for (let teamData of poolData.teamData) {
+                    let score = 0
+                    for (let judgeKey in poolData.judges) {
+                        let judge = teamData.judgeData[judgeKey]
+                        score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                        score += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
+
+                        if (poolData.judges[judgeKey] === "ExAi") {
+                            score += judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
+                        }
+                    }
+
+                    teamData.teamScore = score
+                }
+            } else {
+                // TODO: Remove after 2023/4/1
+                for (let teamData of poolData.teamData) {
+                    let judgeData = teamData.judgeData
+                    let categorySums = {
+                        Diff: 0,
+                        Variety: 0,
+                        ExAi: 0,
+                        Ex: 0,
+                        General: 0
+                    }
+                    for (let categoryType of this.categoryOrder) {
+                        for (let judgeKey in poolData.judges) {
+                            let judgeType = poolData.judges[judgeKey]
+                            if (categoryType === judgeType) {
+                                let judge = judgeData[judgeKey]
+                                let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                                categorySums[categoryType] = categorySums[categoryType] || 0 + score
+                                categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
+                            }
+                        }
+                    }
+
+                    for (let judgeKey in poolData.judges) {
+                        let judgeType = poolData.judges[judgeKey]
+                        if (judgeType === "ExAi") {
+                            let judge = judgeData[judgeKey]
+                            let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
+                            categorySums.Ex = categorySums.Ex || 0 + score
+                        }
+                    }
+
+                    teamData.teamScore = categorySums.Diff +
+                        categorySums.Variety +
+                        categorySums.ExAi +
+                        categorySums.Ex +
+                        categorySums.General
+                }
+            }
+
+            Common.updatePoolData(poolKey, poolData)
+        })
+    }
+
+    getLockAndUploadResultsWidget() {
+        let poolKey = Common.getSelectedPoolKey()
+        let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+
+        if (poolData.isLocked === true) {
+            return <button onClick={() => this.unlockPool()}>Unlock Results</button>
+        } else {
+            return <button onClick={() => this.lockAndUploadResults()}>Lock and Upload Results</button>
+        }
+    }
+
     render() {
         if (MainStore.eventData === undefined) {
             return (
@@ -387,6 +484,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
             return (
                 <div>
                     <button onClick={() => this.printFullDetails()}>Print Full Details</button>
+                    {this.getLockAndUploadResultsWidget()}
                     <div className="results2020">
                         {this.getSummaryWidget(poolKey, poolName)}
                         {this.getJudgesListWidget()}
