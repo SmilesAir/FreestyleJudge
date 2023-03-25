@@ -537,6 +537,8 @@ module.exports.updatePoolData = (e, c, cb) => { Common.handler(e, c, cb, async (
         throw error
     })
 
+    await incrementImportantVersionByPoolKey(poolKey)
+
     return {
         message: `Updated "${poolKey}" Successful`
     }
@@ -551,6 +553,25 @@ function incrementMinorVersion(eventKey) {
         TableName: process.env.DATA_TABLE,
         Key: {"key": eventKey},
         UpdateExpression: `set minorVersion = minorVersion + :one`,
+        ExpressionAttributeValues: {
+            ":one": 1
+        },
+        ReturnValues: "NONE"
+    }
+    return docClient.update(updateParams).promise().catch((error) => {
+        throw error
+    })
+}
+
+function incrementImportantVersionByPoolKey(poolKey) {
+    return incrementImportantVersion(poolKey.split("|")[1])
+}
+
+function incrementImportantVersion(eventKey) {
+    let updateParams = {
+        TableName: process.env.DATA_TABLE,
+        Key: {"key": eventKey},
+        UpdateExpression: "set importantVersion = importantVersion + :one",
         ExpressionAttributeValues: {
             ":one": 1
         },

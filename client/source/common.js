@@ -454,6 +454,11 @@ module.exports.getSelectedTeamFirstNameString = function() {
     }).join(" - ")
 }
 
+module.exports.isSelectedPoolLocked = function() {
+    let poolData = Common.getSelectedPoolData()
+    return poolData && poolData.isLocked || false
+}
+
 module.exports.isRoutinePlaying = function() {
     return MainStore.eventData && MainStore.eventData.controllerState.routineStartTime && Common.getRoutineTimeSeconds() <= Common.getSelectedPoolRoutineSeconds()
 }

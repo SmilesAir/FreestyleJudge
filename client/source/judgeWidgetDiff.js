@@ -22,6 +22,10 @@ module.exports = class JudgeWidgetDiff extends JudgeWidgetFpaBase {
     }
 
     onEditScore(scoreIndex) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         if (scoreIndex === this.state.editScoreIndex) {
             this.state.editScoreIndex = this.getJudgeData().data.diffScores.length
         } else {
@@ -73,11 +77,13 @@ module.exports = class JudgeWidgetDiff extends JudgeWidgetFpaBase {
             )
         }
 
+        let cn = `diffInputNumberWidget ${Common.isSelectedPoolLocked() ? "disabled" : ""}`
+        let inputCallback = Common.isSelectedPoolLocked() ? undefined : (e) => this.onInputNumberClicked(e)
         return (
             <div className="judgeWidgetDiff">
                 {this.getPhrasesWidget()}
-                <div className="diffInputNumberWidget">
-                    {this.getInputNumberWidget((e) => this.onInputNumberClicked(e))}
+                <div className={cn}>
+                    {this.getInputNumberWidget(inputCallback)}
                 </div>
             </div>
         )
@@ -156,6 +162,10 @@ module.exports = class JudgeWidgetDiff extends JudgeWidgetFpaBase {
     }
 
     onScoresMarkClicked(teamIndex, markIndex) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         this.state.scoresEditGeneral = false
 
         if (this.state.scoresEditIndexTeam === teamIndex && this.state.scoresEditIndexMark === markIndex) {
@@ -169,6 +179,10 @@ module.exports = class JudgeWidgetDiff extends JudgeWidgetFpaBase {
     }
 
     onScoresGeneralClicked(teamIndex) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         this.state.scoresEditIndexMark = undefined
 
         if (this.state.scoresEditIndexTeam === teamIndex && this.state.scoresEditGeneral) {
@@ -181,6 +195,10 @@ module.exports = class JudgeWidgetDiff extends JudgeWidgetFpaBase {
     }
 
     onScoresInputNumberClicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         runInAction(() => {
             if (this.state.scoresEditGeneral) {
                 let judgeData = this.judgeDataArray[this.state.scoresEditIndexTeam]

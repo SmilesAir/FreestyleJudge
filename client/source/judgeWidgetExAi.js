@@ -29,6 +29,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onInputIncrementPoint1Clicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         let judgeData = this.getJudgeData()
         judgeData.data.point1 = Math.max(0, judgeData.data.point1 + value)
         this.setState(this.state)
@@ -37,6 +41,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onInputIncrementPoint2Clicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         let judgeData = this.getJudgeData()
         judgeData.data.point2 = Math.max(0, judgeData.data.point2 + value)
         this.setState(this.state)
@@ -45,6 +53,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onInputIncrementPoint3Clicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         let judgeData = this.getJudgeData()
         judgeData.data.point3 = Math.max(0, judgeData.data.point3 + value)
         this.setState(this.state)
@@ -53,6 +65,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     toggleEditingProp(propName) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         if (this.state.editingPropName === propName) {
             this.state.editingPropName = undefined
         } else {
@@ -77,7 +93,7 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
             )
         }
 
-        let inputNumberWidget = this.state.editingPropName !== undefined ? (
+        let inputNumberWidget = !Common.isSelectedPoolLocked() && this.state.editingPropName !== undefined ? (
             <div className="inputNumber">
                 {this.getInputNumberWidget((e) => this.onInputNumberClicked(e, this.state.editingPropName))}
             </div>
@@ -154,6 +170,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
 
 
     onInputNumberClicked(value, propName) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         runInAction(() => {
             let judgeData = this.getJudgeData()
             let propValue = judgeData.data[propName]
@@ -185,6 +205,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     toggleScoresEditingProp(teamIndex, propName) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         if (this.state.scoresEditPropName === propName) {
             this.state.scoresEditPropName = undefined
             this.state.scoresEditIndexTeam = undefined
@@ -197,6 +221,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onScoresInputNumberClicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         runInAction(() => {
             let judgeData = this.judgeDataArray[this.state.scoresEditIndexTeam]
             let score = judgeData.data[this.state.scoresEditPropName] || 0
@@ -221,6 +249,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onScoresInputIncrementClicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         let judgeData = this.judgeDataArray[this.state.scoresEditIndexTeam]
         let score = judgeData.data[this.state.scoresEditPropName] || 0
         judgeData.data[this.state.scoresEditPropName] = Math.max(0, score + value)
@@ -230,7 +262,7 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     getScoresInput() {
-        if (this.state.scoresEditIndexTeam === undefined) {
+        if (this.state.scoresEditIndexTeam === undefined || Common.isSelectedPoolLocked()) {
             return null
         }
 
@@ -241,28 +273,6 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
                 {useInputIncrement ? this.getInputIncrementWidget((e) => this.onScoresInputIncrementClicked(e)) : this.getInputNumberWidget((e) => this.onScoresInputNumberClicked(e))}
             </div>
         )
-    }
-
-    onScoresQuantityClicked(teamIndex) {
-        if (this.state.scoresEditIndexTeam === teamIndex && this.state.scoresEditQuantity) {
-            this.clearScoresEditingState()
-        } else {
-            this.clearScoresEditingState()
-            this.state.scoresEditIndexTeam = teamIndex
-            this.state.scoresEditQuantity = true
-        }
-        this.setState(this.state)
-    }
-
-    onScoresQualityClicked(teamIndex) {
-        if (this.state.scoresEditIndexTeam === teamIndex && this.state.scoresEditQuality) {
-            this.clearScoresEditingState()
-        } else {
-            this.clearScoresEditingState()
-            this.state.scoresEditIndexTeam = teamIndex
-            this.state.scoresEditQuality = true
-        }
-        this.setState(this.state)
     }
 
     scoresTeamWidget() {

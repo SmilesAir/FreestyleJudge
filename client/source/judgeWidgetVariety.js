@@ -26,6 +26,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onInputIncrementClicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         let judgeData = this.getJudgeData()
         judgeData.data.quantity = Math.max(0, judgeData.data.quantity + value)
         this.setState(this.state)
@@ -34,11 +38,19 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     setEditingQuantity() {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         this.state.editingQuality = false
         this.setState(this.state)
     }
 
     setEditingQuality() {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         this.state.editingQuality = true
         this.setState(this.state)
     }
@@ -53,8 +65,8 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
             )
         }
 
-        let quantityCN = `number ${this.state.editingQuality ? "" : "editing"}`
-        let qualityCN = `number ${this.state.editingQuality ? "editing" : ""}`
+        let quantityCN = `number ${this.state.editingQuality || Common.isSelectedPoolLocked() ? "" : "editing"}`
+        let qualityCN = `number ${this.state.editingQuality && !Common.isSelectedPoolLocked() ? "editing" : ""}`
         return (
             <div className="judgeWidgetVariety">
                 <div className="numbers">
@@ -84,6 +96,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
 
 
     onInputNumberClicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         runInAction(() => {
             let judgeData = this.getJudgeData()
             let quality = judgeData.data.quality
@@ -117,6 +133,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onScoresGeneralClicked(teamIndex) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         this.state.scoresEditQuantity = false
         this.state.scoresEditQuality = false
 
@@ -130,6 +150,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onScoresInputIncrementClicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         let judgeData = this.judgeDataArray[this.state.scoresEditIndexTeam]
         let quantity = judgeData.data.quantity
         judgeData.data.quantity = Math.max(0, quantity + value)
@@ -139,6 +163,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onScoresInputNumberClicked(value) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         runInAction(() => {
             if (this.state.scoresEditGeneral) {
                 let judgeData = this.judgeDataArray[this.state.scoresEditIndexTeam]
@@ -195,6 +223,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onScoresQuantityClicked(teamIndex) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         if (this.state.scoresEditIndexTeam === teamIndex && this.state.scoresEditQuantity) {
             this.clearScoresEditingState()
         } else {
@@ -206,6 +238,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
     }
 
     onScoresQualityClicked(teamIndex) {
+        if (Common.isSelectedPoolLocked()) {
+            return
+        }
+
         if (this.state.scoresEditIndexTeam === teamIndex && this.state.scoresEditQuality) {
             this.clearScoresEditingState()
         } else {

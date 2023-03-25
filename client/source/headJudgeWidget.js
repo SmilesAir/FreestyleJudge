@@ -326,11 +326,12 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         let widgets = []
         let teamNumber = 1
         for (let teamData of poolData.teamData) {
-            let selected = teamNumber - 1 === MainStore.eventData.controllerState.selectedTeamIndex
-            let cn = `team ${selected ? "selected" : ""} ${Common.isRoutinePlaying() ? "disabled" : ""}`
+            let selected = teamNumber - 1 === MainStore.eventData.controllerState.selectedTeamIndex && !Common.isSelectedPoolLocked()
+            let cn = `team ${selected ? "selected" : ""} ${Common.isRoutinePlaying() || Common.isSelectedPoolLocked() ? "disabled" : ""}`
             let teamIndex = teamNumber - 1
+            let onClick = Common.isSelectedPoolLocked() ? undefined : () => this.onTeamClicked(teamIndex)
             widgets.push(
-                <div key={teamNumber} className={cn} onClick={() => this.onTeamClicked(teamIndex)}>
+                <div key={teamNumber} className={cn} onClick={onClick}>
                     {`${teamNumber}. ${Common.getPlayerNamesString(teamData.players)}`}
                 </div>
             )
@@ -428,8 +429,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                     {`Playing: ${Common.getSelectedTeamNameString()}`}
                 </h2>
                 <div className="buttons">
-                    <button onClick={() => this.onStartClicked()} disabled={Common.isRoutinePlaying()}>Click on First Throw</button>
-                    <button onClick={() => this.onCancelClicked()} disabled={!Common.isRoutinePlaying()}>Cancel Routine</button>
+                    <button onClick={() => this.onStartClicked()} disabled={Common.isSelectedPoolLocked() || Common.isRoutinePlaying()}>Click on First Throw</button>
+                    <button onClick={() => this.onCancelClicked()} disabled={Common.isSelectedPoolLocked() || !Common.isRoutinePlaying()}>Cancel Routine</button>
                 </div>
                 <div className="details">
                     <div className="teams">

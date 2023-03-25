@@ -209,7 +209,7 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
     getInputNumberButtonWidget(value, callback) {
         return (
             <div className="cell">
-                <button onClick={() => callback(value)}>{value}</button>
+                <button onClick={() => callback && callback(value)}>{value}</button>
             </div>
         )
     }
@@ -251,10 +251,10 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
     getInputIncrementWidget(callback) {
         return (
             <div className="inputIncrementWidget">
-                <button onClick={() => callback(-1)}>
+                <button onClick={() => callback(-1)} disabled={Common.isSelectedPoolLocked()}>
                     -
                 </button>
-                <button onClick={() => callback(1)}>
+                <button onClick={() => callback(1)} disabled={Common.isSelectedPoolLocked()}>
                     +
                 </button>
             </div>
