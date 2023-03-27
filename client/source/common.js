@@ -761,17 +761,25 @@ module.exports.getExpiredWidget = function(eventDataUpdater) {
     )
 }
 
-module.exports.getActiveDivisionRulesId = function() {
-    if (MainStore.eventData === undefined || MainStore.eventData.eventState.activePoolKey === undefined) {
+module.exports.getDivisionRulesId = function(poolKey) {
+    if (MainStore.eventData === undefined) {
         return defaultRulesId
     }
 
-    let parts = MainStore.eventData.eventState.activePoolKey.split("|")
+    let parts = poolKey.split("|")
     if (parts.length !== 5) {
         return defaultRulesId
     }
 
     return MainStore.eventData.eventData.divisionData[parts[2]].rulesId || defaultRulesId
+}
+
+module.exports.getActiveDivisionRulesId = function() {
+    if (MainStore.eventData === undefined || MainStore.eventData.eventState.activePoolKey === undefined) {
+        return defaultRulesId
+    }
+
+    return Common.getDivisionRulesId(MainStore.eventData.eventState.activePoolKey)
 }
 
 module.exports.getPlaceFromNumber = function(number) {
@@ -874,62 +882,65 @@ module.exports.unlockPoolResults = function(poolKey) {
 
 module.exports.lockAndUploadPoolResults = function(poolKey) {
     let poolData = MainStore.eventData.eventData.poolMap[poolKey]
-    poolData.isLocked = true
+    let rulesId = Common.getDivisionRulesId(poolKey)
+    if (rulesId === "Fpa2020") {
+        poolData.isLocked = true
 
-    if (Common.getDataVersion() > 0) {
-        for (let teamData of poolData.teamData) {
-            let score = 0
-            for (let judgeKey in poolData.judges) {
-                let judge = teamData.judgeData[judgeKey]
-                score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
-                score += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
-
-                if (poolData.judges[judgeKey] === "ExAi") {
-                    score += judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
-                }
-            }
-
-            teamData.teamScore = score
-        }
-    } else {
-        // TODO: Remove after 2023/4/1
-        for (let teamData of poolData.teamData) {
-            let judgeData = teamData.judgeData
-            let categorySums = {
-                Diff: 0,
-                Variety: 0,
-                ExAi: 0,
-                Ex: 0,
-                General: 0
-            }
-            for (let categoryType of Common.categoryOrder) {
+        if (Common.getDataVersion() > 0) {
+            for (let teamData of poolData.teamData) {
+                let score = 0
                 for (let judgeKey in poolData.judges) {
-                    let judgeType = poolData.judges[judgeKey]
-                    if (categoryType === judgeType) {
-                        let judge = judgeData[judgeKey]
-                        let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
-                        categorySums[categoryType] = categorySums[categoryType] || 0 + score
-                        categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
+                    let judge = teamData.judgeData[judgeKey]
+                    score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                    score += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
+
+                    if (poolData.judges[judgeKey] === "ExAi") {
+                        score += judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
                     }
                 }
-            }
 
-            for (let judgeKey in poolData.judges) {
-                let judgeType = poolData.judges[judgeKey]
-                if (judgeType === "ExAi") {
-                    let judge = judgeData[judgeKey]
-                    let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
-                    categorySums.Ex = categorySums.Ex || 0 + score
+                teamData.teamScore = score
+            }
+        } else {
+            // TODO: Remove after 2023/4/1
+            for (let teamData of poolData.teamData) {
+                let judgeData = teamData.judgeData
+                let categorySums = {
+                    Diff: 0,
+                    Variety: 0,
+                    ExAi: 0,
+                    Ex: 0,
+                    General: 0
                 }
+                for (let categoryType of Common.categoryOrder) {
+                    for (let judgeKey in poolData.judges) {
+                        let judgeType = poolData.judges[judgeKey]
+                        if (categoryType === judgeType) {
+                            let judge = judgeData[judgeKey]
+                            let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                            categorySums[categoryType] = categorySums[categoryType] || 0 + score
+                            categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
+                        }
+                    }
+                }
+
+                for (let judgeKey in poolData.judges) {
+                    let judgeType = poolData.judges[judgeKey]
+                    if (judgeType === "ExAi") {
+                        let judge = judgeData[judgeKey]
+                        let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
+                        categorySums.Ex = categorySums.Ex || 0 + score
+                    }
+                }
+
+                teamData.teamScore = categorySums.Diff +
+                    categorySums.Variety +
+                    categorySums.ExAi +
+                    categorySums.Ex +
+                    categorySums.General
             }
-
-            teamData.teamScore = categorySums.Diff +
-                categorySums.Variety +
-                categorySums.ExAi +
-                categorySums.Ex +
-                categorySums.General
         }
-    }
 
-    Common.updatePoolData(poolKey, poolData)
+        Common.updatePoolData(poolKey, poolData)
+    }
 }
