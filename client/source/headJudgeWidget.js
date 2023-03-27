@@ -54,6 +54,14 @@ require("./headJudgeWidget.less")
         navigator.clipboard.writeText(this.getPermalink(poolKey))
     }
 
+    onPoolLockClicked(poolKey, isLocked) {
+        if (isLocked) {
+            Common.unlockPoolResults(poolKey)
+        } else {
+            Common.lockAndUploadPoolResults(poolKey)
+        }
+    }
+
     getPoolWidgets(divisionData, roundData) {
         let widgets = []
         for (let poolName of roundData.poolNames) {
@@ -73,12 +81,17 @@ require("./headJudgeWidget.less")
             let judgeCountCN = `poolDetail ${judgeStrings.length === 0 ? "error" : ""}`
             let routineLengthCN = `${roundData.lengthSeconds === 0 ? "error" : ""}`
 
+            let setActive = poolData.isLocked === true ?
+                <h2>Locked</h2> :
+                <button onClick={() => this.onSetActivePool(poolKey)} disabled={isActive || Common.isRoutinePlaying()}>Set Active Pool</button>
+
             widgets.push(
                 <div key={poolName} className={`poolWidget ${isActive ? "poolWidgetActive" : ""}`}>
-                    <button onClick={() => this.onSetActivePool(poolKey)} disabled={isActive || Common.isRoutinePlaying()}>Set Active Pool</button>
-                    <h4>
+                    <div className="poolName">
                         Pool {poolName}
-                    </h4>
+                    </div>
+                    {setActive}
+                    <button onClick={() => this.onPoolLockClicked(poolKey, poolData.isLocked)}>{poolData.isLocked ? "Unlock" : "Lock and Upload Results"}</button>
                     <div>
                         <div className={teamCountCN} title={teamsText}>
                             Team Count: {poolData.teamData.length}
@@ -114,13 +127,21 @@ require("./headJudgeWidget.less")
         return widgets
     }
 
+    uploadDivisionResults(divisionData) {
+        let resultsText = Common.getResultsTextForDivisionData(divisionData)
+        Common.uploadResults(resultsText, divisionData.name)
+    }
+
     getDivisionWidgets() {
         let widgets = []
         for (let divisionKey in MainStore.eventData.eventData.divisionData) {
             let divisionData = MainStore.eventData.eventData.divisionData[divisionKey]
             widgets.push(
-                <div key={divisionKey}>
-                    <h2>{divisionKey}</h2>
+                <div key={divisionKey} className="divisionWidget">
+                    <div className="divisionHeader">
+                        <div className="divisionName">{divisionKey}</div>
+                        <button onClick={() => this.uploadDivisionResults(divisionData)} disabled={!Common.isDivisionLocked(divisionData)}>Upload Division Results</button>
+                    </div>
                     {this.getRoundWidgets(divisionData)}
                 </div>
             )

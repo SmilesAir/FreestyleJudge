@@ -19,9 +19,35 @@
         flex-direction: row;
     }
 
+    .divisionWidget {
+        border: 2px solid gray;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: .1em;
+        margin-bottom: .1em;
+        background-color: rgb(251, 251, 255);
+
+        .divisionHeader {
+            display: flex;
+            flex-direction: row;
+
+            .divisionName {
+                font-size: 2em;
+                font-weight: bold;
+                margin-right: 1em;
+            }
+        }
+    }
+
     .poolWidget {
         display: flex;
         flex-direction: row;
+
+        .poolName {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: .25em;
+        }
 
         .poolDetail {
             cursor: help;

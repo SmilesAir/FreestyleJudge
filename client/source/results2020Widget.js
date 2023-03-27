@@ -12,7 +12,6 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
     constructor(props) {
         super(props)
 
-        this.categoryOrder = [ "Diff", "Variety", "ExAi" ]
         this.categoryName = {
             Diff: "Diff",
             Variety: "Vty",
@@ -33,7 +32,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
     getCategoryHeaderWidgets(poolData) {
         let widgets = []
 
-        for (let categoryType of this.categoryOrder) {
+        for (let categoryType of Common.categoryOrder) {
             let typeCount = 1
             for (let judgeKey in poolData.judges) {
                 let judgeType = poolData.judges[judgeKey]
@@ -110,7 +109,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
             }
 
             let judgeData = teamData.judgeData
-            for (let categoryType of this.categoryOrder) {
+            for (let categoryType of Common.categoryOrder) {
                 for (let judgeKey in poolData.judges) {
                     let judgeType = poolData.judges[judgeKey]
                     if (categoryType === judgeType) {
@@ -324,7 +323,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         let sorted = {}
         let maxRows = 0
         let judgeCN = this.props.scoreboardMode ? "scoreboard" : ""
-        for (let categoryType of this.categoryOrder) {
+        for (let categoryType of Common.categoryOrder) {
             for (let judgeKey in poolData.judges) {
                 let judgeType = poolData.judges[judgeKey]
                 if (judgeType === categoryType) {
@@ -340,7 +339,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         let lines = []
         for (let judgePerCatIndex = 0; judgePerCatIndex < maxRows; ++judgePerCatIndex) {
             let judgesLine = []
-            for (let categoryType of this.categoryOrder) {
+            for (let categoryType of Common.categoryOrder) {
                 let judges = sorted[categoryType]
                 if (judgePerCatIndex < judges.length) {
                     judgesLine.push(judges[judgePerCatIndex])
@@ -364,75 +363,14 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
     unlockPool() {
         runInAction(() => {
             let poolKey = Common.getSelectedPoolKey()
-            let poolData = MainStore.eventData.eventData.poolMap[poolKey]
-            poolData.isLocked = false
-
-            Common.updatePoolData(poolKey, poolData)
+            Common.unlockPoolResults(poolKey)
         })
     }
 
     lockAndUploadResults() {
         runInAction(() => {
             let poolKey = Common.getSelectedPoolKey()
-            let poolData = MainStore.eventData.eventData.poolMap[poolKey]
-            poolData.isLocked = true
-
-            if (Common.getDataVersion() > 0) {
-                for (let teamData of poolData.teamData) {
-                    let score = 0
-                    for (let judgeKey in poolData.judges) {
-                        let judge = teamData.judgeData[judgeKey]
-                        score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
-                        score += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
-
-                        if (poolData.judges[judgeKey] === "ExAi") {
-                            score += judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
-                        }
-                    }
-
-                    teamData.teamScore = score
-                }
-            } else {
-                // TODO: Remove after 2023/4/1
-                for (let teamData of poolData.teamData) {
-                    let judgeData = teamData.judgeData
-                    let categorySums = {
-                        Diff: 0,
-                        Variety: 0,
-                        ExAi: 0,
-                        Ex: 0,
-                        General: 0
-                    }
-                    for (let categoryType of this.categoryOrder) {
-                        for (let judgeKey in poolData.judges) {
-                            let judgeType = poolData.judges[judgeKey]
-                            if (categoryType === judgeType) {
-                                let judge = judgeData[judgeKey]
-                                let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
-                                categorySums[categoryType] = categorySums[categoryType] || 0 + score
-                                categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
-                            }
-                        }
-                    }
-
-                    for (let judgeKey in poolData.judges) {
-                        let judgeType = poolData.judges[judgeKey]
-                        if (judgeType === "ExAi") {
-                            let judge = judgeData[judgeKey]
-                            let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
-                            categorySums.Ex = categorySums.Ex || 0 + score
-                        }
-                    }
-
-                    teamData.teamScore = categorySums.Diff +
-                        categorySums.Variety +
-                        categorySums.ExAi +
-                        categorySums.Ex +
-                        categorySums.General
-                }
-            }
-
-            Common.updatePoolData(poolKey, poolData)
+            Common.lockAndUploadPoolResults(poolKey)
         })
     }
 

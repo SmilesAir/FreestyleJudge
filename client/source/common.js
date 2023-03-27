@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 const { runInAction } = require("mobx")
 const React = require("react")
 const { Auth } = require("aws-amplify")
@@ -9,6 +10,15 @@ const JudgeDataBase = require("./judgeDataBase.js")
 const poolKeyPrefix = "pool|"
 const Common = module.exports
 const defaultRulesId = "Fpa2020"
+
+module.exports.roundNames = [
+    "Finals",
+    "Semifinals",
+    "Quarterfinals",
+    "Preliminaries"
+]
+
+module.exports.categoryOrder = [ "Diff", "Variety", "ExAi" ]
 
 module.exports.EventDataUpdateHelper = class {
     constructor(extendMinutes, updateIntervalSeconds, includeMinorUpdates, onUpdateCallback, onExpiredCallback) {
@@ -210,6 +220,51 @@ module.exports.updateEventState = function(eventState, controllerState) {
         Common.fetchEventData(MainStore.eventData.key)
     }).catch((error) => {
         console.error(`Trying to update event/controller state "${error}"`)
+    })
+}
+
+module.exports.uploadResults = function(resultsText, divisionName) {
+    if (MainStore.eventData === undefined) {
+        console.error("Failed to upload results since event is downloaded yet")
+    }
+
+    return fetchEx("CONVERT_TO_RESULTS_DATA", {
+        eventKey: MainStore.eventData.key,
+        divisionName: divisionName
+    }, undefined, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: resultsText
+    }).then((response) => {
+        return response.json()
+    }).then((response) => {
+        if (response.success !== true) {
+            throw new Error(`Error converting results: ${response.error}`)
+        }
+
+        return fetchEx("UPLOAD_RESULTS", {
+            eventKey: MainStore.eventData.key,
+            divisionName: divisionName
+        }, undefined, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                resultsData: response.resultsData,
+                rawText: resultsText,
+                eventName: MainStore.eventData.eventName
+            })
+        })
+    }).then((response) => {
+        return response.json()
+    }).then((response) => {
+        alert(`Successfully uploaded ${divisionName}`)
+        console.log(response)
+    }).catch((error) => {
+        console.error(`Error uploading results "${error}"`)
     })
 }
 
@@ -738,4 +793,143 @@ module.exports.getDataVersion = function() {
     }
 
     return MainStore.eventData.dataVersion || 0
+}
+
+module.exports.isDivisionLocked = function(divisionData) {
+    if (divisionData === undefined) {
+        return false
+    }
+
+    let hasPool = false
+    for (let roundName in divisionData.roundData) {
+        let roundData = divisionData.roundData[roundName]
+        for (let poolName of roundData.poolNames) {
+            let poolKey = Common.makePoolKey(MainStore.eventData.key, divisionData.name, roundName, poolName)
+            let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+            hasPool = true
+            if (poolData.isLocked !== true) {
+                return false
+            }
+        }
+    }
+
+    return hasPool
+}
+
+module.exports.getResultsTextForDivisionData = function(divisionData) {
+    let lines = [
+        `start pools "${MainStore.eventData.eventName}" "${divisionData.name}"`
+    ]
+
+    let hasPool = false
+    for (let roundName of Common.roundNames) {
+        let roundData = divisionData.roundData[roundName]
+        if (roundData !== undefined) {
+            lines.push(`round ${Common.roundNames.findIndex((name) => name === roundData.name) + 1}`)
+            for (let poolName of roundData.poolNames) {
+                hasPool = true
+                lines.push(`pool ${poolName}`)
+                let poolKey = Common.makePoolKey(MainStore.eventData.key, divisionData.name, roundName, poolName)
+                let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+                let sortedTeams = poolData.teamData.slice()
+                sortedTeams.sort((a, b) => {
+                    if (a.teamScore === undefined && b.teamScore === undefined) {
+                        return 0
+                    } else if (a.teamScore === undefined) {
+                        return 1
+                    } else if (b.teamScore === undefined) {
+                        return -1
+                    } else {
+                        return b.teamScore - a.teamScore
+                    }
+                })
+
+                let place = 0
+                let lastScore = 0
+                for (let [ i, teamData ] of sortedTeams.entries()) {
+                    if (lastScore !== teamData.teamScore) {
+                        place = i + 1
+                    }
+                    lastScore = teamData.score
+                    let playerIds = teamData.players.join(" ")
+                    lines.push(`${place} ${playerIds} ${teamData.teamScore}`)
+                }
+            }
+        } else {
+            break
+        }
+    }
+
+    lines.push("end")
+
+    return hasPool ? lines.join("\n") : undefined
+}
+
+module.exports.unlockPoolResults = function(poolKey) {
+    let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+    poolData.isLocked = false
+
+    Common.updatePoolData(poolKey, poolData)
+}
+
+module.exports.lockAndUploadPoolResults = function(poolKey) {
+    let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+    poolData.isLocked = true
+
+    if (Common.getDataVersion() > 0) {
+        for (let teamData of poolData.teamData) {
+            let score = 0
+            for (let judgeKey in poolData.judges) {
+                let judge = teamData.judgeData[judgeKey]
+                score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                score += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
+
+                if (poolData.judges[judgeKey] === "ExAi") {
+                    score += judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
+                }
+            }
+
+            teamData.teamScore = score
+        }
+    } else {
+        // TODO: Remove after 2023/4/1
+        for (let teamData of poolData.teamData) {
+            let judgeData = teamData.judgeData
+            let categorySums = {
+                Diff: 0,
+                Variety: 0,
+                ExAi: 0,
+                Ex: 0,
+                General: 0
+            }
+            for (let categoryType of Common.categoryOrder) {
+                for (let judgeKey in poolData.judges) {
+                    let judgeType = poolData.judges[judgeKey]
+                    if (categoryType === judgeType) {
+                        let judge = judgeData[judgeKey]
+                        let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                        categorySums[categoryType] = categorySums[categoryType] || 0 + score
+                        categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
+                    }
+                }
+            }
+
+            for (let judgeKey in poolData.judges) {
+                let judgeType = poolData.judges[judgeKey]
+                if (judgeType === "ExAi") {
+                    let judge = judgeData[judgeKey]
+                    let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
+                    categorySums.Ex = categorySums.Ex || 0 + score
+                }
+            }
+
+            teamData.teamScore = categorySums.Diff +
+                categorySums.Variety +
+                categorySums.ExAi +
+                categorySums.Ex +
+                categorySums.General
+        }
+    }
+
+    Common.updatePoolData(poolKey, poolData)
 }

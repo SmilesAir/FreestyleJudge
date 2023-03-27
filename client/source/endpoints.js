@@ -9,7 +9,9 @@ let urls = {
     UPDATE_JUDGE_DATA: "{path}/updateJudgeData/{poolKey}/judgeKey/{judgeKey}/teamIndex/{teamIndex}",
     UPDATE_POOL_DATA: "{path}/updatePoolData/{poolKey}",
     REMOVE_EVENT_FROM_DIRECTORY: "{path}/removeEventFromDirectory/{eventKey}",
-    GET_USER_PERMISSIONS: "{path}/getUserPermissions"
+    GET_USER_PERMISSIONS: "{path}/getUserPermissions",
+    CONVERT_TO_RESULTS_DATA: "https://v869a98rf9.execute-api.us-west-2.amazonaws.com/production/convertToResultsData/{eventKey}/divisionName/{divisionName}",
+    UPLOAD_RESULTS: "https://v869a98rf9.execute-api.us-west-2.amazonaws.com/production/setEventResults/{eventKey}/divisionName/{divisionName}",
 }
 
 function buildUrl(isAuth, urlKey, pathParams, queryParams) {
