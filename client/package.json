@@ -19,13 +19,14 @@
         "build:production": "npm i && codeglue --stage=production"
     },
     "dependencies": {
-        "react-cognito-auth-widget": "git+https://github.com/SmilesAir/AuthWidget.git#v1.0.3",
         "aws-amplify": "^5.0.18",
         "aws-sdk": "2.316.0",
+        "freestyle-admin-widget": "git+https://github.com/SmilesAir/FreestyleAdminWidget.git",
         "mobx": "^6.7.0",
         "mobx-react": "^7.6.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-cognito-auth-widget": "git+https://github.com/SmilesAir/AuthWidget.git#v1.0.3",
         "react-select": "^5.7.0",
         "react-tabs": "^6.0.0",
         "semantic-ui-css": "^2.5.0",

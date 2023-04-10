@@ -346,7 +346,7 @@ module.exports.initJudgeDataForTeamData = function(teamData) {
         let judgeData = teamData.judgeData[judgeKey]
 
         let judgeDataObj = getJudgeDataObj(judgeData)
-        if (judgeDataObj !== undefined) {
+        if (judgeDataObj !== undefined && judgeDataObj.addJudgePreProcessData !== undefined) {
             judgeDataObj.addJudgePreProcessData(teamData.judgePreProcessData)
             teamData.judgeInstances[judgeKey] = judgeDataObj
         }

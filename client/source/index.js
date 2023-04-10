@@ -7,6 +7,7 @@ const { createRoot } = require("react-dom/client")
 const MobxReact = require("mobx-react")
 const { runInAction } = require("mobx")
 const { AuthWidget } = require("react-cognito-auth-widget")
+const { FreestyleAdminWidget } = require("freestyle-admin-widget")
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
@@ -73,6 +74,9 @@ require("./index.less")
         switch(MainStore.currentWidgetName) {
         case "eventCreator":
             widget = <iframe src="https://d1buigy8p55ler.cloudfront.net" allow="clipboard-write"/>
+            break
+        case "adminTools":
+            widget = <FreestyleAdminWidget />
             break
         case "head":
             widget = <HeadJudgeWidget />
@@ -159,6 +163,20 @@ root.render(
             <button onClick={() => this.setUrl(undefined, "eventCreator")}>
                 <h2>
                     Event Creator
+                </h2>
+            </button>
+        )
+    }
+
+    getAdminToolsButton() {
+        if (!Common.isUserAdmin()) {
+            return null
+        }
+
+        return (
+            <button onClick={() => this.setUrl(undefined, "adminTools")}>
+                <h2>
+                    Admin Tools
                 </h2>
             </button>
         )
@@ -261,6 +279,7 @@ root.render(
                     style={style}
                 />
                 {this.getEventCreatorButton()}
+                {this.getAdminToolsButton()}
                 {widgets}
             </div>
         )
