@@ -144,7 +144,7 @@ function removeEmptyEventData(eventData) {
 }
 
 module.exports.setSelectedPoolFromPoolKey = function(poolKey) {
-    if (poolKey === undefined) {
+    if (poolKey === undefined || MainStore.eventData.eventData.poolMap[poolKey] === undefined) {
         return
     }
 
@@ -771,7 +771,8 @@ module.exports.getDivisionRulesId = function(poolKey) {
         return defaultRulesId
     }
 
-    return MainStore.eventData.eventData.divisionData[parts[2]].rulesId || defaultRulesId
+    let divisionData = MainStore.eventData.eventData.divisionData[parts[2]]
+    return divisionData.rulesId || defaultRulesId
 }
 
 module.exports.getActiveDivisionRulesId = function() {

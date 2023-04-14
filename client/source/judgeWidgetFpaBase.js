@@ -143,6 +143,10 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
         }
 
         let poolData = MainStore.eventData.eventData.poolMap[MainStore.eventData.eventState.activePoolKey]
+        if (poolData === undefined) {
+            return <h1>Pool Data Missing</h1>
+        }
+
         let sortedJudgeKeys = Common.getSortedJudgeKeyArray(poolData)
         let judges = []
         for (let [ judgeIndex, judgeKey ] of sortedJudgeKeys.entries()) {
