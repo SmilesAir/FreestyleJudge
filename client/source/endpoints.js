@@ -22,23 +22,19 @@ function buildUrl(isAuth, urlKey, pathParams, queryParams) {
         path = __STAGE__ === "DEVELOPMENT" ? "https://8er0vxrmr4.execute-api.us-west-2.amazonaws.com/development" : "https://xf4cu1wy10.execute-api.us-west-2.amazonaws.com/production"
     }
 
-    let pathReplaceData = {
-        "path": path
-    }
-
-    Object.assign(pathReplaceData, pathParams)
-
     let url = urls[urlKey]
-    for (let wildName in pathReplaceData) {
-        url = url.replace(`{${wildName}}`, pathReplaceData[wildName])
+    for (let wildName in pathParams) {
+        url = url.replace(`{${wildName}}`, encodeURIComponent(pathParams[wildName]))
     }
+
+    url = url.replace("{path}", path)
 
     let firstQueryParam = true
     for (let paramName in queryParams) {
         let prefix = firstQueryParam ? "?" : "&"
         firstQueryParam = false
 
-        url += `${prefix}${paramName}=${queryParams[paramName]}`
+        url += `${prefix}${paramName}=${encodeURIComponent(queryParams[paramName])}`
     }
 
     return url
