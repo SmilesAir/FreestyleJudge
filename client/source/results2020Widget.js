@@ -1,6 +1,7 @@
 
 const React = require("react")
 const MobxReact = require("mobx-react")
+const ReactToPdf = require("react-to-pdf").default
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
@@ -17,6 +18,8 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
             Variety: "Vty",
             ExAi: "AI"
         }
+
+        this.resultsDivRef = React.createRef()
 
         if (this.props.scoreboardMode === true) {
             Common.fetchEventData(MainStore.eventKey)
@@ -315,6 +318,10 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
     }
 
     getJudgesListWidget() {
+        if (MainStore.isAnonJudges === true) {
+            return null
+        }
+
         let poolData = Common.getSelectedPoolData()
         if (poolData === undefined) {
             return null
@@ -385,6 +392,14 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         }
     }
 
+    getResultsFilename() {
+        return `${MainStore.eventData.eventName} - ${Common.makePoolName(MainStore.selectedDivision.value, MainStore.selectedRound.value, MainStore.selectedPool.value)}`
+    }
+
+    toggleAnonJudges() {
+        MainStore.isAnonJudges = !MainStore.isAnonJudges
+    }
+
     render() {
         if (MainStore.eventData === undefined) {
             return (
@@ -422,8 +437,14 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
             return (
                 <div>
                     <button onClick={() => this.printFullDetails()}>Print Full Details</button>
+                    <button onClick={() => this.toggleAnonJudges()}>Toggle Anon Judges</button>
                     {this.getLockAndUploadResultsWidget()}
-                    <div className="results2020">
+                    <ReactToPdf targetRef={this.resultsDivRef} options={{ orientation: "landscape" }} filename={this.getResultsFilename()}>
+                        {({ toPdf }) =>
+                            <button onClick={toPdf}>Generate pdf</button>
+                        }
+                    </ReactToPdf>
+                    <div id="results" className="results2020" ref={this.resultsDivRef}>
                         {this.getSummaryWidget(poolKey, poolName)}
                         {this.getJudgesListWidget()}
                         {this.getDetailedWidget(poolKey)}

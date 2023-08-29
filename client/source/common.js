@@ -421,6 +421,14 @@ module.exports.calcJudgeScoreEx = function(judgeKey, teamData) {
     return null
 }
 
+module.exports.getJudgeNameString = function(categoryType, judgeKey) {
+    if (MainStore.isAnonJudges === true) {
+        return categoryType
+    } else {
+        return `${categoryType} - ${Common.getPlayerNameString(judgeKey)}`
+    }
+}
+
 module.exports.getPlayerNameString = function(playerKey) {
     if (MainStore.playerData === undefined) {
         return "Unknown"

@@ -35,7 +35,7 @@ module.exports.JudgeDataClass = class extends JudgeDataFpaBase.JudgeDataFpaBase 
             <div key={Math.random()} className="judgeDataDetailed">
                 <div className="rawScores">
                     <div className="judgeName">
-                        {`${JudgeData.categoryType} - ${Common.getPlayerNameString(this.data.judgeKey)}`}
+                        {Common.getJudgeNameString(JudgeData.categoryType, this.data.judgeKey)}
                     </div>
                     <div className="line">
                         <label>
