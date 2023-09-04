@@ -227,11 +227,41 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         })
     }
 
+    tryAutoSelectRoundAndPool() {
+        let divisionData = MainStore.eventData.eventData.divisionData[MainStore.selectedDivision.value]
+        if (divisionData === undefined || divisionData.roundData === undefined) {
+            return
+        }
+
+        let roundKeys = Object.keys(divisionData.roundData)
+        if (roundKeys.length === 1) {
+            MainStore.selectedRound = {
+                label: roundKeys[0],
+                value: roundKeys[0]
+            }
+        }
+
+        let roundData = divisionData.roundData[MainStore.selectedRound.value]
+        if (roundData === undefined) {
+            return
+        }
+
+        let poolKeys = roundData.poolNames
+        if (poolKeys.length === 1) {
+            MainStore.selectedPool = {
+                label: poolKeys[0],
+                value: poolKeys[0]
+            }
+        }
+    }
+
     onSelectDivision(selected) {
         runInAction(() => {
             MainStore.selectedDivision = selected
             MainStore.selectedRound = null
             MainStore.selectedPool = null
+
+            this.tryAutoSelectRoundAndPool()
         })
     }
 
@@ -239,6 +269,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         runInAction(() => {
             MainStore.selectedRound = selected
             MainStore.selectedPool = null
+
+            this.tryAutoSelectRoundAndPool()
         })
     }
 

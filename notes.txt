@@ -1,4 +1,3 @@
-print summary button
 Better scoreboard
 
 Add "cursor" for new diff block
