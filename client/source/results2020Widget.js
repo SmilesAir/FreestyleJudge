@@ -1,7 +1,6 @@
 
 const React = require("react")
 const MobxReact = require("mobx-react")
-const ReactToPdf = require("react-to-pdf").default
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
@@ -439,11 +438,6 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                     <button onClick={() => this.printFullDetails()}>Print Full Details</button>
                     <button onClick={() => this.toggleAnonJudges()}>Toggle Anon Judges</button>
                     {this.getLockAndUploadResultsWidget()}
-                    <ReactToPdf targetRef={this.resultsDivRef} options={{ orientation: "landscape" }} filename={this.getResultsFilename()}>
-                        {({ toPdf }) =>
-                            <button onClick={toPdf}>Generate pdf</button>
-                        }
-                    </ReactToPdf>
                     <div id="results" className="results2020" ref={this.resultsDivRef}>
                         {this.getSummaryWidget(poolKey, poolName)}
                         {this.getJudgesListWidget()}
