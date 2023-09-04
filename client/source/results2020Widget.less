@@ -11,12 +11,20 @@
         visibility: visible;
     }
 
-    .detailedContainer {
+    .detailedContainer * {
         page-break-inside: avoid;
     }
 
+    .detailedContainerNone * {
+        display: none;
+    }
+
+    .judgeSummaryNone * {
+        display: none;
+    }
+
     button * {
-        visibility: hidden;
+        display: none;
     }
 }
 

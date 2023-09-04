@@ -18,7 +18,9 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
             ExAi: "AI"
         }
 
-        this.resultsDivRef = React.createRef()
+        this.state = {
+            isSummaryPrintOnly: false
+        }
 
         if (this.props.scoreboardMode === true) {
             Common.fetchEventData(MainStore.eventKey)
@@ -117,12 +119,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                     if (categoryType === judgeType) {
                         let judge = judgeData[judgeKey]
                         let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
-                        if (Common.getDataVersion() > 0) {
-                            categorySums[categoryType] = (categorySums[categoryType] || 0) + score
-                        } else {
-                            // TODO: Remove after 2023/4/1
-                            categorySums[categoryType] = categorySums[categoryType] || 0 + score
-                        }
+                        categorySums[categoryType] = (categorySums[categoryType] || 0) + score
                         categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
                         teamCategoryScores.push(score)
                     }
@@ -134,12 +131,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                 if (judgeType === "ExAi") {
                     let judge = judgeData[judgeKey]
                     let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
-                    if (Common.getDataVersion() > 0) {
-                        categorySums.Ex = (categorySums.Ex || 0) + score
-                    } else {
-                        // TODO: Remove after 2023/4/1
-                        categorySums.Ex = categorySums.Ex || 0 + score
-                    }
+                    categorySums.Ex = (categorySums.Ex || 0) + score
                     teamCategoryScores.push(score)
                 }
             }
@@ -298,7 +290,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
             let teanNames = Common.getPlayerNamesString(teamData.players)
 
             widgets.push(
-                <div key={teamNumber} className="detailedContainer">
+                <div key={teamNumber} className={`detailedContainer ${this.state.isSummaryPrintOnly ? "detailedContainerNone" : ""}`}>
                     <div className="teamHeaderName">
                         {`Team ${teamNumber}: ${teanNames}`}
                     </div>
@@ -313,7 +305,21 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
     }
 
     printFullDetails() {
-        window.print()
+        this.state.isSummaryPrintOnly = false
+        this.setState(this.state)
+
+        setTimeout(() => {
+            window.print()
+        }, 1)
+    }
+
+    printSummary() {
+        this.state.isSummaryPrintOnly = true
+        this.setState(this.state)
+
+        setTimeout(() => {
+            window.print()
+        }, 1)
     }
 
     getJudgesListWidget() {
@@ -360,7 +366,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         }
 
         return (
-            <div>
+            <div className={`${this.state.isSummaryPrintOnly ? "judgeSummaryNone" : ""}`}>
                 {lines}
             </div>
         )
@@ -435,10 +441,11 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         } else {
             return (
                 <div>
+                    <button onClick={() => this.printSummary()}>Print Summary</button>
                     <button onClick={() => this.printFullDetails()}>Print Full Details</button>
                     <button onClick={() => this.toggleAnonJudges()}>Toggle Anon Judges</button>
                     {this.getLockAndUploadResultsWidget()}
-                    <div id="results" className="results2020" ref={this.resultsDivRef}>
+                    <div id="results" className="results2020">
                         {this.getSummaryWidget(poolKey, poolName)}
                         {this.getJudgesListWidget()}
                         {this.getDetailedWidget(poolKey)}
