@@ -8,5 +8,8 @@
   },
   "devDependencies": {
     "fullstack-serverless": "^0.8.0"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
   }
 }

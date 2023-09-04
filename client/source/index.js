@@ -105,7 +105,7 @@ require("./index.less")
                 default:
                     widget =
                         <div>
-                            {`Can't find judge for ${judgeCategoryType}`}
+                            Can't find judge. No Event Data
                         </div>
                 }
             } else {

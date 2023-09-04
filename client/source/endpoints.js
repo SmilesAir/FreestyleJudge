@@ -2,6 +2,7 @@
 let urls = {
     GET_EVENT_DATA: "{path}/getEventData/{eventKey}",
     GET_PLAYER_DATA: "https://4wnda3jb78.execute-api.us-west-2.amazonaws.com/production/getAllPlayers",
+    GET_ESSENTIAL_DATABASE_DATA: "{path}/getEssentialDatabaseData/{eventKey}",
     GET_EVENT_DATA_VERSION: "{path}/getEventDataVersion/{eventKey}",
     GET_EVENT_DIRECTORY: "{path}/getEventDirectory",
     UPDATE_EVENT_STATE: "{path}/updateEventState/{eventKey}",

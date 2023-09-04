@@ -52,6 +52,13 @@ functions:
           path: importEventFromEventCreator/{eventKey}
           method: post
           cors: true
+  getEssentialDatabaseData:
+    handler: source/main.getEssentialDatabaseData
+    events:
+      - http:
+          path: getEssentialDatabaseData/{eventKey}
+          method: get
+          cors: true
   getEventData:
     handler: source/main.getEventData
     events:

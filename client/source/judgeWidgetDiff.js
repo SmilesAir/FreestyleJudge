@@ -17,8 +17,17 @@ module.exports = class JudgeWidgetDiff extends JudgeWidgetFpaBase {
         this.state.scoresEditIndexTeam = undefined
     }
 
+    getDiffScoreCount() {
+        let judgeData = this.getJudgeData()
+        if (judgeData === undefined || judgeData.data === undefined || judgeData.data.diffScores === undefined) {
+            return 0
+        }
+
+        return judgeData.data.diffScores.length
+    }
+
     postInitFectchEventData() {
-        this.state.editScoreIndex = this.getJudgeData().data.diffScores.length
+        this.state.editScoreIndex = this.getDiffScoreCount()
     }
 
     onEditScore(scoreIndex) {
@@ -27,7 +36,7 @@ module.exports = class JudgeWidgetDiff extends JudgeWidgetFpaBase {
         }
 
         if (scoreIndex === this.state.editScoreIndex) {
-            this.state.editScoreIndex = this.getJudgeData().data.diffScores.length
+            this.state.editScoreIndex = this.getDiffScoreCount()
         } else {
             this.state.editScoreIndex = scoreIndex
         }
@@ -91,7 +100,7 @@ module.exports = class JudgeWidgetDiff extends JudgeWidgetFpaBase {
 
     runStopEditingTimeout() {
         this.stopEditingTimeoutId = setTimeout(() => {
-            this.state.editScoreIndex = this.getJudgeData().data.diffScores.length
+            this.state.editScoreIndex = this.getDiffScoreCount()
             this.setState(this.state)
         }, 2000)
     }

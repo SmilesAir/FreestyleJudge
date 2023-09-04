@@ -11,10 +11,9 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
     constructor() {
         super()
 
-        Promise.all([
-            Common.fetchEventData(MainStore.eventKey),
-            Common.fetchPlayerData()
-        ]). then(() => {
+        Common.fetchEventData(MainStore.eventKey).then(() => {
+            return Common.fetchEssentialDatabaseData()
+        }).then(() => {
             this.onEventDataUpdatedBase()
         })
 

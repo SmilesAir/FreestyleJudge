@@ -182,6 +182,27 @@ module.exports.fetchPlayerData = function() {
     }).then((response) => {
         runInAction(() => {
             MainStore.playerData = response.players
+
+            console.log("GET_PLAYER_DATA", response.players)
+        })
+    }).catch((error) => {
+        console.error(`Trying to get event data "${error}"`)
+    })
+}
+
+module.exports.fetchEssentialDatabaseData = function() {
+    return fetchEx("GET_ESSENTIAL_DATABASE_DATA", { eventKey: MainStore.eventData.key }, undefined, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then((response) => {
+        return response.json()
+    }).then((response) => {
+        runInAction(() => {
+            MainStore.playerData = response.players
+
+            console.log("GET_ESSENTIAL_DATABASE_DATA", response.players)
         })
     }).catch((error) => {
         console.error(`Trying to get event data "${error}"`)

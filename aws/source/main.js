@@ -1,6 +1,6 @@
 const AWS = require("aws-sdk")
+const fetch = require("node-fetch")
 let docClient = new AWS.DynamoDB.DocumentClient()
-const uuid = AWS.util.uuid
 
 
 const Common = require("./common.js")
@@ -373,6 +373,40 @@ module.exports.getEventData = (e, c, cb) => { Common.handler(e, c, cb, async (ev
 
     return {
         eventData: await getEventDataWithPoolData(eventKey)
+    }
+})}
+
+module.exports.getEssentialDatabaseData = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+    let eventKey = decodeURIComponent(event.pathParameters.eventKey)
+
+    validateEventKey(eventKey)
+
+    let eventData = await getEventDataWithPoolData(eventKey)
+
+    let stage = event.requestContext.stage
+    let getNameDataUrl = undefined
+    if (stage === "production") {
+        getNameDataUrl = "https://4wnda3jb78.execute-api.us-west-2.amazonaws.com/production/getAllPlayers"
+    } else {
+        getNameDataUrl = "https://tkhmiv70u9.execute-api.us-west-2.amazonaws.com/development/getAllPlayers"
+    }
+
+    let response = await fetch(getNameDataUrl)
+    let playerData = await response.json()
+
+    let essentialPlayerData = {}
+    for (let playerKey in eventData.eventData.playerData) {
+        let foundPlayerData = playerData.players[playerKey]
+        if (foundPlayerData === undefined) {
+            console.warn(`Could not find player data for key ${playerKey}`)
+            continue
+        }
+
+        essentialPlayerData[playerKey] = foundPlayerData
+    }
+
+    return {
+        players: essentialPlayerData
     }
 })}
 
