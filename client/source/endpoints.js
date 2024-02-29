@@ -13,6 +13,7 @@ let urls = {
     GET_USER_PERMISSIONS: "{path}/getUserPermissions",
     CONVERT_TO_RESULTS_DATA: "https://v869a98rf9.execute-api.us-west-2.amazonaws.com/production/convertToResultsData/{eventKey}/divisionName/{divisionName}",
     UPLOAD_RESULTS: "https://v869a98rf9.execute-api.us-west-2.amazonaws.com/production/setEventResults/{eventKey}/divisionName/{divisionName}",
+    GET_SET_PERMALINK_PARAMS: "{path}/getSetPermalinkParams/{crc32}"
 }
 
 function buildUrl(isAuth, urlKey, pathParams, queryParams) {

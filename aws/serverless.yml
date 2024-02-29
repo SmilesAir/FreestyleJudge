@@ -122,6 +122,13 @@ functions:
           path: /getUserPermissions
           method: get
           authorizer: serviceAuthorizer
+  getSetPermalinkParams:
+    handler: source/main.getSetPermalinkParams
+    events:
+      - http:
+          path: /getSetPermalinkParams/{crc32}
+          method: post
+          cors: true
 
 resources:
   Resources:

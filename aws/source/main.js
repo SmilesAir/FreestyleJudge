@@ -715,3 +715,45 @@ async function getUserData(username) {
         throw error
     })
 }
+
+module.exports.getSetPermalinkParams = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+    let crc = decodeURIComponent(event.pathParameters.crc32)
+    let request = JSON.parse(event.body) || {}
+
+    if (crc === undefined) {
+        throw "No crc specified"
+    }
+
+    const permalinkPrefix = "permalink+"
+    let urlParams = undefined
+    if (request.urlParams !== undefined) {
+        urlParams = request.urlParams
+        let putParams = {
+            TableName : process.env.DATA_TABLE,
+            Item: {
+                key: permalinkPrefix + crc,
+                urlParams: request.urlParams
+            }
+        }
+        docClient.put(putParams).promise().catch((error) => {
+            throw error
+        })
+    } else {
+        let getEventParams = {
+            TableName : process.env.DATA_TABLE,
+            Key: {
+                key: permalinkPrefix + crc
+            }
+        }
+        await docClient.get(getEventParams).promise().then((response) => {
+            urlParams = response.Item.urlParams
+        }).catch((error) => {
+            throw error
+        })
+    }
+
+    return {
+        crc32: crc,
+        urlParams: urlParams
+    }
+})}

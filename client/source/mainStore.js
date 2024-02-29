@@ -20,5 +20,6 @@ module.exports = Mobx.observable({
     isSignedIn: false,
     username: undefined,
     userPermissions: undefined,
-    isAnonJudges: false
+    isAnonJudges: false,
+    isPermalink: false
 })

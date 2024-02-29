@@ -21,6 +21,7 @@
     "dependencies": {
         "aws-amplify": "^5.0.18",
         "aws-sdk": "2.316.0",
+        "crc-32": "^1.2.2",
         "formik": "^2.4.3",
         "freestyle-admin-widget": "git+https://github.com/SmilesAir/FreestyleAdminWidget.git",
         "mobx": "^6.7.0",

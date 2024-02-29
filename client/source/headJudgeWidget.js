@@ -4,6 +4,7 @@ const MobxReact = require("mobx-react")
 const { runInAction } = require("mobx")
 const { Tab, Tabs, TabList, TabPanel } = require("react-tabs")
 const ReactSelect = require("react-select").default
+const CRC32 = require("crc-32")
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
@@ -42,16 +43,30 @@ require("./headJudgeWidget.less")
         })
     }
 
-    getPermalink(poolKey) {
+    generatePermalink(poolKey, isAnonJudges) {
         let url = new URL(window.location.href)
         url.searchParams.set("startup", "results")
         url.searchParams.set("pool", poolKey)
+        url.searchParams.set("perma", "1")
+        if (isAnonJudges !== true) {
+            url.searchParams.set("showJudges", "1")
+        }
 
-        return url.href
+        let parts = url.href.split("?")
+        let paramsString = parts[1]
+        let crc = CRC32.str(paramsString)
+
+        Common.getSetPermalinkParams(crc, paramsString).then((resp) => {
+            return resp.json()
+        })
+
+        let compressedUrl = new URL(window.location.origin)
+        compressedUrl.searchParams.set("x", crc)
+        return compressedUrl.href
     }
 
     copyPermalink(poolKey) {
-        navigator.clipboard.writeText(this.getPermalink(poolKey))
+        navigator.clipboard.writeText(this.generatePermalink(poolKey))
     }
 
     onPoolLockClicked(poolKey, isLocked) {
@@ -150,7 +165,7 @@ require("./headJudgeWidget.less")
         return widgets
     }
 
-    copyAllPoolsForRound(roundName) {
+    getAllPoolsForRound(roundName, isAnonJudges) {
         let lines = []
         for (let divisionKey in MainStore.eventData.eventData.divisionData) {
             let divisionData = MainStore.eventData.eventData.divisionData[divisionKey]
@@ -159,10 +174,33 @@ require("./headJudgeWidget.less")
                     let roundData = divisionData.roundData[roundKey]
                     for (let poolName of roundData.poolNames) {
                         let poolKey = Common.makePoolKey(MainStore.eventData.key, divisionKey, roundKey, poolName)
-                        lines.push(`${divisionKey} ${roundKey} ${poolName}: ${this.getPermalink(poolKey)}`)
+                        lines.push(`${divisionKey} ${roundKey} ${poolName}: ${this.generatePermalink(poolKey, isAnonJudges)}`)
                     }
                 }
             }
+        }
+
+        return lines
+    }
+
+    copyAllRoundLinks(isAnonJudges) {
+        let rounds = []
+        for (let divisionKey in MainStore.eventData.eventData.divisionData) {
+            let divisionData = MainStore.eventData.eventData.divisionData[divisionKey]
+            let divisionRounds = []
+            for (let roundKey in divisionData.roundData) {
+                divisionRounds.push(roundKey)
+            }
+
+            if (divisionRounds.length > rounds.length) {
+                rounds = divisionRounds
+            }
+        }
+
+        let lines = []
+        for (let roundKey of rounds) {
+            lines = lines.concat(this.getAllPoolsForRound(roundKey, isAnonJudges))
+            lines.push("")
         }
 
         navigator.clipboard.writeText(lines.join("\n"))
@@ -171,8 +209,8 @@ require("./headJudgeWidget.less")
     render() {
         return (
             <div>
-                <button onClick={() => this.copyAllPoolsForRound("Semifinals")}>Copy All Semifinals Permalinks</button>
-                <button onClick={() => this.copyAllPoolsForRound("Finals")}>Copy All Finals Permalinks</button>
+                <button onClick={() => this.copyAllRoundLinks()}>Copy All Permalinks</button>
+                <button onClick={() => this.copyAllRoundLinks(true)}>Copy All Anonymous Judges Permalinks</button>
                 {this.getDivisionWidgets()}
             </div>
         )

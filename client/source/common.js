@@ -974,3 +974,15 @@ module.exports.lockAndUploadPoolResults = function(poolKey) {
         Common.updatePoolData(poolKey, poolData)
     }
 }
+
+module.exports.getSetPermalinkParams = function(crc32, urlParams) {
+    return fetchEx("GET_SET_PERMALINK_PARAMS", { crc32: crc32 }, undefined, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            urlParams: urlParams
+        })
+    })
+}

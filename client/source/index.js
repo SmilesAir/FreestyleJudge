@@ -28,6 +28,21 @@ require("./index.less")
         super()
 
         let url = new URL(window.location.href)
+
+        let peramlinkCrc32 = url.searchParams.get("x")
+        if (peramlinkCrc32 !== null) {
+            Common.getSetPermalinkParams(peramlinkCrc32).then((resp) => {
+                return resp.json()
+            }).then((resp) => {
+
+                let uncompressedUrl = window.location.origin + "/?" + resp.urlParams
+                console.log(uncompressedUrl, resp)
+                window.location.replace(uncompressedUrl)
+            })
+
+            return
+        }
+
         let startupParam = url.searchParams.get("startup")
         if (startupParam !== null) {
             MainStore.currentWidgetName = startupParam
@@ -55,6 +70,9 @@ require("./index.less")
         } else {
             Common.fetchEventDirectory()
         }
+
+        MainStore.isAnonJudges = url.searchParams.get("showJudges") !== "1"
+        MainStore.isPermalink = url.searchParams.get("perma") === "1"
     }
 
     getData(url) {

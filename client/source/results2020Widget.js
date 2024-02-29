@@ -443,8 +443,8 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                 <div>
                     <button onClick={() => this.printSummary()}>Print Summary</button>
                     <button onClick={() => this.printFullDetails()}>Print Full Details</button>
-                    <button onClick={() => this.toggleAnonJudges()}>Toggle Anon Judges</button>
-                    {this.getLockAndUploadResultsWidget()}
+                    {MainStore.isPermalink ? null : <button onClick={() => this.toggleAnonJudges()}>Toggle Anon Judges</button>}
+                    {MainStore.isPermalink ? null : this.getLockAndUploadResultsWidget()}
                     <div id="results" className="results2020">
                         {this.getSummaryWidget(poolKey, poolName)}
                         {this.getJudgesListWidget()}
