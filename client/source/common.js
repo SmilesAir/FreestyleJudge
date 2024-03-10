@@ -214,9 +214,17 @@ module.exports.setActivePool = function(poolKey) {
     MainStore.topTabsSelectedIndex = 1
     MainStore.controlsTabsSelectedIndex = 0
 
+    let controllerState = {}
+    if (!Common.getPoolHasResults(poolKey) && getPoolHasTeams(poolKey)) {
+        MainStore.eventData.controllerState.selectedTeamIndex = 0
+        controllerState = {
+            selectedTeamIndex: MainStore.eventData.controllerState.selectedTeamIndex
+        }
+    }
+
     return Common.updateEventState({
         activePoolKey: poolKey
-    }, {})
+    }, controllerState)
 }
 
 module.exports.updateEventState = function(eventState, controllerState) {
@@ -949,4 +957,30 @@ module.exports.getSetPermalinkParams = function(crc32, urlParams) {
             urlParams: urlParams
         })
     })
+}
+
+function getTeamHasResults(teamData) {
+    return Object.keys(teamData.judgeData).length > 0
+}
+
+function getPoolHasTeams(poolKey) {
+    let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+    if (poolData !== undefined && poolData.teamData !== undefined) {
+        return poolData.teamData.length > 0
+    }
+
+    return false
+}
+
+module.exports.getPoolHasResults = function(poolKey) {
+    let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+    if (poolData !== undefined) {
+        for (let team of poolData.teamData) {
+            if (getTeamHasResults(team)) {
+                return true
+            }
+        }
+    }
+
+    return false
 }
