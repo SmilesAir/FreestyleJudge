@@ -932,43 +932,7 @@ module.exports.lockAndUploadPoolResults = function(poolKey) {
                 teamData.teamScore = score
             }
         } else {
-            // TODO: Remove after 2023/4/1
-            for (let teamData of poolData.teamData) {
-                let judgeData = teamData.judgeData
-                let categorySums = {
-                    Diff: 0,
-                    Variety: 0,
-                    ExAi: 0,
-                    Ex: 0,
-                    General: 0
-                }
-                for (let categoryType of Common.categoryOrder) {
-                    for (let judgeKey in poolData.judges) {
-                        let judgeType = poolData.judges[judgeKey]
-                        if (categoryType === judgeType) {
-                            let judge = judgeData[judgeKey]
-                            let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
-                            categorySums[categoryType] = categorySums[categoryType] || 0 + score
-                            categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
-                        }
-                    }
-                }
-
-                for (let judgeKey in poolData.judges) {
-                    let judgeType = poolData.judges[judgeKey]
-                    if (judgeType === "ExAi") {
-                        let judge = judgeData[judgeKey]
-                        let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
-                        categorySums.Ex = categorySums.Ex || 0 + score
-                    }
-                }
-
-                teamData.teamScore = categorySums.Diff +
-                    categorySums.Variety +
-                    categorySums.ExAi +
-                    categorySums.Ex +
-                    categorySums.General
-            }
+            console.error(`Unsupported Data Version ${Common.getDataVersion()}`)
         }
 
         Common.updatePoolData(poolKey, poolData)
