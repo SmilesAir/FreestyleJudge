@@ -317,9 +317,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
             MainStore.selectedPool = selected
 
             if (MainStore.controlsTabsSelectedIndex === 0) {
-                Common.updateEventState({
-                    activePoolKey: Common.getSelectedPoolKey()
-                })
+                Common.setActivePool(Common.getSelectedPoolKey())
             }
 
             this.eventDataUpdater.extendUpdateDeadline()
