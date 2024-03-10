@@ -39,7 +39,8 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
             judgeKey: judgeData.judgeKey,
             isFinished: Common.isRoutineFinished() && judgeData.general !== 0,
             isEditing: MainStore.judgeTabsSelectedIndex === 1,
-            updatedAt: Date.now()
+            updatedAt: Date.now(),
+            teamIndex: this.state.teamIndex
         })
     }
 

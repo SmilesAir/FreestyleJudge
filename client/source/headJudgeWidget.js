@@ -437,7 +437,10 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         let statusCN = "disconnected"
         let judgeState = Common.getJudgeState(judgeKey)
         if (Date.now() - judgeState.updatedAt < 5 * 60 * 1000) {
-            if (judgeState.isFinished) {
+            if (MainStore.eventData.controllerState.selectedTeamIndex === undefined) {
+                status = "Connected"
+                statusCN = "connected"
+            } else if (judgeState.isFinished) {
                 status = "Finished"
                 statusCN = "finished"
             } else if (judgeState.isEditing) {
@@ -478,11 +481,38 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         )
     }
 
+    setNextTeam() {
+        if (Common.isRoutinePlaying() || Common.isSelectedPoolLocked()) {
+            return
+        }
+
+        let poolData = Common.getSelectedPoolData()
+        if (poolData === undefined) {
+            return
+        }
+
+        if (MainStore.eventData.controllerState.selectedTeamIndex === undefined) {
+            MainStore.eventData.controllerState.selectedTeamIndex = 0
+        } else if (MainStore.eventData.controllerState.selectedTeamIndex >= poolData.teamData.length - 1) {
+            MainStore.eventData.controllerState.selectedTeamIndex = undefined
+        } else {
+            ++MainStore.eventData.controllerState.selectedTeamIndex
+        }
+
+        Common.updateEventState(undefined, {
+            selectedTeamIndex: MainStore.eventData.controllerState.selectedTeamIndex
+        })
+    }
+
     onStartClicked() {
         runInAction(() => {
-            MainStore.eventData.controllerState.routineStartTime = Date.now()
-            Common.updateEventState(undefined, MainStore.eventData.controllerState)
-            this.runUpdateRoutineTimeString()
+            if (this.getAllJudgesFinished()) {
+                this.setNextTeam()
+            } else {
+                MainStore.eventData.controllerState.routineStartTime = Date.now()
+                Common.updateEventState(undefined, MainStore.eventData.controllerState)
+                this.runUpdateRoutineTimeString()
+            }
         })
 
         this.eventDataUpdater.extendUpdateDeadline()
@@ -512,6 +542,37 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         this.setState(this.state)
     }
 
+    getAllJudgesFinished() {
+        let allJudgesFinished = true
+        let atLeastOneJudge = false
+        let poolData = Common.getSelectedPoolData()
+        if (poolData !== undefined) {
+            for (let judgeKey in poolData.judges) {
+                atLeastOneJudge = true
+                let judgeState = Common.getJudgeState(judgeKey)
+                if (!judgeState.isFinished || judgeState.teamIndex !== MainStore.eventData.controllerState.selectedTeamIndex) {
+                    allJudgesFinished = false
+                    break
+                }
+            }
+        }
+
+        return atLeastOneJudge && allJudgesFinished && MainStore.eventData.controllerState.selectedTeamIndex !== undefined
+    }
+
+    getStartButtonText() {
+        if (this.getAllJudgesFinished()) {
+            let poolData = Common.getSelectedPoolData()
+            if (MainStore.eventData.controllerState.selectedTeamIndex < poolData.teamData.length - 1) {
+                return "Click to Set Next Team"
+            } else {
+                return "Click to Finish Pool"
+            }
+        } else {
+            return "Click on First Throw"
+        }
+    }
+
     getRunControls() {
         return (
             <div className="runControls">
@@ -520,7 +581,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                     {`Playing: ${Common.getSelectedTeamNameString()}`}
                 </h2>
                 <div className="buttons">
-                    <button onClick={() => this.onStartClicked()} disabled={Common.isSelectedPoolLocked() || Common.isRoutinePlaying()}>Click on First Throw</button>
+                    <button onClick={() => this.onStartClicked()} disabled={Common.isSelectedPoolLocked() || Common.isRoutinePlaying() || MainStore.eventData.controllerState.selectedTeamIndex === undefined}>{this.getStartButtonText()}</button>
                     <button onClick={() => this.onCancelClicked()} disabled={Common.isSelectedPoolLocked() || !Common.isRoutinePlaying()}>Cancel Routine</button>
                 </div>
                 <div className="details">

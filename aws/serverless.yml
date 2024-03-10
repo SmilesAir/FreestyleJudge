@@ -192,6 +192,7 @@ resources:
 
 plugins:
   - fullstack-serverless
+  - ./public-policy-workaround.js
 
 custom:
   fullstack:
