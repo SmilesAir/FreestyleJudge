@@ -531,7 +531,8 @@ module.exports.getPlayerFirstNamesString = function(playerKeyArray) {
     }
 
     return playerKeyArray.map((key) => {
-        return MainStore.playerData[key].firstName
+        let playerData = MainStore.playerData[key]
+        return playerData !== undefined ? MainStore.playerData[key].firstName : "Missing"
     }).join(" - ")
 }
 
