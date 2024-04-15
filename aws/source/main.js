@@ -359,6 +359,13 @@ module.exports.getEventDataVersion = (e, c, cb) => { Common.handler(e, c, cb, as
 
     let eventData = await getEventData(eventKey)
 
+    if (eventData === null || eventData === undefined) {
+        return {
+            importantVersion: 0,
+            minorVersion: 0
+        }
+    }
+
     return {
         importantVersion: eventData.importantVersion,
         minorVersion: eventData.minorVersion
