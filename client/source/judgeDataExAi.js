@@ -36,7 +36,8 @@ module.exports.JudgeDataClass = class extends JudgeDataFpaBase.JudgeDataFpaBase 
         return (this.data.music + this.data.teamwork + this.data.form) / 3 * constants.aiScaler
     }
 
-    //https://www.wolframalpha.com/input?i=y+%3D+%28%2845+-+%28x+-+14%29+%2F+.5%29+%2F+45%29+%5E+2%2C+x+%3D+14+to+50
+    // 3 minutes: https://www.wolframalpha.com/input?i=y+%3D+%28%2845+-+%28x+-+14%29+%2F+.5%29+%2F+45%29+%5E+2%2C+x+%3D+14+to+25
+    // 4 minutes: https://www.wolframalpha.com/input?i=y+%3D+%28%2860+-+%28x+-+19%29+%2F+.5%29+%2F+60%29+%5E+2%2C+x+%3D+19+to+30
     getExScaler(phraseCount) {
         if (phraseCount !== undefined && this.routineLengthSeconds !== undefined) {
             let constants = MainStore.constants.ExAi
