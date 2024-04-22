@@ -40,7 +40,8 @@ module.exports = @MobxReact.observer class ResultsSimpleRankingWidget extends Re
         let scores = {
             teamRankScores: [],
             teamRankTotalScores: [],
-            teamRanks: []
+            teamRanks: [],
+            judgeCount: 0
         }
 
         for (let teamData of poolData.teamData) {
@@ -51,6 +52,10 @@ module.exports = @MobxReact.observer class ResultsSimpleRankingWidget extends Re
                 let judgeData = teamData.judgeData[judgeKey]
                 if (judgeData.categoryType === "SimpleRanking") {
                     total += judgeData.rawScores.ranking
+
+                    if (scores.teamRanks.length === 0) {
+                        ++scores.judgeCount
+                    }
                 }
                 ++ranks[judgeData.rawScores.ranking - 1]
             }
@@ -142,7 +147,7 @@ module.exports = @MobxReact.observer class ResultsSimpleRankingWidget extends Re
                     <div className="header">
                         <div className="subHeaderDescriptions">
                             <div className="subHeaderTeam">
-                                Team
+                                {`Team (Total Judge Count: ${summaryScoreData.judgeCount})`}
                             </div>
                             <div className="subHeaderCategories">
                                 {this.getCategoryHeaderWidgets(poolData)}
