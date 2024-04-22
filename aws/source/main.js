@@ -11,58 +11,9 @@ const poolKeyPrefix = "pool|"
 const usernameKeyPrefix = "user|"
 
 module.exports.importEventFromPoolCreator = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
-    let eventKey = decodeURIComponent(event.pathParameters.eventKey)
-    let request = JSON.parse(event.body) || {}
-    let eventName = request.TournamentName
-
-    validateEventKey(eventKey)
-
-    if (eventName === undefined || eventName.length < 1) {
-        throw `Bad Event Name "${eventName}"`
-    }
-
-    updateManifest(eventKey, eventName)
-
-    let parsedData = await parseEventDataFromPoolCreator(eventKey, eventName, request)
-    let newEventData = parsedData.eventData
-    let newPoolMap = parsedData.poolMap
-
-    let currentEventData = await getEventDataWithPoolData(eventKey)
-
-    // conditionally update the event data
-    if (currentEventData !== undefined) {
-        newEventData.importantVersion = currentEventData.importantVersion + 1
-
-        mergePoolMap(currentEventData.eventData.poolMap, newPoolMap)
-    }
-
-    console.log(JSON.stringify(newPoolMap))
-    console.log(JSON.stringify(newEventData))
-
-    let putPromises = []
-    let putNewEventParams = {
-        TableName : process.env.DATA_TABLE,
-        Item: newEventData
-    }
-    putPromises.push(docClient.put(putNewEventParams).promise().catch((error) => {
-        throw error
-    }))
-
-    for (let poolKey in newPoolMap) {
-        let newPoolData = newPoolMap[poolKey]
-        let putNewPoolParams = {
-            TableName : process.env.DATA_TABLE,
-            Item: newPoolData
-        }
-        putPromises.push(docClient.put(putNewPoolParams).promise().catch((error) => {
-            throw error
-        }))
-    }
-
-    await Promise.all(putPromises)
-
     return {
-        message: `"${eventName}" Imported Succesfully to V3`
+        success: false,
+        message: "importEventFromPoolCreator is deprecated"
     }
 })}
 
@@ -86,7 +37,7 @@ module.exports.importEventFromEventCreator = (e, c, cb) => { Common.handler(e, c
     if (currentEventData !== undefined) {
         newEventData.importantVersion = currentEventData.importantVersion + 1
 
-        mergePoolMap(currentEventData.eventData.poolMap, newPoolMap)
+        mergePoolMap(newEventData.eventData, currentEventData.eventData.poolMap, newPoolMap)
     }
 
     newEventData.eventData.poolMap = {}
@@ -121,25 +72,42 @@ module.exports.importEventFromEventCreator = (e, c, cb) => { Common.handler(e, c
     }
 })}
 
-function mergePoolMap(currentPoolMap, newPoolMap) {
-    for (let poolKey in newPoolMap) {
-        let newPoolData = newPoolMap[poolKey]
-        let currentPoolData = currentPoolMap[poolKey]
-        if (currentPoolData !== undefined) {
-            for (let currentTeam of currentPoolData.teamData) {
-                if (hasTeamResults(currentTeam)) {
-                    let found = false
-                    for (let newTeamIndex = 0; newTeamIndex < newPoolData.teamData.length; ++newTeamIndex) {
-                        let newTeam = newPoolData.teamData[newTeamIndex]
-                        if (hasSamePlayers(currentTeam, newTeam)) {
-                            found = true
-                            newPoolData.teamData[newTeamIndex] = currentTeam
-                            break
-                        }
-                    }
+function getRulesIdForPool(eventData, poolKey) {
+    let poolKeyParts = poolKey.split("|")
+    if (poolKeyParts.length !== 5) {
+        console.error(`Bad pool key ${poolKey}`)
+    }
 
-                    if (!found) {
-                        newPoolData.teamData.push(currentTeam)
+    let divisionName = poolKeyParts[2]
+    let divisionData = eventData.divisionData[divisionName]
+    if (divisionData !== undefined) {
+        return divisionData.rulesId
+    }
+
+    return undefined
+}
+
+function mergePoolMap(eventData, currentPoolMap, newPoolMap) {
+    for (let poolKey in newPoolMap) {
+        if (getRulesIdForPool(eventData, poolKey) !== "SimpleRanking") {
+            let newPoolData = newPoolMap[poolKey]
+            let currentPoolData = currentPoolMap[poolKey]
+            if (currentPoolData !== undefined) {
+                for (let currentTeam of currentPoolData.teamData) {
+                    if (hasTeamResults(currentTeam)) {
+                        let found = false
+                        for (let newTeamIndex = 0; newTeamIndex < newPoolData.teamData.length; ++newTeamIndex) {
+                            let newTeam = newPoolData.teamData[newTeamIndex]
+                            if (hasSamePlayers(currentTeam, newTeam)) {
+                                found = true
+                                newPoolData.teamData[newTeamIndex] = currentTeam
+                                break
+                            }
+                        }
+
+                        if (!found) {
+                            newPoolData.teamData.push(currentTeam)
+                        }
                     }
                 }
             }

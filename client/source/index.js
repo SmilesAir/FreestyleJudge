@@ -167,7 +167,7 @@ root.render(
     }
 
     onRemoveClick(event) {
-        if (confirm("Really remove event from Directory?")) {
+        if (confirm("Really hide event from Directory?")) {
             Common.removeEventFromDirectory(event.eventKey)
         }
     }
@@ -232,7 +232,7 @@ root.render(
                                     {event.eventName}
                                 </h1>
                                 <div className="line2">
-                                    <button onClick={() => this.onRemoveClick(event)}>Remove</button>
+                                    <button onClick={() => this.onRemoveClick(event)}>Hide Event</button>
                                     <div>
                                         Last Imported: {new Date(event.modifiedAt).toISOString()}
                                     </div>
