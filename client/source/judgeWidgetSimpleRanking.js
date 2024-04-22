@@ -31,7 +31,7 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
                 MainStore.judgeKey = uuidv4()
                 this.state.localData = {
                     judgeKey: MainStore.judgeKey,
-                    [MainStore.eventData.key] : {
+                    [MainStore.eventData.eventState.activePoolKey] : {
                         rankings: []
                     }
                 }
@@ -40,8 +40,8 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
                 MainStore.judgeKey = uuidv4()
                 this.state.localData.judgeKey = MainStore.judgeKey
             }
-            if (this.state.localData[MainStore.eventData.key] === undefined) {
-                this.state.localData[MainStore.eventData.key] = {
+            if (this.state.localData[MainStore.eventData.eventState.activePoolKey] === undefined) {
+                this.state.localData[MainStore.eventData.eventState.activePoolKey] = {
                     rankings: []
                 }
             }
@@ -68,7 +68,7 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
             if (noneSet) {
                 for (let i = 0; i < this.state.judgeDataArray.length; ++i) {
                     let data = this.state.judgeDataArray[i].data
-                    let rank = this.state.localData[MainStore.eventData.key][i]
+                    let rank = this.state.localData[MainStore.eventData.eventState.activePoolKey][i]
                     data.ranking = rank !== null ? rank : undefined
                 }
             }
@@ -127,7 +127,7 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
             }
         }
 
-        this.state.localData[MainStore.eventData.key] = this.state.judgeDataArray.map((data) => {
+        this.state.localData[MainStore.eventData.eventState.activePoolKey] = this.state.judgeDataArray.map((data) => {
             return data.data.ranking !== null ? data.data.ranking : undefined
         })
         window.localStorage.setItem("simpleRankingData", JSON.stringify(this.state.localData))
