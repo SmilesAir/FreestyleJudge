@@ -16,7 +16,8 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
 
         this.state = {
             judgeDataArray: undefined,
-            localData: undefined
+            localData: undefined,
+            isEditing: true
         }
     }
 
@@ -27,6 +28,7 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
         runInAction(() => {
             let localDataString = window.localStorage.getItem("simpleRankingData")
             this.state.localData = localDataString && JSON.parse(localDataString) || undefined
+            console.log(this.state.localData)
             if (this.state.localData === undefined) {
                 MainStore.judgeKey = uuidv4()
                 this.state.localData = {
@@ -42,7 +44,8 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
             }
             if (this.state.localData[MainStore.eventData.eventState.activePoolKey] === undefined) {
                 this.state.localData[MainStore.eventData.eventState.activePoolKey] = {
-                    rankings: []
+                    rankings: [],
+                    isEditing: true
                 }
             }
 
@@ -51,6 +54,8 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
 
             Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
             this.state.judgeDataArray = Common.getJudgeDataArrayByJudgeKey()
+            this.state.isEditing = this.state.localData[MainStore.eventData.eventState.activePoolKey].isEditing
+            this.state.isEditing = this.state.isEditing === undefined ? true : this.state.isEditing
             this.setState(this.state)
 
             this.eventDataUpdater.extendUpdateDeadline()
@@ -68,7 +73,7 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
             if (noneSet) {
                 for (let i = 0; i < this.state.judgeDataArray.length; ++i) {
                     let data = this.state.judgeDataArray[i].data
-                    let rank = this.state.localData[MainStore.eventData.eventState.activePoolKey][i]
+                    let rank = this.state.localData[MainStore.eventData.eventState.activePoolKey].rankings[i]
                     data.ranking = rank !== null ? rank : undefined
                 }
             }
@@ -76,6 +81,10 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
     }
 
     adjustPlace(teamIndex, dir) {
+        if (!this.state.isEditing) {
+            return
+        }
+
         let curRank = this.state.judgeDataArray[teamIndex].data.ranking
         if (dir > 0) {
             if (curRank === undefined) {
@@ -127,9 +136,11 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
             }
         }
 
-        this.state.localData[MainStore.eventData.eventState.activePoolKey] = this.state.judgeDataArray.map((data) => {
-            return data.data.ranking !== null ? data.data.ranking : undefined
-        })
+        this.state.localData[MainStore.eventData.eventState.activePoolKey] = {
+            rankings: this.state.judgeDataArray.map((data) => {
+                return data.data.ranking !== null ? data.data.ranking : undefined
+            })
+        }
         window.localStorage.setItem("simpleRankingData", JSON.stringify(this.state.localData))
 
         this.updateJudgeData()
@@ -137,6 +148,10 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
     }
 
     getIsAllSet() {
+        if (this.state.judgeDataArray === undefined) {
+            return false
+        }
+
         let allSet = true
         for (let data of this.state.judgeDataArray) {
             if (data.data.ranking === undefined) {
@@ -177,11 +192,11 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
                         {playerNames}
                     </div>
                     <div className="controls">
-                        <button className="down" onClick={() => this.adjustPlace(i, -1)}>⬇</button>
+                        <button className="down" disabled={!this.state.isEditing} onClick={() => this.adjustPlace(i, -1)}>⬇</button>
                         <div className="score">
                             {ranking ? Common.getPlaceFromNumber(ranking) : "-"}
                         </div>
-                        <button className="up" onClick={() => this.adjustPlace(i, 1)}>⬆</button>
+                        <button className="up" disabled={!this.state.isEditing} onClick={() => this.adjustPlace(i, 1)}>⬆</button>
                     </div>
                 </div>
             )
@@ -190,17 +205,29 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
         return widgets
     }
 
+    onSubmitClick() {
+        this.state.isEditing = !this.state.isEditing
+        this.setState(this.state)
+
+        this.state.localData[MainStore.eventData.eventState.activePoolKey].isEditing = this.state.isEditing
+        window.localStorage.setItem("simpleRankingData", JSON.stringify(this.state.localData))
+    }
+
     render() {
+        let submitText = this.state.isEditing ? "Submit" : "Submitted | Click to Edit"
         let cn = `simpleRanking ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
         return (
             <div className={cn}>
                 {Common.getExpiredWidget(this.eventDataUpdater)}
                 <div className="instructions">
-                    <p>Use the arrow buttons to increase or decrease the Place of the team. 1st is the highest Place<br />
-                    Your results are sent automatically once all the teams have a Place set and when you edit the places</p>
+                    <p>Use the arrow buttons to increase or decrease the Place of the team. 1st is the highest Place.<br />
+                    Results are sent by pressing Submit once all teams have a rank.</p>
                 </div>
                 <div>
                     {this.getTeamWidgets()}
+                </div>
+                <div className="submit">
+                    <button className="submit" onClick={() => this.onSubmitClick()} disabled={!this.getIsAllSet()} >{submitText}</button>
                 </div>
             </div>
         )
