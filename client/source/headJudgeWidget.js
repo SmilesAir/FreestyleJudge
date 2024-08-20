@@ -188,8 +188,10 @@ require("./headJudgeWidget.less")
         for (let divisionKey in MainStore.eventData.eventData.divisionData) {
             let divisionData = MainStore.eventData.eventData.divisionData[divisionKey]
             let divisionRounds = []
-            for (let roundKey in divisionData.roundData) {
-                divisionRounds.push(roundKey)
+            for (let roundKey of Common.roundNames.toReversed()) {
+                if (divisionData.roundData[roundKey] !== undefined) {
+                    divisionRounds.push(roundKey)
+                }
             }
 
             if (divisionRounds.length > rounds.length) {
@@ -579,8 +581,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                     {`Playing: ${Common.getSelectedTeamNameString()}`}
                 </h2>
                 <div className="buttons">
-                    <button onClick={() => this.onStartClicked()} disabled={Common.isSelectedPoolLocked() || Common.isRoutinePlaying() || MainStore.eventData.controllerState.selectedTeamIndex === undefined}>{this.getStartButtonText()}</button>
-                    <button onClick={() => this.onCancelClicked()} disabled={Common.isSelectedPoolLocked() || !Common.isRoutinePlaying()}>Cancel Routine</button>
+                    <button onClick={() => this.onStartClicked()} disabled={Common.isSelectedPoolLocked() || Common.isRoutinePlaying() || Common.isRoutineFinished() && !this.getAllJudgesFinished() || MainStore.eventData.controllerState.selectedTeamIndex === undefined}>{this.getStartButtonText()}</button>
+                    <button onClick={() => this.onCancelClicked()} disabled={Common.isSelectedPoolLocked() || !Common.isRoutinePlaying() && !Common.isRoutineFinished()}>Cancel Routine</button>
                 </div>
                 <div className="details">
                     <div className="teams">
