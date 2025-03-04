@@ -379,21 +379,21 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         })
     }
 
-    lockAndUploadResults() {
+    lockAndCalcResults() {
         runInAction(() => {
             let poolKey = Common.getSelectedPoolKey()
-            Common.lockAndUploadPoolResults(poolKey)
+            Common.lockAndCalcPoolResults(poolKey)
         })
     }
 
-    getLockAndUploadResultsWidget() {
+    getLockAndCalcResultsWidget() {
         let poolKey = Common.getSelectedPoolKey()
         let poolData = MainStore.eventData.eventData.poolMap[poolKey]
 
         if (poolData.isLocked === true) {
             return <button onClick={() => this.unlockPool()}>Unlock Results</button>
         } else {
-            return <button onClick={() => this.lockAndUploadResults()}>Lock and Upload Results</button>
+            return <button onClick={() => this.lockAndCalcResults()}>Lock and Calc Results</button>
         }
     }
 
@@ -444,7 +444,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                     <button onClick={() => this.printSummary()}>Print Summary</button>
                     <button onClick={() => this.printFullDetails()}>Print Full Details</button>
                     {MainStore.isPermalink ? null : <button onClick={() => this.toggleAnonJudges()}>Toggle Anon Judges</button>}
-                    {MainStore.isPermalink ? null : this.getLockAndUploadResultsWidget()}
+                    {MainStore.isPermalink ? null : this.getLockAndCalcResultsWidget()}
                     <div id="results" className="results2020">
                         {this.getSummaryWidget(poolKey, poolName)}
                         {this.getJudgesListWidget()}

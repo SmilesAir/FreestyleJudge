@@ -863,6 +863,35 @@ module.exports.isDivisionLocked = function(divisionData) {
     return hasPool
 }
 
+function sortTeamsBasedOnRules(poolKey, inOutSortedTeams) {
+    let rulesId = Common.getDivisionRulesId(poolKey)
+    if (rulesId === "Fpa2020") {
+        inOutSortedTeams.sort((a, b) => {
+            if (a.teamScore === undefined && b.teamScore === undefined) {
+                return 0
+            } else if (a.teamScore === undefined) {
+                return 1
+            } else if (b.teamScore === undefined) {
+                return -1
+            } else {
+                return b.teamScore - a.teamScore
+            }
+        })
+    } else if (rulesId === "SimpleRanking") {
+        inOutSortedTeams.sort((a, b) => {
+            if (a.teamScore === undefined && b.teamScore === undefined) {
+                return 0
+            } else if (a.teamScore === undefined) {
+                return 1
+            } else if (b.teamScore === undefined) {
+                return -1
+            } else {
+                return a.teamScore - b.teamScore
+            }
+        })
+    }
+}
+
 module.exports.getResultsTextForDivisionData = function(divisionData) {
     let lines = [
         `start pools "${MainStore.eventData.eventName}" "${divisionData.name}"`
@@ -879,17 +908,7 @@ module.exports.getResultsTextForDivisionData = function(divisionData) {
                 let poolKey = Common.makePoolKey(MainStore.eventData.key, divisionData.name, roundName, poolName)
                 let poolData = MainStore.eventData.eventData.poolMap[poolKey]
                 let sortedTeams = poolData.teamData.slice()
-                sortedTeams.sort((a, b) => {
-                    if (a.teamScore === undefined && b.teamScore === undefined) {
-                        return 0
-                    } else if (a.teamScore === undefined) {
-                        return 1
-                    } else if (b.teamScore === undefined) {
-                        return -1
-                    } else {
-                        return b.teamScore - a.teamScore
-                    }
-                })
+                sortTeamsBasedOnRules(poolKey, sortedTeams)
 
                 let place = 0
                 let lastScore = 0
@@ -908,7 +927,6 @@ module.exports.getResultsTextForDivisionData = function(divisionData) {
     }
 
     lines.push("end")
-
     return hasPool ? lines.join("\n") : undefined
 }
 
@@ -919,11 +937,12 @@ module.exports.unlockPoolResults = function(poolKey) {
     Common.updatePoolData(poolKey, poolData)
 }
 
-module.exports.lockAndUploadPoolResults = function(poolKey) {
+module.exports.lockAndCalcPoolResults = function(poolKey) {
     let poolData = MainStore.eventData.eventData.poolMap[poolKey]
     let rulesId = Common.getDivisionRulesId(poolKey)
+    poolData.isLocked = true
+
     if (rulesId === "Fpa2020") {
-        poolData.isLocked = true
 
         if (Common.getDataVersion() > 0) {
             for (let teamData of poolData.teamData) {
@@ -942,6 +961,23 @@ module.exports.lockAndUploadPoolResults = function(poolKey) {
             }
         } else {
             console.error(`Unsupported Data Version ${Common.getDataVersion()}`)
+        }
+
+        Common.updatePoolData(poolKey, poolData)
+    } else if (rulesId === "SimpleRanking") {
+        for (let teamData of poolData.teamData) {
+            let total = 0
+            let ranks = new Array(poolData.teamData.length).fill(0)
+
+            for (let judgeKey in teamData.judgeData) {
+                let judgeData = teamData.judgeData[judgeKey]
+                if (judgeData.categoryType === "SimpleRanking") {
+                    total += judgeData.rawScores.ranking
+                }
+                ++ranks[judgeData.rawScores.ranking - 1]
+            }
+
+            teamData.teamScore = total
         }
 
         Common.updatePoolData(poolKey, poolData)

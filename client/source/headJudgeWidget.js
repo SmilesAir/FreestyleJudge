@@ -73,7 +73,7 @@ require("./headJudgeWidget.less")
         if (isLocked) {
             Common.unlockPoolResults(poolKey)
         } else {
-            Common.lockAndUploadPoolResults(poolKey)
+            Common.lockAndCalcPoolResults(poolKey)
         }
     }
 
@@ -106,7 +106,7 @@ require("./headJudgeWidget.less")
                         Pool {poolName}
                     </div>
                     {setActive}
-                    <button onClick={() => this.onPoolLockClicked(poolKey, poolData.isLocked)}>{poolData.isLocked ? "Unlock" : "Lock and Upload Results"}</button>
+                    <button onClick={() => this.onPoolLockClicked(poolKey, poolData.isLocked)}>{poolData.isLocked ? "Unlock" : "Lock and Calc Results"}</button>
                     <div>
                         <div className={teamCountCN} title={teamsText}>
                             Team Count: {poolData.teamData.length}
