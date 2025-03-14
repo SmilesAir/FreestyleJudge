@@ -604,6 +604,29 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         )
     }
 
+    getConnectionStatusWidget() {
+        let pingStr = "No Connection"
+        let color = "red"
+        if (MainStore.pingMs !== undefined && !this.eventDataUpdater.isExpired()) {
+            pingStr = MainStore.pingMs + "ms"
+
+            if (MainStore.pingMs < 700) {
+                color = "green"
+            } else if (MainStore.pingMs < 2000) {
+                color = "orange"
+            } else {
+                color = "red"
+                pingStr += " Bad Connection! Interface may be laggy"
+            }
+        }
+        let style = {
+            color: color
+        }
+        return (
+            <div>Ping: <div className="pingMs" style={style}>{pingStr}</div></div>
+        )
+    }
+
     render() {
         if (MainStore.eventData === undefined) {
             return <h1>No Event Data</h1>
@@ -636,6 +659,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                         <TabList>
                             <Tab>Event Info</Tab>
                             <Tab>Pool Controls</Tab>
+                            <Tab>{this.getConnectionStatusWidget()}</Tab>
                         </TabList>
                         <TabPanel>
                             <EventInfoWidget />
@@ -659,6 +683,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                                 </TabPanel>
                             </Tabs>
                         </TabPanel>
+                        <TabPanel></TabPanel>
                     </Tabs>
                 </div>
             )

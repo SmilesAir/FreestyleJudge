@@ -52,6 +52,10 @@ module.exports.EventDataUpdateHelper = class {
                     this.runVersionCheck()
                 }, 1000 * this.updateIntervalSeconds)
             } else if (this.onExpiredCallback !== undefined) {
+                runInAction(() => {
+                    MainStore.pingMs = undefined
+                    MainStore.lastPingUpdateTime = undefined
+                })
                 this.onExpiredCallback()
             }
         }
@@ -766,6 +770,7 @@ module.exports.incrementalUpdate = function(includeMinorUpdates, forced) {
         console.error("Failed to update judge state because no event is downloaded yet")
     }
 
+    let startTime = Date.now()
     return fetchEx("GET_EVENT_DATA_VERSION", { eventKey: MainStore.eventData.key }, undefined, {
         method: "GET",
         headers: {
@@ -774,6 +779,13 @@ module.exports.incrementalUpdate = function(includeMinorUpdates, forced) {
     }).then((response) => {
         return response.json()
     }).then((response) => {
+        let now = Date.now()
+        if (MainStore.lastPingUpdateTime === undefined || now - MainStore.lastPingUpdateTime > 7 * 1000) {
+            runInAction(() => {
+                MainStore.lastPingUpdateTime = now
+                MainStore.pingMs = Date.now() - startTime
+            })
+        }
         let importantVersionUpdated = response.importantVersion !== undefined && response.importantVersion !== MainStore.eventData.importantVersion
         let minorVersionUpdated = response.minorVersion !== undefined && response.minorVersion !== MainStore.eventData.minorVersion
         if (forced || importantVersionUpdated || (includeMinorUpdates && minorVersionUpdated)) {
