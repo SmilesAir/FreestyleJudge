@@ -192,11 +192,11 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
                         {playerNames}
                     </div>
                     <div className="controls">
-                        <button className="down" disabled={!this.state.isEditing} onClick={() => this.adjustPlace(i, -1)}>⬇</button>
+                        <button className="down" disabled={!this.state.isEditing || Common.isSelectedPoolLocked()} onClick={() => this.adjustPlace(i, -1)}>⬇</button>
                         <div className="score">
                             {ranking ? Common.getPlaceFromNumber(ranking) : "-"}
                         </div>
-                        <button className="up" disabled={!this.state.isEditing} onClick={() => this.adjustPlace(i, 1)}>⬆</button>
+                        <button className="up" disabled={!this.state.isEditing || Common.isSelectedPoolLocked()} onClick={() => this.adjustPlace(i, 1)}>⬆</button>
                     </div>
                 </div>
             )
@@ -213,12 +213,21 @@ module.exports = class JudgeWidgetSimpleRanking extends JudgeWidgetBase {
         window.localStorage.setItem("simpleRankingData", JSON.stringify(this.state.localData))
     }
 
+    getLockedMessage() {
+        if (Common.isSelectedPoolLocked()) {
+            return <h1>Pool is Locked. No editing allowed.</h1>
+        } else {
+            return null
+        }
+    }
+
     render() {
         let submitText = this.state.isEditing ? "Submit" : "Submitted | Click to Edit"
         let cn = `simpleRanking ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
         return (
             <div className={cn}>
                 {Common.getExpiredWidget(this.eventDataUpdater)}
+                {this.getLockedMessage()}
                 <div className="instructions">
                     <p>Use the arrow buttons to increase or decrease the Place of the team. 1st is the highest Place.<br />
                     Results are sent by pressing Submit once all teams have a rank.</p>
