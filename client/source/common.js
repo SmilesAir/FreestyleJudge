@@ -973,6 +973,7 @@ module.exports.lockAndCalcPoolResults = function(poolKey) {
             }
         } else {
             console.error(`Unsupported Data Version ${Common.getDataVersion()}`)
+            // TODO: Need to skip upload
         }
 
         Common.updatePoolData(poolKey, poolData)
