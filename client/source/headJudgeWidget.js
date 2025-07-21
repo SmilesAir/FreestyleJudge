@@ -318,7 +318,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         runInAction(() => {
             MainStore.selectedPool = selected
 
-            if (MainStore.controlsTabsSelectedIndex === 0) {
+            if (MainStore.controlsTabsSelectedIndex === 0 && !this.props.resultsMode) {
                 Common.setActivePool(Common.getSelectedPoolKey())
             }
 
