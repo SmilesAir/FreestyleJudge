@@ -529,14 +529,19 @@ module.exports.getSelectedTeamNameString = function() {
     return Common.getPlayerNamesString(teamData.players)
 }
 
+module.exports.getFirstName = function(playerKey) {
+    let playerData = MainStore.playerData[playerKey]
+    console.log(playerData, playerKey)
+    return playerData !== undefined ? playerData.firstName : "Unknown"
+}
+
 module.exports.getPlayerFirstNamesString = function(playerKeyArray) {
     if (MainStore.playerData === undefined) {
         return ""
     }
 
     return playerKeyArray.map((key) => {
-        let playerData = MainStore.playerData[key]
-        return playerData !== undefined ? MainStore.playerData[key].firstName : "Missing"
+        return Common.getFirstName(key)
     }).join(" - ")
 }
 
@@ -547,7 +552,7 @@ module.exports.getSelectedTeamFirstNameString = function() {
     }
 
     return teamData.players.map((key) => {
-        return MainStore.playerData[key].firstName
+        return Common.getFirstName(key)
     }).join(" - ")
 }
 
