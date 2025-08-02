@@ -93,7 +93,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
         return widgets
     }
 
-    calcSummaryScores(poolData) {
+    calcSummaryScores(poolData, isHideScores) {
         let scores = {
             teamCategoryScores: [],
             teamSumScores: [],
@@ -112,27 +112,29 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
                 General: 0
             }
 
-            let judgeData = teamData.judgeData
-            for (let categoryType of Common.categoryOrder) {
-                for (let judgeKey in poolData.judges) {
-                    let judgeType = poolData.judges[judgeKey]
-                    if (categoryType === judgeType) {
-                        let judge = judgeData[judgeKey]
-                        let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
-                        categorySums[categoryType] = (categorySums[categoryType] || 0) + score
-                        categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
-                        teamCategoryScores.push(score)
+            if (!isHideScores) {
+                let judgeData = teamData.judgeData
+                for (let categoryType of Common.categoryOrder) {
+                    for (let judgeKey in poolData.judges) {
+                        let judgeType = poolData.judges[judgeKey]
+                        if (categoryType === judgeType) {
+                            let judge = judgeData[judgeKey]
+                            let score = judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                            categorySums[categoryType] = (categorySums[categoryType] || 0) + score
+                            categorySums.General += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
+                            teamCategoryScores.push(score)
+                        }
                     }
                 }
-            }
 
-            for (let judgeKey in poolData.judges) {
-                let judgeType = poolData.judges[judgeKey]
-                if (judgeType === "ExAi") {
-                    let judge = judgeData[judgeKey]
-                    let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
-                    categorySums.Ex = (categorySums.Ex || 0) + score
-                    teamCategoryScores.push(score)
+                for (let judgeKey in poolData.judges) {
+                    let judgeType = poolData.judges[judgeKey]
+                    if (judgeType === "ExAi") {
+                        let judge = judgeData[judgeKey]
+                        let score = judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
+                        categorySums.Ex = (categorySums.Ex || 0) + score
+                        teamCategoryScores.push(score)
+                    }
                 }
             }
 
@@ -238,7 +240,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
 
     getSummaryWidget(poolKey, poolName) {
         let poolData = MainStore.eventData.eventData.poolMap[poolKey]
-        let summaryScoreData = this.calcSummaryScores(poolData)
+        let summaryScoreData = this.calcSummaryScores(poolData, Common.getIsScoresHidden())
 
         if (summaryScoreData === undefined) {
             return null
@@ -275,6 +277,10 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
     }
 
     getDetailedWidget(poolKey) {
+        if (Common.getIsScoresHidden()) {
+            return null
+        }
+
         let widgets = []
         let poolData = MainStore.eventData.eventData.poolMap[poolKey]
         let teamNumber = 1
@@ -323,7 +329,7 @@ module.exports = @MobxReact.observer class Results2020Widget extends React.Compo
     }
 
     getJudgesListWidget() {
-        if (MainStore.isAnonJudges === true) {
+        if (MainStore.isAnonJudges === true || !Common.getIsScoresHidden()) {
             return null
         }
 

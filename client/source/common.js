@@ -455,7 +455,8 @@ module.exports.calcJudgeScoreEx = function(judgeKey, teamData) {
 }
 
 module.exports.getJudgeNameString = function(categoryType, judgeKey) {
-    if (MainStore.isAnonJudges === true) {
+    let poolData = Common.getSelectedPoolData()
+    if (MainStore.isAnonJudges === true || (MainStore.isPermalink && poolData && poolData.isLocked)) {
         return categoryType
     } else {
         return `${categoryType} - ${Common.getPlayerNameString(judgeKey)}`
@@ -500,6 +501,11 @@ module.exports.makePoolName = function(divisionName, roundName, poolName) {
     } else {
         return `${divisionName} ${roundName} ${poolName}`
     }
+}
+
+module.exports.getIsScoresHidden = function() {
+    let poolData = Common.getSelectedPoolData()
+    return poolData && MainStore.isPermalink && !poolData.isLocked
 }
 
 module.exports.getSelectedPoolData = function() {
