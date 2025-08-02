@@ -23,6 +23,10 @@ require("./judgeDataBase.js")
 require("react-tabs/style/react-tabs.css")
 require("./index.less")
 
+history.pushState(null, null, window.location.href)
+history.back()
+window.onpopstate = () => history.forward()
+
 @MobxReact.observer class Main extends React.Component {
     constructor() {
         super()
