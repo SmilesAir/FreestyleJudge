@@ -129,6 +129,13 @@ functions:
           path: /getSetPermalinkParams/{crc32}
           method: post
           cors: true
+  updatePoolLocked:
+    handler: source/main.updatePoolLocked
+    events:
+      - http:
+          path: /updatePoolLocked/{poolKey}/isLocked/{isLocked}
+          method: post
+          cors: true
 
 resources:
   Resources:

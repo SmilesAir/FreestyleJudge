@@ -530,6 +530,30 @@ module.exports.updateJudgeData = (e, c, cb) => { Common.handler(e, c, cb, async 
     }
 })}
 
+module.exports.updatePoolLocked = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
+    let poolKey = decodeURIComponent(event.pathParameters.poolKey)
+    let isLocked = decodeURIComponent(event.pathParameters.isLocked) === "1"
+
+    let updateParams = {
+        TableName: process.env.DATA_TABLE,
+        Key: {"key": poolKey},
+        UpdateExpression: `set isLocked = :locked`,
+        ExpressionAttributeValues: {
+            ":locked": isLocked
+        },
+        ReturnValues: "NONE"
+    }
+    await docClient.update(updateParams).promise().catch((error) => {
+        throw error
+    })
+
+    await incrementMinorVersionByPoolKey(poolKey)
+
+    return {
+        message: `Updated "${poolKey}" Successful`
+    }
+})}
+
 module.exports.updatePoolData = (e, c, cb) => { Common.handler(e, c, cb, async (event, context) => {
     let poolKey = decodeURIComponent(event.pathParameters.poolKey)
     let request = JSON.parse(event.body) || {}

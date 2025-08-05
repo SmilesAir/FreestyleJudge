@@ -114,6 +114,7 @@ module.exports.fetchEventData = function(eventKey) {
     }).then((response) => {
         runInAction(() => {
             MainStore.eventData = removeEmptyEventData(response.eventData)
+            MainStore.lastUpdatedEventDataTime = Date.now()
             document.title = MainStore.eventData.eventName
             if (MainStore.currentWidgetName !== "results") {
                 Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
@@ -676,6 +677,28 @@ module.exports.updateJudgeData = function(teamIndex, judgeData) {
     })
 }
 
+module.exports.updatePoolLocked = function(poolKey, isLocked) {
+    if (MainStore.eventData === undefined) {
+        console.error("Failed to update pool data because no event is downloaded yet")
+    }
+
+    return fetchEx("UPDATE_POOL_LOCKED", {
+        poolKey: poolKey,
+        isLocked: isLocked
+    }, undefined, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then((response) => {
+        return response.json()
+    }).then((response) => {
+        console.log(response)
+    }).catch((error) => {
+        console.error(`Trying to lock/unlock pool data "${error}"`)
+    })
+}
+
 module.exports.updatePoolData = function(poolKey, poolData) {
     if (MainStore.eventData === undefined) {
         console.error("Failed to update pool data because no event is downloaded yet")
@@ -957,10 +980,16 @@ module.exports.unlockPoolResults = function(poolKey) {
     let poolData = MainStore.eventData.eventData.poolMap[poolKey]
     poolData.isLocked = false
 
-    Common.updatePoolData(poolKey, poolData)
+    Common.updatePoolLocked(poolKey, false)
 }
 
 module.exports.lockAndCalcPoolResults = function(poolKey) {
+    if (Date.now() - MainStore.lastUpdatedEventDataTime > 1000 * 60 * 5) {
+        alert("Event Data is older than 5 minutes. Refresh page before calculating results. Aborting")
+        return
+    }
+
+
     let poolData = MainStore.eventData.eventData.poolMap[poolKey]
     let rulesId = Common.getDivisionRulesId(poolKey)
     poolData.isLocked = true
@@ -987,7 +1016,7 @@ module.exports.lockAndCalcPoolResults = function(poolKey) {
             // TODO: Need to skip upload
         }
 
-        Common.updatePoolData(poolKey, poolData)
+        Common.updatePoolLocked(poolKey, poolData)
     } else if (rulesId === "SimpleRanking") {
         for (let teamData of poolData.teamData) {
             let total = 0

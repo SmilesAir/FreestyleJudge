@@ -23,5 +23,6 @@ module.exports = Mobx.observable({
     isAnonJudges: false,
     isPermalink: false,
     pingMs: undefined,
-    lastPingUpdateTime: undefined
+    lastPingUpdateTime: undefined,
+    lastUpdatedEventDataTime: 0
 })
