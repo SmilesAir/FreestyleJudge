@@ -1083,5 +1083,15 @@ module.exports.backupResults = function() {
     let dataKey = poolKey + `|${Date.now()}`
     backupData[dataKey] = MainStore.eventData.eventData.poolMap[poolKey]
 
+    let keys = Object.keys(backupData)
+    if (keys.length > 50) {
+        keys = keys.sort((a, b) => {
+            return parseInt(a.split("|")[5], 10) - parseInt(b.split("|")[5], 10)
+        })
+
+        let removeKey = keys[0]
+        delete backupData[removeKey]
+    }
+
     localStorage.setItem("backupData", JSON.stringify(backupData))
 }
