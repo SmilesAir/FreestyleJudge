@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 
 const React = require("react")
 const MobxReact = require("mobx-react")
@@ -386,6 +387,9 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
 
     onControlsTabsSelectedIndexChanged(index) {
         runInAction(() => {
+            if (index === 2) {
+                alert("DANGER! Restoring old results will overwite current results.")
+            }
             MainStore.controlsTabsSelectedIndex = index
             Common.setSelectedPoolFromPoolKey(MainStore.eventData.eventState.activePoolKey)
             window.localStorage.setItem("controlsTabsSelectedIndex", index)
@@ -512,6 +516,11 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                 MainStore.eventData.controllerState.routineStartTime = Date.now()
                 Common.updateEventState(undefined, MainStore.eventData.controllerState)
                 this.runUpdateRoutineTimeString()
+
+                Common.backupResults()
+                setTimeout(() => {
+                    Common.backupResults()
+                }, 1000 * 60 * 7)
             }
         })
 
@@ -627,6 +636,49 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         )
     }
 
+    getTimeFromBackupKey(key) {
+        let poolKey = Common.getSelectedPoolKey()
+        return parseInt(key.replace(poolKey + "|", ""), 10)
+    }
+
+    restorePoolData(poolKey, poolData) {
+        runInAction(() => {
+            if (MainStore.eventData.eventData.poolMap[poolKey].isLocked) {
+                alert("Notice! You can't restore a pool when it is locked")
+                return
+            }
+
+            alert("Notice! After restoring results, you need to Lock and Calculate the pool to upload restored results to the internet")
+            MainStore.eventData.eventData.poolMap[poolKey] = poolData
+        })
+    }
+
+    getBackupsWidget() {
+        let backupData = JSON.parse(localStorage.getItem("backupData")) || {}
+        let poolKey = Common.getSelectedPoolKey()
+
+        let dataKeys = Object.keys(backupData).filter((key) => {
+            return key.startsWith(poolKey)
+        })
+        dataKeys = dataKeys.sort((a, b) => {
+            return this.getTimeFromBackupKey(b) - this.getTimeFromBackupKey(a)
+        })
+
+        let backupWidgets = dataKeys.map((key, index) => {
+            return (
+                <div key={index} className="backup">
+                    <div>{new Date(this.getTimeFromBackupKey(key)).toISOString()}</div>
+                    <button onClick={() => this.restorePoolData(poolKey, backupData[key])}>Restore</button>
+                </div>
+            )
+        })
+        return(
+            <div className="backupsContainer">
+                {backupWidgets}
+            </div>
+        )
+    }
+
     render() {
         if (MainStore.eventData === undefined) {
             return <h1>No Event Data</h1>
@@ -674,12 +726,16 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                                 <TabList>
                                     <Tab>Run Pool</Tab>
                                     <Tab>Results</Tab>
+                                    <Tab>Backups</Tab>
                                 </TabList>
                                 <TabPanel>
                                     {this.getRunControls()}
                                 </TabPanel>
                                 <TabPanel>
                                     <ResultsWidget />
+                                </TabPanel>
+                                <TabPanel>
+                                    {this.getBackupsWidget()}
                                 </TabPanel>
                             </Tabs>
                         </TabPanel>

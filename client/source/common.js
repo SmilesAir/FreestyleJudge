@@ -1074,3 +1074,14 @@ module.exports.getPoolHasResults = function(poolKey) {
 
     return false
 }
+
+module.exports.backupResults = function() {
+    let backupData = localStorage.getItem("backupData")
+    backupData = JSON.parse(backupData) || {}
+
+    let poolKey = Common.getSelectedPoolKey()
+    let dataKey = poolKey + `|${Date.now()}`
+    backupData[dataKey] = MainStore.eventData.eventData.poolMap[poolKey]
+
+    localStorage.setItem("backupData", JSON.stringify(backupData))
+}
