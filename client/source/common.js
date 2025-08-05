@@ -977,10 +977,12 @@ module.exports.getResultsTextForDivisionData = function(divisionData) {
 }
 
 module.exports.unlockPoolResults = function(poolKey) {
-    let poolData = MainStore.eventData.eventData.poolMap[poolKey]
-    poolData.isLocked = false
+    runInAction(() => {
+        let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+        poolData.isLocked = false
 
-    Common.updatePoolLocked(poolKey, false)
+        Common.updatePoolLocked(poolKey, false)
+    })
 }
 
 module.exports.lockAndCalcPoolResults = function(poolKey) {
@@ -990,51 +992,53 @@ module.exports.lockAndCalcPoolResults = function(poolKey) {
     }
 
 
-    let poolData = MainStore.eventData.eventData.poolMap[poolKey]
-    let rulesId = Common.getDivisionRulesId(poolKey)
-    poolData.isLocked = true
+    runInAction(() => {
+        let poolData = MainStore.eventData.eventData.poolMap[poolKey]
+        let rulesId = Common.getDivisionRulesId(poolKey)
+        poolData.isLocked = true
 
-    if (rulesId === "Fpa2020") {
+        if (rulesId === "Fpa2020") {
 
-        if (Common.getDataVersion() > 0) {
-            for (let teamData of poolData.teamData) {
-                let score = 0
-                for (let judgeKey in poolData.judges) {
-                    let judge = teamData.judgeData[judgeKey]
-                    score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
-                    score += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
+            if (Common.getDataVersion() > 0) {
+                for (let teamData of poolData.teamData) {
+                    let score = 0
+                    for (let judgeKey in poolData.judges) {
+                        let judge = teamData.judgeData[judgeKey]
+                        score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                        score += judge !== undefined ? Common.calcJudgeScoreGeneral(judgeKey, teamData) : 0
 
-                    if (poolData.judges[judgeKey] === "ExAi") {
-                        score += judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
+                        if (poolData.judges[judgeKey] === "ExAi") {
+                            score += judge !== undefined ? Common.calcJudgeScoreEx(judgeKey, teamData) : 0
+                        }
                     }
+
+                    teamData.teamScore = score
                 }
-
-                teamData.teamScore = score
-            }
-        } else {
-            console.error(`Unsupported Data Version ${Common.getDataVersion()}`)
-            // TODO: Need to skip upload
-        }
-
-        Common.updatePoolLocked(poolKey, poolData)
-    } else if (rulesId === "SimpleRanking") {
-        for (let teamData of poolData.teamData) {
-            let total = 0
-            let ranks = new Array(poolData.teamData.length).fill(0)
-
-            for (let judgeKey in teamData.judgeData) {
-                let judgeData = teamData.judgeData[judgeKey]
-                if (judgeData.categoryType === "SimpleRanking") {
-                    total += judgeData.rawScores.ranking
-                }
-                ++ranks[judgeData.rawScores.ranking - 1]
+            } else {
+                console.error(`Unsupported Data Version ${Common.getDataVersion()}`)
+                // TODO: Need to skip upload
             }
 
-            teamData.teamScore = total
-        }
+            Common.updatePoolData(poolKey, poolData)
+        } else if (rulesId === "SimpleRanking") {
+            for (let teamData of poolData.teamData) {
+                let total = 0
+                let ranks = new Array(poolData.teamData.length).fill(0)
 
-        Common.updatePoolData(poolKey, poolData)
-    }
+                for (let judgeKey in teamData.judgeData) {
+                    let judgeData = teamData.judgeData[judgeKey]
+                    if (judgeData.categoryType === "SimpleRanking") {
+                        total += judgeData.rawScores.ranking
+                    }
+                    ++ranks[judgeData.rawScores.ranking - 1]
+                }
+
+                teamData.teamScore = total
+            }
+
+            Common.updatePoolData(poolKey, poolData)
+        }
+    })
 }
 
 module.exports.getSetPermalinkParams = function(crc32, urlParams) {
