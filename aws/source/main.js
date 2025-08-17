@@ -37,13 +37,14 @@ module.exports.importEventFromEventCreator = (e, c, cb) => { Common.handler(e, c
     if (currentEventData !== undefined) {
         newEventData.importantVersion = currentEventData.importantVersion + 1
 
+        console.log("Current poolMap", JSON.stringify(currentEventData.eventData.poolMap))
         mergePoolMap(newEventData.eventData, currentEventData.eventData.poolMap, newPoolMap)
     }
 
     newEventData.eventData.poolMap = {}
 
-    console.log(JSON.stringify(newPoolMap))
-    console.log(JSON.stringify(newEventData))
+    console.log("New poolMap", JSON.stringify(newPoolMap))
+    console.log("New eventData", JSON.stringify(newEventData))
 
     let putPromises = []
     let putNewEventParams = {
@@ -89,25 +90,24 @@ function getRulesIdForPool(eventData, poolKey) {
 
 function mergePoolMap(eventData, currentPoolMap, newPoolMap) {
     for (let poolKey in newPoolMap) {
-        if (getRulesIdForPool(eventData, poolKey) !== "SimpleRanking") {
-            let newPoolData = newPoolMap[poolKey]
-            let currentPoolData = currentPoolMap[poolKey]
-            if (currentPoolData !== undefined) {
-                for (let currentTeam of currentPoolData.teamData) {
-                    if (hasTeamResults(currentTeam)) {
-                        let found = false
-                        for (let newTeamIndex = 0; newTeamIndex < newPoolData.teamData.length; ++newTeamIndex) {
-                            let newTeam = newPoolData.teamData[newTeamIndex]
-                            if (hasSamePlayers(currentTeam, newTeam)) {
-                                found = true
-                                newPoolData.teamData[newTeamIndex] = currentTeam
-                                break
-                            }
+        let isSimpleRanking = getRulesIdForPool(eventData, poolKey) !== "SimpleRanking"
+        let newPoolData = newPoolMap[poolKey]
+        let currentPoolData = currentPoolMap[poolKey]
+        if (currentPoolData !== undefined) {
+            for (let currentTeam of currentPoolData.teamData) {
+                if (hasTeamResults(currentTeam)) {
+                    let found = false
+                    for (let newTeamIndex = 0; newTeamIndex < newPoolData.teamData.length; ++newTeamIndex) {
+                        let newTeam = newPoolData.teamData[newTeamIndex]
+                        if (hasSamePlayers(currentTeam, newTeam)) {
+                            found = true
+                            newPoolData.teamData[newTeamIndex] = currentTeam
+                            break
                         }
+                    }
 
-                        if (!found) {
-                            newPoolData.teamData.push(currentTeam)
-                        }
+                    if (!found && !isSimpleRanking) {
+                        newPoolData.teamData.push(currentTeam)
                     }
                 }
             }
