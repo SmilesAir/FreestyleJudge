@@ -116,7 +116,7 @@ function mergePoolMap(eventData, currentPoolMap, newPoolMap) {
 }
 
 function hasTeamResults(teamData) {
-    return Object.keys(teamData.judgeData).length > 0
+    return teamData.judgeData && Object.keys(teamData.judgeData).length > 0
 }
 
 function hasSamePlayers(teamData1, teamData2) {

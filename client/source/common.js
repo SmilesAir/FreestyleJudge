@@ -1054,7 +1054,7 @@ module.exports.getSetPermalinkParams = function(crc32, urlParams) {
 }
 
 function getTeamHasResults(teamData) {
-    return Object.keys(teamData.judgeData).length > 0
+    return teamData.judgeData && Object.keys(teamData.judgeData).length > 0
 }
 
 function getPoolHasTeams(poolKey) {
