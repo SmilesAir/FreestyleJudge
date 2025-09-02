@@ -94,6 +94,9 @@ window.onpopstate = () => history.forward()
     render() {
         let widget = null
         switch(MainStore.currentWidgetName) {
+        case "quickEventCreator":
+            widget = <iframe src="https://d1buigy8p55ler.cloudfront.net/?startup=quick" allow="clipboard-write"/>
+            break
         case "eventCreator":
             widget = <iframe src="https://d1buigy8p55ler.cloudfront.net" allow="clipboard-write"/>
             break
@@ -174,6 +177,16 @@ root.render(
         if (confirm("Really hide event from Directory?")) {
             Common.removeEventFromDirectory(event.eventKey)
         }
+    }
+
+    getQuickEventCreatorButton() {
+        return (
+            <button onClick={() => this.setUrl(undefined, "quickEventCreator")}>
+                <h2>
+                    Quick Event Creator
+                </h2>
+            </button>
+        )
     }
 
     getEventCreatorButton() {
@@ -300,9 +313,12 @@ root.render(
                     signOutCallback={() => this.onSignOut()}
                     style={style}
                 />
+                {this.getQuickEventCreatorButton()}
                 {this.getEventCreatorButton()}
                 {this.getAdminToolsButton()}
-                {widgets}
+                <div className="events">
+                    {widgets}
+                </div>
             </div>
         )
     }
