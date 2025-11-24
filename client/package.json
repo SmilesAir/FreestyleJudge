@@ -14,9 +14,9 @@
     },
     "main": "source/index.js",
     "scripts": {
-        "start": "npm i && codeglue --mode=server --stage=development",
-        "start:production": "npm i && codeglue --mode=server --stage=production",
-        "build:production": "npm i && codeglue --stage=production"
+        "start": "webpack serve --config ./webpack.config.js --mode development --port 3000 --env production",
+        "start:production": "webpack serve --config ./webpack.config.js --mode production --port 3000 --env production",
+        "build:production": "npm i && webpack --mode production --env production"
     },
     "dependencies": {
         "aws-amplify": "^5.0.18",
@@ -29,6 +29,7 @@
         "react": "^18.2.0",
         "react-cognito-auth-widget": "git+https://github.com/SmilesAir/AuthWidget.git",
         "react-dom": "^18.2.0",
+        "react-router-dom": "^7.9.6",
         "react-select": "^5.7.0",
         "react-tabs": "^6.0.0",
         "semantic-ui-css": "^2.5.0",
@@ -36,10 +37,20 @@
         "uuid": "^3.1.0"
     },
     "devDependencies": {
-        "@babel/plugin-proposal-class-properties": "^7.1.0",
-        "@babel/plugin-proposal-decorators": "^7.1.6",
-        "codeglue": "git+https://github.com/SmilesAir/codeglue.git",
-        "eslint": "^4.19.1",
-        "eslint-plugin-react": "^7.11.1"
+        "@babel/core": "^7.28.5",
+        "@babel/plugin-proposal-class-properties": "^7.18.6",
+        "@babel/plugin-proposal-decorators": "^7.28.0",
+        "@babel/plugin-transform-modules-commonjs": "^7.27.1",
+        "@babel/preset-env": "^7.28.5",
+        "@babel/preset-react": "^7.28.5",
+        "babel-loader": "^10.0.0",
+        "babel-plugin-add-module-exports": "^1.0.4",
+        "css-loader": "^7.1.2",
+        "less": "^4.4.2",
+        "less-loader": "^12.3.0",
+        "style-loader": "^4.0.0",
+        "webpack": "^5.102.1",
+        "webpack-cli": "^6.0.1",
+        "webpack-dev-server": "^5.2.2"
     }
 }

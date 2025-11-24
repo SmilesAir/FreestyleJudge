@@ -282,6 +282,10 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
             }
         }
 
+        if (!MainStore.selectedRound) {
+            return
+        }
+
         let roundData = divisionData.roundData[MainStore.selectedRound.value]
         if (roundData === undefined) {
             return

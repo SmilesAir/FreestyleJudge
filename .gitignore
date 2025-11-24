@@ -53,3 +53,4 @@ benchmarks/graphs
 
 .serverless
 client/builds
+client/dist

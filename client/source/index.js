@@ -8,6 +8,7 @@ const MobxReact = require("mobx-react")
 const { runInAction } = require("mobx")
 const { AuthWidget } = require("react-cognito-auth-widget")
 const { FreestyleAdminWidget } = require("freestyle-admin-widget")
+const { BrowserRouter, Routes, Route, Link, useParams } = require("react-router-dom")
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
@@ -142,10 +143,37 @@ window.onpopstate = () => history.forward()
             widget = <EventDirectoryWidget />
         }
 
+        let links = []
+        if (Common.isUserAdmin()) {
+            links = [
+                <Link key={1} to="/">Home</Link>, " | ",
+                <Link key={2} to="/quick">Quick Event Creator</Link>, " | ",
+                <Link key={3} to="/creator">Full Event Creator</Link>, " | ",
+                <Link key={4} to="/admin">Admin Tools</Link>, " | ",
+                <Link key={5} to="/viewer">View Players and Results</Link>
+            ]
+        } else {
+            links = [
+                <Link key={1} to="/">Home</Link>, " | ",
+                <Link key={2} to="/quick">Quick Event Creator</Link>, " | ",
+                <Link key={3} to="/viewer">View Players and Results</Link>
+            ]
+        }
+
         return (
-            <div>
-                {widget}
-            </div>
+            <BrowserRouter>
+                <nav>
+                    {links}
+                </nav>
+
+                <Routes>
+                    <Route path="/" element={widget} />
+                    <Route path="/quick" element={<iframe src="https://d1buigy8p55ler.cloudfront.net/?startup=quick" allow="clipboard-write"/>} />
+                    <Route path="/creator" element={<iframe src="https://d1buigy8p55ler.cloudfront.net" allow="clipboard-write"/>} />
+                    <Route path="/admin" element={<FreestyleAdminWidget />} />
+                    <Route path="/viewer" element={<iframe src="https://d2dmp0z3wz2180.cloudfront.net" allow="clipboard-write"/>} />
+                </Routes>
+            </BrowserRouter>
         )
     }
 }
@@ -177,44 +205,6 @@ root.render(
         if (confirm("Really hide event from Directory?")) {
             Common.removeEventFromDirectory(event.eventKey)
         }
-    }
-
-    getQuickEventCreatorButton() {
-        return (
-            <button onClick={() => this.setUrl(undefined, "quickEventCreator")}>
-                <h2>
-                    Quick Event Creator
-                </h2>
-            </button>
-        )
-    }
-
-    getEventCreatorButton() {
-        if (!Common.isUserAdmin()) {
-            return null
-        }
-
-        return (
-            <button onClick={() => this.setUrl(undefined, "eventCreator")}>
-                <h2>
-                    Event Creator
-                </h2>
-            </button>
-        )
-    }
-
-    getAdminToolsButton() {
-        if (!Common.isUserAdmin()) {
-            return null
-        }
-
-        return (
-            <button onClick={() => this.setUrl(undefined, "adminTools")}>
-                <h2>
-                    Admin Tools
-                </h2>
-            </button>
-        )
     }
 
     onSignIn(username) {
@@ -313,9 +303,9 @@ root.render(
                     signOutCallback={() => this.onSignOut()}
                     style={style}
                 />
-                {this.getQuickEventCreatorButton()}
-                {this.getEventCreatorButton()}
-                {this.getAdminToolsButton()}
+                <h1>
+                    Active Events
+                </h1>
                 <div className="events">
                     {widgets}
                 </div>

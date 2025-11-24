@@ -204,5 +204,5 @@ plugins:
 custom:
   fullstack:
     bucketName: deployed-bucket
-    distributionFolder: ../client/builds/web
+    distributionFolder: ../client/dist
     indexDocument: index.html
