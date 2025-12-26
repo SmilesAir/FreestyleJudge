@@ -1,0 +1,119 @@
+
+.judgeWidgetGoe {
+    display: flex;
+    flex-direction: row;
+
+    .input {
+        height: 85vh;
+        width: 8em;
+        border: 2px peru solid;
+    }
+
+    .baseline {
+        position: relative;
+        height: 85vh;
+        width: 17em;
+        border: 2px green solid;
+        display: flex;
+        flex-direction: row;
+
+        .control {
+            width: 5em;
+            border: 2px darkcyan solid;
+            display: flex;
+            flex-direction: column;
+
+            button {
+                height: 10vh;
+            }
+
+            .sliderWidget {
+                flex-grow: 1;
+
+                .slider {
+                    position: relative;
+                    background-color: lightcyan;
+                    border: darkturquoise solid 3px;
+                    min-height: 5em;
+                }
+            }
+        }
+
+        .baselineValueWidget {
+            flex-grow: 1;
+            .baselineValue {
+                position: absolute;
+                border: 1px gray solid;
+                font-size: 1.5em;
+                pointer-events: none;
+            }
+        }
+    }
+
+    .history {
+        height: 85vh;
+        flex-grow: 1;
+        border: 2px blue solid;
+        position: relative;
+        overflow-x: scroll;
+
+        .enter {
+            position: absolute;
+            bottom: .5em;
+            right: .5em;
+            font-size: 2.5em;
+
+            button {
+                font-size: 1em;
+            }
+        }
+
+        .mark {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            font-size: 2em;
+            border: 3px dotted gray;
+            border-top: 3px solid black;
+
+            button {
+                font-size: .7em;
+            }
+        }
+
+        .edit {
+            position: absolute;
+            top: .5em;
+            left: .5em;
+            width: 7em;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            border: 3px solid lightcoral;
+            font-size: 2.5em;
+
+            .header {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+            }
+
+            button {
+                font-size: 1em;
+            }
+
+            .arrows {
+                display: flex;
+                flex-direction: row;
+
+                button {
+                    flex-grow: 1;
+                }
+            }
+
+            .remove {
+                background-color: salmon;
+            }
+        }
+    }
+}

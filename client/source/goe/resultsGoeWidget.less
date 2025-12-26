@@ -1,0 +1,208 @@
+@media print {
+    @page {
+        size: portrait;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    .resultsGoe * {
+        visibility: visible;
+    }
+
+    .detailedContainer * {
+        page-break-inside: avoid;
+    }
+
+    .detailedContainerNone * {
+        display: none;
+    }
+
+    .judgeSummaryNone * {
+        display: none;
+    }
+
+    button * {
+        display: none;
+    }
+}
+
+.resultsGoe {
+    .detailedContainer {
+        .teamHeaderName {
+            margin-top: 1em;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        .graph {
+            position: relative;
+            height: 10em;
+            width: 97%;
+            min-width: 40em;
+            border: 2px black solid;
+
+            .bar {
+                position: absolute;
+                bottom: 0;
+                display: flex;
+                flex-direction: row;
+                align-items: end;
+                border-top: 3px gray dotted;
+                border-left: 3px gray dotted;
+                border-right: 3px gray dotted;
+
+                .tech {
+                    flex-grow: 1;
+                    background-color: cornflowerblue;
+                }
+
+                .sub {
+                    flex-grow: 1;
+                    background-color: fuchsia;
+                }
+            }
+
+            .used {
+                border-top: 3px black solid;
+                border-left: 3px black solid;
+                border-right: 3px black solid;
+            }
+        }
+    }
+
+    .judgeListRow {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+
+        .scoreboard {
+            font-size: 2em;
+            font-weight: bold;
+        }
+    }
+
+    .resultsSummary {
+        .title {
+            display: flex;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+
+        .results {
+            border: 2px solid gray;
+            border-radius: 2px;
+            width: fit-content;
+            block-size: fit-content;
+
+            .header {
+                display: flex;
+                flex-direction: row;
+                border-bottom: 1px solid gray;
+
+                .subHeaderDescriptions {
+                    border-right: 1px solid gray;
+                    flex-grow: 1;
+
+                    .subHeaderTeam {
+                        font-weight: bold;
+                        border-bottom: 1px solid gray;
+                    }
+                }
+
+                .subHeaderCategories {
+                    display: flex;
+                    flex-direction: row;
+
+                    .subHeaderCategory {
+                        display: flex;
+                        justify-content: center;
+                        border-right: 1px solid gray;
+                        width: 3em;
+                    }
+
+                    .subHeaderCategoryBold {
+                        .subHeaderCategory;
+                        font-weight: bold;
+                    }
+                }
+
+                .subHeaderRank {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: center;
+                    font-weight: bold;
+                    font-size: 2em;
+                    width: 3em;
+                }
+
+                .subHeaderTotal {
+                    .subHeaderRank;
+                    border-right: 1px solid gray;
+                    width: 3.5em;
+                }
+            }
+
+            .scores {
+                display: flex;
+                flex-direction: row;
+
+                .score {
+                    display: flex;
+                    justify-content: center;
+                    border-right: 1px solid gray;
+                    width: 3em;
+                }
+
+                .scoreHighest {
+                    font-weight: bold;
+                }
+            }
+
+            .teams {
+
+                .team {
+                    display: flex;
+                    flex-direction: row;
+                    flex-grow: 1;
+                    justify-content: space-between;
+                    border-bottom: 1px solid gray;
+
+                    .teamDetails {
+                        flex-grow: 1;
+
+                        .teamName {
+                            font-weight: bold;
+                            border-bottom: 1px solid gray;
+                        }
+
+                        .scoreboard {
+                            font-size: 3em;
+                        }
+                    }
+
+                    .totals {
+                        display: flex;
+                        flex-direction: row;
+
+                        .rank {
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: center;
+                            font-size: 2em;
+                            width: 3em;
+                        }
+
+                        .total {
+                            .rank;
+                            border-left: 1px solid gray;
+                            border-right: 1px solid gray;
+                            width: 3.5em;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

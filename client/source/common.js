@@ -18,7 +18,10 @@ module.exports.roundNames = [
     "Preliminaries"
 ]
 
-module.exports.categoryOrder = [ "Diff", "Variety", "ExAi" ]
+module.exports.categoryOrder = [
+    "Diff", "Variety", "ExAi",
+    "GoeDiff", "GoeTech", "GoeSub"
+]
 
 module.exports.EventDataUpdateHelper = class {
     constructor(extendMinutes, updateIntervalSeconds, includeMinorUpdates, onUpdateCallback, onExpiredCallback) {
@@ -538,7 +541,6 @@ module.exports.getSelectedTeamNameString = function() {
 
 module.exports.getFirstName = function(playerKey) {
     let playerData = MainStore.playerData[playerKey]
-    console.log(playerData, playerKey)
     return playerData !== undefined ? playerData.firstName : "Unknown"
 }
 
@@ -911,7 +913,7 @@ module.exports.isDivisionLocked = function(divisionData) {
 
 function sortTeamsBasedOnRules(poolKey, inOutSortedTeams) {
     let rulesId = Common.getDivisionRulesId(poolKey)
-    if (rulesId === "Fpa2020") {
+    if (rulesId === "Fpa2020" || rulesId === "Goe") {
         inOutSortedTeams.sort((a, b) => {
             if (a.teamScore === undefined && b.teamScore === undefined) {
                 return 0
@@ -1037,6 +1039,16 @@ module.exports.lockAndCalcPoolResults = function(poolKey) {
             }
 
             Common.updatePoolData(poolKey, poolData)
+        } else if (rulesId === "Goe") {
+            for (let teamData of poolData.teamData) {
+                let score = 0
+                for (let judgeKey in poolData.judges) {
+                    let judge = teamData.judgeData[judgeKey]
+                    score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                }
+
+                teamData.teamScore = score
+            }
         }
     })
 }

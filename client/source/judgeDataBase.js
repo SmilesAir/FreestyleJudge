@@ -34,4 +34,4 @@ function requireAll(r) {
         MainStore.constants[judgeDataExport.categoryType] = judgeDataExport.getDefaultConstants()
     })
 }
-requireAll(require.context("./", false, /^\.\/judgeData.+\.js$/))
+requireAll(require.context("./", true, /.*judgeData.+\.js$/))

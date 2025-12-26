@@ -1,1 +1,1 @@
-start "" "npm" run start:production
+start "" "npm" run start

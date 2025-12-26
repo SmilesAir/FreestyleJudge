@@ -1,0 +1,85 @@
+
+.judgeDataDetailed {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border: 2px solid gray;
+    border-radius: 3px;
+    background-color: azure;
+    width: fit-content;
+    block-size: fit-content;
+
+    .rawScores {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+
+        .judgeName {
+            font-weight: bold;
+            border-bottom: 1px solid gray;
+        }
+
+        .line {
+            display: flex;
+            flex-direction: row;
+            border-bottom: 1px solid gray;
+
+            label {
+                background-color: beige;
+                border-right: 1px solid gray;
+                width: 4.5em;
+            }
+
+            .value {
+                border-right: 1px solid gray;
+                padding-right: .5em;
+                padding-left: .5em;
+            }
+
+            .phrases {
+                display: flex;
+                flex-direction: row;
+                border-right: 1px solid gray;
+                padding-right: .5em;
+                padding-left: .5em;
+            }
+
+            .mark {
+                padding-left: .1em;
+                padding-right: .1em;
+            }
+
+            .markTier1 {
+                .mark;
+                font-weight: bold;
+            }
+
+            .subLine {
+                display: flex;
+                flex-direction: row;
+
+                .subLabel {
+                    background-color: lightgray;
+                    border-right: 1px solid gray;
+                    padding-left: .5em;
+                    padding-right: .5em;
+                }
+            }
+        }
+
+        .lastLine {
+            .line;
+            border-bottom: none;
+        }
+    }
+
+    .categoryOnlyScore {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 2.5em;
+        border-left: 1px solid gray;
+        width: 3.3em;
+    }
+}

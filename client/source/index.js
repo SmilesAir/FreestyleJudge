@@ -19,6 +19,9 @@ const JudgeWidgetDiff = require("./judgeWidgetDiff.js")
 const JudgeWidgetVariety = require("./judgeWidgetVariety.js")
 const JudgeWidgetExAi = require("./judgeWidgetExAi.js")
 const JudgeWidgetSimpleRanking = require("./judgeWidgetSimpleRanking.js")
+const JudgeWidgetGoeDiff = require("./goe/judgeWidgetGoeDiff.js")
+const JudgeWidgetGoeTech = require("./goe/judgeWidgetGoeTech.js")
+const JudgeWidgetGoeSub = require("./goe/judgeWidgetGoeSub.js")
 require("./judgeDataBase.js")
 
 require("react-tabs/style/react-tabs.css")
@@ -94,6 +97,7 @@ window.onpopstate = () => history.forward()
 
     render() {
         let widget = null
+        let showLinks = false
         switch(MainStore.currentWidgetName) {
         case "quickEventCreator":
             widget = <iframe src="https://d1buigy8p55ler.cloudfront.net/?startup=quick" allow="clipboard-write"/>
@@ -128,6 +132,15 @@ window.onpopstate = () => history.forward()
                 case "ExAi":
                     widget = <JudgeWidgetExAi />
                     break
+                case "GoeDiff":
+                    widget = <JudgeWidgetGoeDiff />
+                    break
+                case "GoeTech":
+                    widget = <JudgeWidgetGoeTech />
+                    break
+                case "GoeSub":
+                    widget = <JudgeWidgetGoeSub />
+                    break
                 default:
                     widget =
                         <div>
@@ -140,11 +153,17 @@ window.onpopstate = () => history.forward()
             break
         }
         default:
+            showLinks = true
             widget = <EventDirectoryWidget />
         }
 
+        let loc = window.location.toString()
+        let params = loc.split('?')[1]
+
         let links = []
-        if (Common.isUserAdmin()) {
+        if (!showLinks) {
+            // none
+        } else if (Common.isUserAdmin()) {
             links = [
                 <Link key={1} to="/">Home</Link>, " | ",
                 <Link key={2} to="/quick">Quick Event Creator</Link>, " | ",
@@ -171,7 +190,7 @@ window.onpopstate = () => history.forward()
                     <Route path="/quick" element={<iframe src="https://d1buigy8p55ler.cloudfront.net/?startup=quick" allow="clipboard-write"/>} />
                     <Route path="/creator" element={<iframe src="https://d1buigy8p55ler.cloudfront.net" allow="clipboard-write"/>} />
                     <Route path="/admin" element={<FreestyleAdminWidget />} />
-                    <Route path="/viewer" element={<iframe src="https://d2dmp0z3wz2180.cloudfront.net" allow="clipboard-write"/>} />
+                    <Route path="/viewer" element={<iframe src={`https://d2dmp0z3wz2180.cloudfront.net?${params}`} allow="clipboard-write"/>} />
                 </Routes>
             </BrowserRouter>
         )

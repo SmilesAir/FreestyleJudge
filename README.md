@@ -86,7 +86,7 @@ Keeps a list of all the events
                 name: string,
                 headJudge: string,
                 directors: [string, ...],
-                rulesId: string, // Fpa2020, SimpleRanking
+                rulesId: string, // Fpa2020, SimpleRanking, Goe
                 roundData: {
                     [roundName]: {
                         name: string,

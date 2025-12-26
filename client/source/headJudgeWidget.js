@@ -232,7 +232,6 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         this.state = {
             routineTimeString: "0:00"
         }
-        this.categoryOrder = [ "Diff", "Variety", "ExAi" ]
 
         Common.fetchEventData(MainStore.eventKey).then(() => {
             this.onEventDataUpdated()
@@ -473,7 +472,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         }
 
         let widgets = []
-        for (let categoryType of this.categoryOrder) {
+        for (let categoryType of Common.categoryOrder) {
             for (let judgeKey in poolData.judges) {
                 let judgeType = poolData.judges[judgeKey]
                 if (judgeType === categoryType) {

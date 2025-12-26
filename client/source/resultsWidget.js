@@ -6,6 +6,7 @@ const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
 const Results2020Widget = require("./results2020Widget.js")
 const ResultsSimpleRankingWidget = require("./resultsSimpleRankingWidget.js")
+const ResultsGoeWidget = require("./goe/resultsGoeWidget.js")
 
 module.exports = @MobxReact.observer class ResultsWidget extends React.Component {
     constructor(props) {
@@ -38,6 +39,8 @@ module.exports = @MobxReact.observer class ResultsWidget extends React.Component
             return <Results2020Widget />
         case "simpleranking":
             return <ResultsSimpleRankingWidget />
+        case "goe":
+            return <ResultsGoeWidget />
         }
 
         return <h1>Cannot find Results Widget</h1>
