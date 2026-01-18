@@ -847,7 +847,16 @@ module.exports.getExpiredWidget = function(eventDataUpdater) {
     )
 }
 
-module.exports.getDivisionRulesId = function(poolKey) {
+module.exports.getDivisionRulesId = function(division) {
+    if (MainStore.eventData === undefined) {
+        return defaultRulesId
+    }
+
+    let divisionData = MainStore.eventData.eventData.divisionData[division]
+    return divisionData.rulesId || defaultRulesId
+}
+
+module.exports.getDivisionRulesIdFromPoolKey = function(poolKey) {
     if (MainStore.eventData === undefined) {
         return defaultRulesId
     }
@@ -857,8 +866,7 @@ module.exports.getDivisionRulesId = function(poolKey) {
         return defaultRulesId
     }
 
-    let divisionData = MainStore.eventData.eventData.divisionData[parts[2]]
-    return divisionData.rulesId || defaultRulesId
+    return Common.getDivisionRulesId(parts[2])
 }
 
 module.exports.getActiveDivisionRulesId = function() {
@@ -866,7 +874,7 @@ module.exports.getActiveDivisionRulesId = function() {
         return defaultRulesId
     }
 
-    return Common.getDivisionRulesId(MainStore.eventData.eventState.activePoolKey)
+    return Common.getDivisionRulesIdFromPoolKey(MainStore.eventData.eventState.activePoolKey)
 }
 
 module.exports.getPlaceFromNumber = function(number) {
@@ -912,7 +920,7 @@ module.exports.isDivisionLocked = function(divisionData) {
 }
 
 function sortTeamsBasedOnRules(poolKey, inOutSortedTeams) {
-    let rulesId = Common.getDivisionRulesId(poolKey)
+    let rulesId = Common.getDivisionRulesIdFromPoolKey(poolKey)
     if (rulesId === "Fpa2020" || rulesId === "Goe") {
         inOutSortedTeams.sort((a, b) => {
             if (a.teamScore === undefined && b.teamScore === undefined) {
@@ -996,7 +1004,7 @@ module.exports.lockAndCalcPoolResults = function(poolKey) {
 
     runInAction(() => {
         let poolData = MainStore.eventData.eventData.poolMap[poolKey]
-        let rulesId = Common.getDivisionRulesId(poolKey)
+        let rulesId = Common.getDivisionRulesIdFromPoolKey(poolKey)
         poolData.isLocked = true
 
         if (rulesId === "Fpa2020") {

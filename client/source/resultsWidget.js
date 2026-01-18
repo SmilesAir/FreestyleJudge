@@ -34,7 +34,7 @@ module.exports = @MobxReact.observer class ResultsWidget extends React.Component
             )
         }
 
-        switch (Common.getActiveDivisionRulesId().toLowerCase()) {
+        switch (Common.getDivisionRulesId(MainStore.selectedDivision.label).toLowerCase()) {
         case "fpa2020":
             return <Results2020Widget />
         case "simpleranking":
