@@ -132,10 +132,12 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
         }
 
         let rect = e.target.getBoundingClientRect()
-        let yNormalized = (e.clientY - rect.top) / (rect.height - rect.top)
+        let yNormalized = Math.max(rect.height - (e.clientY - rect.height * .03), 0) / (rect.height - rect.top)
         let windowSize = this.state.windowBottom - this.state.windowTop
         let value = yNormalized * windowSize / 100 * baselineValueMax
         value += this.state.windowTop / 100 * baselineValueMax
+
+        value = Math.min(Math.max(0, value), baselineValueMax)
 
         if (this.state.selectedEditMark !== undefined) {
             runInAction(() => {
@@ -156,11 +158,11 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
     getBaselineWidget(baselineArray, baselineValueMax, allowZoom) {
         let moves = []
         for (let bv of baselineArray) {
-            let normalizePos = bv.value / baselineValueMax * 100
+            let normalizePos = (baselineValueMax - bv.value) / baselineValueMax * 100
             if (normalizePos >= this.state.windowTop && normalizePos <= this.state.windowBottom) {
                 let pos = (normalizePos - this.state.windowTop) / (this.state.windowBottom - this.state.windowTop) * 100
                 let style = {
-                    "top": `${pos * .9}%`
+                    "top": `${pos * .9 + 3}%`
                 }
                 moves.push(<div key={bv.label} className="baselineValue" style={style}>{bv.label}</div>)
             }
@@ -238,6 +240,10 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
         )
     }
 
+    cancelInput() {
+        this.setState({ newMarkTime: undefined })
+    }
+
     getEnterMarkWidget() {
         if (this.state.newMarkTime === undefined) {
             return null
@@ -245,7 +251,7 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
 
         return (
             <div className="enter">
-                <button>Cancel Input</button>
+                <button onClick={() => this.cancelInput()}>Cancel Input</button>
             </div>
         )
     }
@@ -256,7 +262,7 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
         let right = (scores.length - 1) * (widthInEm + paddingInEm)
         let widgets = scores.map((data) => {
             let style = {
-                "top": `${data.value / baselineValueMax * 90}%`,
+                "top": `${(baselineValueMax - data.value) / baselineValueMax * 90 + 3}%`,
                 "right": `${right}em`,
                 "width": `${widthInEm}em`
             }
@@ -509,13 +515,9 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
                     <Tabs selectedIndex={MainStore.judgeTabsSelectedIndex} onSelect={(index) => this.onJudgeTabsSelectedIndex(index)}>
                         <TabList>
                             <Tab>Judge</Tab>
-                            <Tab>Scores</Tab>
                         </TabList>
                         <TabPanel>
                             {this.getJudgeWidget()}
-                        </TabPanel>
-                        <TabPanel>
-                            {this.scoresWidget()}
                         </TabPanel>
                     </Tabs>
                 </div>

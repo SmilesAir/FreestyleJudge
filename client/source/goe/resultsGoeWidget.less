@@ -62,11 +62,46 @@
                     flex-grow: 1;
                     background-color: fuchsia;
                 }
+
+                .techScore {
+                    position: absolute;
+                    top: -1.3em;
+                    font-size: 1em;
+                    color: cornflowerblue;
+                    font-weight: bold;
+                }
+
+                .subScore {
+                    position: absolute;
+                    top: -1.3em;
+                    right: 0;
+                    font-size: 1em;
+                    color: fuchsia;
+                    font-weight: bold;
+                }
+
+                .unused {
+                    font-weight: normal;
+                    opacity: 50%;
+                    -webkit-text-stroke: 0;
+                }
             }
 
-            .used {
+            .usedBoth {
                 border-top: 3px black solid;
                 border-left: 3px black solid;
+                border-right: 3px black solid;
+            }
+
+            .usedTech {
+                border-top: 3px black solid;
+                border-left: 3px black solid;
+                border-right: 3px gray dotted;
+            }
+
+            .usedSub {
+                border-top: 3px black solid;
+                border-left: 3px gray dotted;
                 border-right: 3px black solid;
             }
         }

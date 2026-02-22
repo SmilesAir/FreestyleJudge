@@ -32,8 +32,10 @@ module.exports.JudgeDataClass = class extends JudgeDataGoeBase.JudgeDataGoeBase 
         }
 
         let ret = []
-        for (let diffScores of judgePreProcessData.techScores) {
-            ret.push(this.calcScoreDetailed(judgePreProcessData, diffScores, this.data.techScores))
+        for (let diffScores of judgePreProcessData.diffScores) {
+            let details = this.calcScoreDetailed(judgePreProcessData, diffScores, this.data.techScores)
+            console.log(5, JSON.parse(JSON.stringify(details)), this.data.techScores)
+            ret.push(details)
         }
 
         return ret

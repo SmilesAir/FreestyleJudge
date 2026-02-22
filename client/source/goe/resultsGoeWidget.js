@@ -250,6 +250,7 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
             if (judgeDetails.categoryType === "GoeTech" || judgeDetails.categoryType === "GoeSub") {
                 let scoreSumPerDiff = allScoreSumPerDiff[judgeDetails.categoryType]
                 for (let perDiffDetails of judgeDetails.details) {
+                    //console.log(2, perDiffDetails.countedScores)
                     for (let [i, detail] of perDiffDetails.details.entries()) {
                         scoreSumPerDiff[i] = scoreSumPerDiff[i] || {
                             score: 0,
@@ -259,8 +260,11 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
                         }
                         scoreSumPerDiff[i].value += detail.goe.value
                         scoreSumPerDiff[i].score += detail.score
-                        scoreSumPerDiff[i].used |= perDiffDetails.countedScores.find((data) => data === detail) !== undefined
+                        scoreSumPerDiff[i].used |= perDiffDetails.countedScores.find((data) => data.score === detail.score) !== undefined
+
                         ++scoreSumPerDiff[i].count
+
+                        //console.log(judgeDetails.categoryType, detail.score, scoreSumPerDiff[i])
                     }
                 }
             } else if (judgeDetails.categoryType === "GoeDiff") {
@@ -295,7 +299,8 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
                 techValue: tech.value,
                 subScore: sub.score,
                 subValue: sub.value,
-                used: tech.used || sub.used
+                usedTech: tech.used,
+                usedSub: sub.used
             })
         }
 
@@ -315,16 +320,25 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
             let subStyle = {
                 "height": `${100 * data.subValue / MainStore.configData.subValueMax}%`
             }
-            console.log(barStyle, techStyle)
+            let usedStyle = ""
+            if (data.usedTech && data.usedSub) {
+                usedStyle = "usedBoth"
+            } else if (data.usedTech) {
+                usedStyle = "usedTech"
+            } else if (data.usedSub) {
+                usedStyle = "usedSub"
+            }
             return (
-                <div key={data.time} className={`bar ${data.used ? "used" : ""}`} style={barStyle}>
+                <div key={data.time} className={`bar ${usedStyle}`} style={barStyle}>
                     <div className="tech" style={techStyle}/>
                     <div className="sub" style={subStyle}/>
+                    <div className={`techScore ${data.usedTech ? "" : "unused"}`}>{Math.round(data.techScore)}</div>
+                    <div className={`subScore ${data.usedSub ? "" : "unused"}`}>{Math.round(data.subScore)}</div>
                 </div>
             )
         })
 
-        console.log(1, renderDetails)
+        //console.log(1, renderDetails)
 
         return (
             <div className="graph">

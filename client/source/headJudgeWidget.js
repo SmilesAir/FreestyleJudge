@@ -585,6 +585,20 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         }
     }
 
+    getVisualizationWidget() {
+        let poolKey = Common.getSelectedPoolKey()
+        let rulesId = Common.getDivisionRulesIdFromPoolKey(poolKey)
+        if (rulesId === "Goe") {
+            return (
+                <div className="visual">
+
+                </div>
+            )
+        }
+
+        return null
+    }
+
     getRunControls() {
         return (
             <div className="runControls">
@@ -610,6 +624,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                         {this.getJudgesWidget()}
                     </div>
                 </div>
+                {this.getVisualizationWidget()}
                 <hr/>
                 <ResultsWidget />
             </div>

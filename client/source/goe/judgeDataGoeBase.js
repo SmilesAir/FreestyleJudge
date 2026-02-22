@@ -73,6 +73,7 @@ module.exports.JudgeDataGoeBase = class extends JudgeDataBase.JudgeDataBase {
         let totalScore = 0
         let countedScores = []
         let sorted = details.slice().sort((a, b) => b.score - a.score)
+        // Todo: Make dependent on time
         for (let i = 0; i < 6 && i < sorted.length; ++i) {
             totalScore += sorted[i].score
             countedScores.push(sorted[i])
