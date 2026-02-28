@@ -129,10 +129,21 @@
         }
 
         .visual {
+            position: relative;
             margin-left: .5%;
             width: 99%;
             height: 15em;
             border: solid black 3px;
+
+            .dataPoint {
+                position: absolute;
+                cursor: pointer;
+            }
+
+            .drawArea {
+                width: 100%;
+                height: 100%;
+            }
         }
     }
 

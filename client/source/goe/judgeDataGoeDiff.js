@@ -99,9 +99,53 @@ module.exports.JudgeDataClass = class extends JudgeDataGoeBase.JudgeDataGoeBase 
 
     addJudgePreProcessData(preProcessData) {
         if (preProcessData.diffScores === undefined) {
-            preProcessData.diffScores = [ this.data.diffScores ]
+            preProcessData.diffScores = [ this.data.diffScores.slice() ]
         } else {
-            preProcessData.diffScores.push(this.data.diffScores)
+            preProcessData.diffScores.push(this.data.diffScores.slice())
+        }
+
+        // Calculate averaged diff scores
+        // TODO add override
+        if (preProcessData.diffScores.length > 1) {
+            let minMarks = Number.MAX_SAFE_INTEGER
+            let minMarksIndex = 0
+            for (let [i, diffArray] of preProcessData.diffScores.entries()) {
+                if (diffArray.length < minMarks) {
+                    minMarks = diffArray.length
+                    minMarksIndex = i
+                }
+            }
+
+            let leaderDiffScores = preProcessData.diffScores[minMarksIndex]
+            let diffJudgesCount = preProcessData.diffScores.length
+            let aggregateDiffScores = []
+            for (let mark of leaderDiffScores) {
+                let sum = mark.value
+                for (let otherPreProcessDiffArray of preProcessData.diffScores) {
+                    if (otherPreProcessDiffArray !== leaderDiffScores) {
+                        let smallestTimeDelta = Number.MAX_VALUE
+                        let closestValue = 0
+                        for (let otherMark of otherPreProcessDiffArray) {
+                            let delta = Math.abs(mark.time - otherMark.time)
+                            if (delta < smallestTimeDelta) {
+                                smallestTimeDelta = delta
+                                closestValue = otherMark.value
+                            }
+                        }
+
+                        sum += closestValue
+                    }
+                }
+
+                aggregateDiffScores.push({
+                    time: mark.time,
+                    value: sum / diffJudgesCount
+                })
+            }
+
+            preProcessData.aggregateDiffScores = aggregateDiffScores
+        } else {
+            preProcessData.aggregateDiffScores = this.data.diffScores.slice()
         }
     }
 

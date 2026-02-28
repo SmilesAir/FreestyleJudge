@@ -91,18 +91,13 @@ module.exports.JudgeDataGoeBase = class extends JudgeDataBase.JudgeDataBase {
     }
 
     getFullCalcDetails(judgePreProcessData) {
-        console.log(5)
         throw new Error("getFullCalcDetails is not implemented in child")
     }
 
     calcJudgeScoreCategoryOnly(judgePreProcessData) {
-        let sum = 0
         let details = this.calcDetailsRaw(judgePreProcessData)
-        for (let detail of details) {
-            sum += detail.score
-        }
 
-        return sum
+        return details.score
     }
 
     getJudgeWidgetDetailed() {

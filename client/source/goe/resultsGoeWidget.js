@@ -21,16 +21,6 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
         this.state = {
             isSummaryPrintOnly: false
         }
-
-        if (this.props.scoreboardMode === true) {
-            Common.fetchEventData(MainStore.eventKey)
-            Common.fetchPlayerData()
-
-            this.eventDataUpdater = new Common.EventDataUpdateHelper(18 * 60, 5, true)
-            setTimeout(() => {
-                this.eventDataUpdater.extendUpdateDeadline()
-            }, 5000)
-        }
     }
 
     getCategoryHeaderWidgets(poolData) {
@@ -249,33 +239,27 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
             let judgeDetails = judge.getFullCalcDetails(teamData.judgePreProcessData)
             if (judgeDetails.categoryType === "GoeTech" || judgeDetails.categoryType === "GoeSub") {
                 let scoreSumPerDiff = allScoreSumPerDiff[judgeDetails.categoryType]
-                for (let perDiffDetails of judgeDetails.details) {
-                    //console.log(2, perDiffDetails.countedScores)
-                    for (let [i, detail] of perDiffDetails.details.entries()) {
-                        scoreSumPerDiff[i] = scoreSumPerDiff[i] || {
-                            score: 0,
-                            value: 0,
-                            used: false,
-                            count: 0
-                        }
-                        scoreSumPerDiff[i].value += detail.goe.value
-                        scoreSumPerDiff[i].score += detail.score
-                        scoreSumPerDiff[i].used |= perDiffDetails.countedScores.find((data) => data.score === detail.score) !== undefined
-
-                        ++scoreSumPerDiff[i].count
-
-                        //console.log(judgeDetails.categoryType, detail.score, scoreSumPerDiff[i])
-                    }
-                }
-            } else if (judgeDetails.categoryType === "GoeDiff") {
-                for (let [i, diff] of judgeDetails.details.entries()) {
-                    allScoreSumPerDiff.GoeDiff[i] = allScoreSumPerDiff.GoeDiff[i] || {
-                        time: diff.time - judgeDetails.details[0].time,
+                let details = judgeDetails.details
+                for (let [i, detail] of details.details.entries()) {
+                    scoreSumPerDiff[i] = scoreSumPerDiff[i] || {
                         score: 0,
+                        value: 0,
+                        used: false,
                         count: 0
                     }
-                    allScoreSumPerDiff.GoeDiff[i].score += diff.value
-                    ++allScoreSumPerDiff.GoeDiff[i].count
+                    scoreSumPerDiff[i].value += detail.goe.value
+                    scoreSumPerDiff[i].score += detail.score
+                    scoreSumPerDiff[i].used |= details.countedScores.find((data) => data.score === detail.score) !== undefined
+
+                    ++scoreSumPerDiff[i].count
+                }
+            } else if (judgeDetails.categoryType === "GoeDiff") {
+                for (let diff of teamData.judgePreProcessData.aggregateDiffScores) {
+                    allScoreSumPerDiff.GoeDiff.push({
+                        time: diff.time - judgeDetails.details[0].time,
+                        score: diff.value,
+                        count: 1
+                    })
                 }
             }
         }
@@ -337,8 +321,6 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
                 </div>
             )
         })
-
-        //console.log(1, renderDetails)
 
         return (
             <div className="graph">
@@ -507,16 +489,6 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
         let poolKey = Common.getSelectedPoolKey()
         let poolName = Common.makePoolName(MainStore.selectedDivision.value, MainStore.selectedRound.value, MainStore.selectedPool.value)
 
-        if (this.props.scoreboardMode === true) {
-            return (
-                <div>
-                    <div className="resultsGoe">
-                        {this.getSummaryWidget(poolKey, poolName)}
-                        {this.getJudgesListWidget()}
-                    </div>
-                </div>
-            )
-        } else {
             return (
                 <div>
                     <button onClick={() => this.printSummary()}>Print Summary</button>
@@ -530,6 +502,5 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
                     </div>
                 </div>
             )
-        }
     }
 }

@@ -29,16 +29,11 @@ module.exports.JudgeDataClass = class extends JudgeDataGoeBase.JudgeDataGoeBase 
     }
 
     calcDetailsRaw(judgePreProcessData) {
-        if (judgePreProcessData.diffScores.length === 0) {
-            return []
+        if (judgePreProcessData.aggregateDiffScores.length === 0) {
+            return undefined
         }
 
-        let ret = []
-        for (let diffScores of judgePreProcessData.diffScores) {
-            ret.push(this.calcScoreDetailed(judgePreProcessData, diffScores, this.data.subScores))
-        }
-
-        return ret
+        return this.calcScoreDetailed(judgePreProcessData, judgePreProcessData.aggregateDiffScores, this.data.subScores)
     }
 
     getJudgeWidgetDetailed(judgePreProcessData) {

@@ -230,7 +230,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         })
 
         this.state = {
-            routineTimeString: "0:00"
+            routineTimeString: "0:00",
+            canvasRef: React.createRef(null)
         }
 
         Common.fetchEventData(MainStore.eventKey).then(() => {
@@ -589,14 +590,130 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
         let poolKey = Common.getSelectedPoolKey()
         let rulesId = Common.getDivisionRulesIdFromPoolKey(poolKey)
         if (rulesId === "Goe") {
+            let dataPoints = []
+            let firstTime = Number.MAX_VALUE
+            let lastTime = 0
+            let teamData = Common.getSelectedTeamData()
+            if (teamData !== undefined && teamData.judgeInstances !== undefined) {
+                for (let diff of teamData.judgePreProcessData.aggregateDiffScores) {
+                    firstTime = Math.min(firstTime, diff.time)
+                    lastTime = Math.max(lastTime, diff.time)
+                    dataPoints.push({
+                        time: diff.time - teamData.judgePreProcessData.aggregateDiffScores[0].time,
+                        score: diff.value,
+                        categoryType: "GoeDiff"
+                    })
+                }
+
+                for (let judge of Object.values(teamData.judgeInstances)) {
+                    let judgeDetails = judge.getFullCalcDetails(teamData.judgePreProcessData)
+                    if (judgeDetails.categoryType !== "GoeDiff") {
+                        let details = judgeDetails.details.details
+                        for (let detail of details) {
+                            dataPoints.push({
+                                time: detail.goe.time - details[0].goe.time,
+                                score: detail.goe.value,
+                                categoryType: judgeDetails.categoryType
+                            })
+                        }
+                    }
+                }
+            }
+
+            let dataPointElements = dataPoints.map((data) => {
+                let icon, color, height
+                switch (data.categoryType) {
+                    case "GoeDiff":
+                        icon = "*"
+                        color = "black"
+                        height = data.score / MainStore.configData.diffValueMax
+                        break
+                    case "GoeTech":
+                        icon = "+"
+                        color = "cornflowerblue"
+                        height = data.score / MainStore.configData.techValueMax
+                        break;
+                    case "GoeSub":
+                        icon = "x"
+                        color = "fuchsia"
+                        height = data.score / MainStore.configData.subValueMax
+                        break
+                }
+                let style = {
+                    "color": color,
+                    "left": `${5 + 90 * (data.time / (lastTime - firstTime))}%`,
+                    "bottom": `${height * 90}%`,
+                }
+
+                return (
+                    <div key={Math.random()} className="dataPoint" style={style}>
+                        {icon}
+                    </div>
+                )
+            })
+
             return (
                 <div className="visual">
-
+                    {dataPointElements}
+                    <canvas className="drawArea" ref={this.state.canvasRef} />
                 </div>
             )
         }
 
         return null
+    }
+
+    componentDidUpdate() {
+        const canvas = this.state.canvasRef.current
+        if (canvas) {
+            const width = 2500
+            const height = 360
+            canvas.width = width
+            canvas.height = height
+            const context = canvas.getContext('2d')
+            context.lineWidth = 1
+            context.strokeStyle = "rgb(0 0 0 / 20%)"
+
+            let dataPoints = []
+            let firstTime = Number.MAX_VALUE
+            let lastTime = 0
+            let teamData = Common.getSelectedTeamData()
+            if (teamData !== undefined && teamData.judgeInstances !== undefined) {
+                for (let diff of teamData.judgePreProcessData.aggregateDiffScores) {
+                    firstTime = Math.min(firstTime, diff.time)
+                    lastTime = Math.max(lastTime, diff.time)
+                }
+
+                for (let judge of Object.values(teamData.judgeInstances)) {
+                    let judgeDetails = judge.getFullCalcDetails(teamData.judgePreProcessData)
+                    if (judgeDetails.categoryType !== "GoeDiff") {
+                        let details = judgeDetails.details.details
+                        for (let detail of details) {
+                            dataPoints.push({
+                                diffTime: detail.diff.time - teamData.judgePreProcessData.aggregateDiffScores[0].time,
+                                diffValue: detail.diff.value,
+                                goeTime: detail.goe.time - details[0].goe.time,
+                                goeValueNormalized: detail.goe.value / (judgeDetails.categoryType === "GoeTech" ? MainStore.configData.techValueMax : MainStore.configData.subValueMax),
+                                categoryType: judgeDetails.categoryType
+                            })
+                        }
+                    }
+                }
+            }
+
+            for (let dataPoint of dataPoints) {
+                context.beginPath()
+
+                let startX = .05 + .9 * (dataPoint.diffTime / (lastTime - firstTime))
+                let startY = .9 * (dataPoint.diffValue / MainStore.configData.diffValueMax)
+                context.moveTo(width * startX + 6, height * (1 - startY) - 12)
+
+                let endX = .05 + .9 * (dataPoint.goeTime / (lastTime - firstTime))
+                let endY = .9 * dataPoint.goeValueNormalized
+                context.lineTo(width * endX + 6, height * (1 - endY) - 14)
+                context.stroke()
+            }
+        }
     }
 
     getRunControls() {
