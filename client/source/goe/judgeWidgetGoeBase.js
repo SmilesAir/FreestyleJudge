@@ -204,13 +204,21 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
     }
 
     moveMarkTime(scores, milliseconds) {
+        this.setMarkTime(scores, this.state.selectedEditMark.time + milliseconds)
+    }
+
+    setMarkTime(scores, milliseconds) {
         runInAction(() => {
-            this.state.selectedEditMark.time += milliseconds
+            this.state.selectedEditMark.time = milliseconds
             scores.sort((a, b) => a.time - b.time)
 
             this.updateJudgeData()
             this.setState(this.state)
         })
+    }
+
+    onTimeChange(scores, e) {
+        this.setMarkTime(scores, scores[0].time + e.target.value * 1000)
     }
 
     getEditMarkWidget(scores) {
@@ -228,9 +236,7 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
                     <button onClick={() => this.moveMarkTime(scores, moveTimeAmount)}>→</button>
                 </div>
                 <div className="header">
-                    <div>
-                        {Math.round((this.state.selectedEditMark.time - scores[0].time) / 1000)}
-                    </div>
+                    <input type="number" value={Math.round((this.state.selectedEditMark.time - scores[0].time) / 1000)} onChange={(e) => this.onTimeChange(scores, e)} />
                     <div>
                         {Common.round1Decimals(this.state.selectedEditMark.value)}
                     </div>
