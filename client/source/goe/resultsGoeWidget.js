@@ -254,12 +254,14 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
                     ++scoreSumPerDiff[i].count
                 }
             } else if (judgeDetails.categoryType === "GoeDiff") {
-                for (let diff of teamData.judgePreProcessData.aggregateDiffScores) {
-                    allScoreSumPerDiff.GoeDiff.push({
-                        time: diff.time - judgeDetails.details[0].time,
-                        score: diff.value,
-                        count: 1
-                    })
+                if (allScoreSumPerDiff.GoeDiff.length === 0) {
+                    for (let diff of teamData.judgePreProcessData.aggregateDiffScores) {
+                        allScoreSumPerDiff.GoeDiff.push({
+                            time: diff.time - judgeDetails.details[0].time,
+                            score: diff.value,
+                            count: 1
+                        })
+                    }
                 }
             }
         }
@@ -291,7 +293,7 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
         let lastTime = renderDetails[renderDetails.length - 1].time
         let bars = renderDetails.map((data) => {
             let diffNormalized = data.diff / MainStore.configData.diffValueMax
-            const maxBarHeight = 90
+            const maxBarHeight = 140
             const barWidth = 2
             let barStyle = {
                 "left": `${5 + 90 * (data.time / lastTime)}%`,

@@ -15,7 +15,7 @@ let baselineArray = [
     { value: 10, label: "-Barrel Gitis" },
     { value: 20, label: "-Double Barrel Gitis" },
     { value: 30, label: "-Triple Barrel Gitis" },
-    { value: 40, label: "-Super Hard Move" },
+    { value: 35, label: "-Super Hard Move" },
 ]
 baselineArray.sort((a, b) => a.value - b.value)
 const baselineValueMax = baselineArray[baselineArray.length - 1].value

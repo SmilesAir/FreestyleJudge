@@ -33,10 +33,9 @@ module.exports.JudgeDataGoeBase = class extends JudgeDataBase.JudgeDataBase {
     }
 
     calcScoreScaling(judgePreProcessData, inValue, category) {
-        let judgeCountMulti = (judgePreProcessData.diffScores ? judgePreProcessData.diffScores.length : 1) *
-            (judgePreProcessData.techScores ? judgePreProcessData.techScores.length : 1) *
+        let judgeCountMulti = (judgePreProcessData.techScores ? judgePreProcessData.techScores.length : 1) +
             (judgePreProcessData.subScores ? judgePreProcessData.subScores.length : 1)
-        return inValue / 250 * (180 / this.routineLengthSeconds) / judgeCountMulti
+        return inValue / 100 * (180 / this.routineLengthSeconds) / judgeCountMulti
     }
 
     calcScoreDetailed(judgePreProcessData, diffScores, goeScores, category) {
