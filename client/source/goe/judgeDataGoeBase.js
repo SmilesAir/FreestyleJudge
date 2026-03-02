@@ -86,6 +86,10 @@ module.exports.JudgeDataGoeBase = class extends JudgeDataBase.JudgeDataBase {
         }
     }
 
+    getCategoryType() {
+        throw new Error("getCategoryType is not implemented in child")
+    }
+
     calcDetailsRaw(judgePreProcessData) {
         throw new Error("calcDetailsRaw is not implemented in child")
     }

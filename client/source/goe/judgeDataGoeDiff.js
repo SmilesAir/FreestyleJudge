@@ -19,6 +19,10 @@ module.exports.JudgeDataClass = class extends JudgeDataGoeBase.JudgeDataGoeBase 
         this.data.diffScores = judgeData.rawScores && judgeData.rawScores.diffScores || []
     }
 
+    getCategoryType() {
+        return module.exports.categoryType
+    }
+
     getFullCalcDetails(judgePreProcessData) {
         return {
             categoryType: module.exports.categoryType,

@@ -605,6 +605,22 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                     })
                 }
 
+                let sortedJudgeKeys = Common.getSortedJudgeKeyArray(Common.getSelectedPoolData())
+                let judgeCountsByType = {
+                    "GoeDiff": 0,
+                    "GoeTech": 0,
+                    "GoeSub": 0
+                }
+                let judgeIndexByKey = {}
+                for (let judgeKey of sortedJudgeKeys) {
+                    let judge = teamData.judgeInstances[judgeKey]
+                    if (judge) {
+                        let categoryType = judge.getCategoryType()
+                        judgeIndexByKey[judgeKey] = judgeCountsByType[categoryType]
+                        ++judgeCountsByType[categoryType]
+                    }
+                }
+
                 for (let judge of Object.values(teamData.judgeInstances)) {
                     let judgeDetails = judge.getFullCalcDetails(teamData.judgePreProcessData)
                     if (judgeDetails.categoryType !== "GoeDiff") {
@@ -613,7 +629,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                             dataPoints.push({
                                 time: detail.goe.time - details[0].goe.time,
                                 score: detail.goe.value,
-                                categoryType: judgeDetails.categoryType
+                                categoryType: judgeDetails.categoryType,
+                                index: judgeIndexByKey[judge.data.judgeKey]
                             })
                         }
                     }
@@ -621,7 +638,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
             }
 
             let dataPointElements = dataPoints.map((data) => {
-                let icon, color, height
+                let icon, color, height, judgeIndex
                 switch (data.categoryType) {
                     case "GoeDiff":
                         icon = "*"
@@ -630,11 +647,13 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                         break
                     case "GoeTech":
                         icon = "+"
+                        judgeIndex = data.index
                         color = "cornflowerblue"
                         height = data.score / MainStore.configData.techValueMax
                         break;
                     case "GoeSub":
                         icon = "x"
+                        judgeIndex = data.index
                         color = "fuchsia"
                         height = data.score / MainStore.configData.subValueMax
                         break
@@ -648,6 +667,7 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                 return (
                     <div key={Math.random()} className="dataPoint" style={style}>
                         {icon}
+                        <sup>{judgeIndex}</sup>
                     </div>
                 )
             })
