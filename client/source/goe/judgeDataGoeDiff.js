@@ -52,7 +52,7 @@ module.exports.JudgeDataClass = class extends JudgeDataGoeBase.JudgeDataGoeBase 
     getJudgeWidgetDetailed() {
         let phrases = []
         for (let phrase of this.data.diffScores) {
-            phrases.push(<div key={Math.random()} className="mark">{Common.round1Decimals(phrase.value)}</div>)
+            phrases.push(<div key={Math.random()} className="mark">{Math.round(phrase.value)}</div>)
         }
 
         let totalAvg = 0
@@ -109,7 +109,6 @@ module.exports.JudgeDataClass = class extends JudgeDataGoeBase.JudgeDataGoeBase 
         }
 
         // Calculate averaged diff scores
-        // TODO add override
         if (preProcessData.diffScores.length > 1) {
             let minMarks = Number.MAX_SAFE_INTEGER
             let minMarksIndex = 0

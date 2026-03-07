@@ -222,7 +222,9 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
     }
 
     getEditMarkWidget(scores) {
-        if (this.state.selectedEditMark === undefined) {
+        if (this.state.selectedEditMark === undefined
+            || scores === undefined
+            || scores.length === 0) {
             return null
         }
 

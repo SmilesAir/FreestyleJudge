@@ -857,7 +857,7 @@ module.exports.getDivisionRulesId = function(division) {
 }
 
 module.exports.getDivisionRulesIdFromPoolKey = function(poolKey) {
-    if (MainStore.eventData === undefined) {
+    if (MainStore.eventData === undefined || poolKey === undefined) {
         return defaultRulesId
     }
 

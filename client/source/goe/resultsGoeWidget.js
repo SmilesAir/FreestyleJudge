@@ -240,18 +240,20 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
             if (judgeDetails.categoryType === "GoeTech" || judgeDetails.categoryType === "GoeSub") {
                 let scoreSumPerDiff = allScoreSumPerDiff[judgeDetails.categoryType]
                 let details = judgeDetails.details
-                for (let [i, detail] of details.details.entries()) {
-                    scoreSumPerDiff[i] = scoreSumPerDiff[i] || {
-                        score: 0,
-                        value: 0,
-                        used: false,
-                        count: 0
-                    }
-                    scoreSumPerDiff[i].value += detail.goe.value
-                    scoreSumPerDiff[i].score += detail.score
-                    scoreSumPerDiff[i].used |= details.countedScores.find((data) => data.score === detail.score) !== undefined
+                if (details && details.details) {
+                    for (let [i, detail] of details.details.entries()) {
+                        scoreSumPerDiff[i] = scoreSumPerDiff[i] || {
+                            score: 0,
+                            value: 0,
+                            used: false,
+                            count: 0
+                        }
+                        scoreSumPerDiff[i].value += detail.goe.value
+                        scoreSumPerDiff[i].score += detail.score
+                        scoreSumPerDiff[i].used |= details.countedScores.find((data) => data.goe.time === detail.goe.time) !== undefined
 
-                    ++scoreSumPerDiff[i].count
+                        ++scoreSumPerDiff[i].count
+                    }
                 }
             } else if (judgeDetails.categoryType === "GoeDiff") {
                 if (allScoreSumPerDiff.GoeDiff.length === 0) {
@@ -264,6 +266,12 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
                     }
                 }
             }
+        }
+
+        if (allScoreSumPerDiff.GoeDiff.length === 0 ||
+            allScoreSumPerDiff.GoeTech.length === 0 ||
+            allScoreSumPerDiff.GoeSub.length === 0) {
+            return null
         }
 
         for (let category of Object.values(allScoreSumPerDiff)) {
@@ -318,8 +326,8 @@ module.exports = @MobxReact.observer class ResultsGoeWidget extends React.Compon
                 <div key={data.time} className={`bar ${usedStyle}`} style={barStyle}>
                     <div className="tech" style={techStyle}/>
                     <div className="sub" style={subStyle}/>
-                    <div className={`techScore ${data.usedTech ? "" : "unused"}`}>{Math.round(data.techScore)}</div>
-                    <div className={`subScore ${data.usedSub ? "" : "unused"}`}>{Math.round(data.subScore)}</div>
+                    <div className={`techScore ${data.usedTech ? "" : "unused"}`}>{Common.round1Decimals(data.techScore)}</div>
+                    <div className={`subScore ${data.usedSub ? "" : "unused"}`}>{Common.round1Decimals(data.subScore)}</div>
                 </div>
             )
         })

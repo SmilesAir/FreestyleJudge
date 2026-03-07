@@ -12,7 +12,7 @@ require("./judgeWidgetGoe.less")
 let baselineArray = [
     { value: 0, label: "-Nothing of Value" },
     { value: 40, label: "Music" },
-    { value: 50, label: "Form" },
+    { value: 50, label: "Look" },
     { value: 100, label: "-All Elements Perfect" },
 ]
 baselineArray.sort((a, b) => a.value - b.value)

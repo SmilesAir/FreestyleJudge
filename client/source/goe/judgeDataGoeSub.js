@@ -33,7 +33,9 @@ module.exports.JudgeDataClass = class extends JudgeDataGoeBase.JudgeDataGoeBase 
     }
 
     calcDetailsRaw(judgePreProcessData) {
-        if (judgePreProcessData.aggregateDiffScores.length === 0) {
+        if (judgePreProcessData === undefined ||
+            judgePreProcessData.aggregateDiffScores === undefined ||
+            judgePreProcessData.aggregateDiffScores.length === 0) {
             return undefined
         }
 
@@ -43,7 +45,7 @@ module.exports.JudgeDataClass = class extends JudgeDataGoeBase.JudgeDataGoeBase 
     getJudgeWidgetDetailed(judgePreProcessData) {
         let phrases = []
         for (let phrase of this.data.subScores) {
-            phrases.push(<div key={Math.random()} className="mark">{Common.round1Decimals(phrase.value)}</div>)
+            phrases.push(<div key={Math.random()} className="mark">{Math.round(phrase.value)}</div>)
         }
 
         let totalAvg = 0

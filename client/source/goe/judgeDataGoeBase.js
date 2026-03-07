@@ -1,4 +1,4 @@
-const MainStore = require("../mainStore.js")
+const Common = require("../common.js")
 const JudgeDataBase = require("../judgeDataBase.js")
 
 require("./judgeDataGoeBase.less")
@@ -9,7 +9,7 @@ module.exports.categoryType = "GoeBase"
 
 module.exports.getDefaultConstants = function() {
     return {
-        // TODO
+        topScoresPerMinute: 2
     }
 }
 
@@ -72,8 +72,8 @@ module.exports.JudgeDataGoeBase = class extends JudgeDataBase.JudgeDataBase {
         let totalScore = 0
         let countedScores = []
         let sorted = details.slice().sort((a, b) => b.score - a.score)
-        // Todo: Make dependent on time
-        for (let i = 0; i < 6 && i < sorted.length; ++i) {
+        const topScoreCount = Math.round(Common.getSelectedPoolRoutineSeconds() / 60 * JudgeDataGoeBase.getDefaultConstants().topScoresPerMinute)
+        for (let i = 0; i < topScoreCount && i < sorted.length; ++i) {
             totalScore += sorted[i].score
             countedScores.push(sorted[i])
         }
@@ -99,6 +99,10 @@ module.exports.JudgeDataGoeBase = class extends JudgeDataBase.JudgeDataBase {
 
     calcJudgeScoreCategoryOnly(judgePreProcessData) {
         let details = this.calcDetailsRaw(judgePreProcessData)
+
+        if (details === undefined) {
+            return 0
+        }
 
         return details.score
     }

@@ -594,7 +594,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
             let firstTime = Number.MAX_VALUE
             let lastTime = 0
             let teamData = Common.getSelectedTeamData()
-            if (teamData !== undefined && teamData.judgeInstances !== undefined) {
+            if (teamData !== undefined && teamData.judgeInstances !== undefined &&
+                teamData.judgePreProcessData && teamData.judgePreProcessData.aggregateDiffScores) {
                 for (let diff of teamData.judgePreProcessData.aggregateDiffScores) {
                     firstTime = Math.min(firstTime, diff.time)
                     lastTime = Math.max(lastTime, diff.time)
@@ -624,14 +625,16 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                 for (let judge of Object.values(teamData.judgeInstances)) {
                     let judgeDetails = judge.getFullCalcDetails(teamData.judgePreProcessData)
                     if (judgeDetails.categoryType !== "GoeDiff") {
-                        let details = judgeDetails.details.details
-                        for (let detail of details) {
-                            dataPoints.push({
-                                time: detail.goe.time - details[0].goe.time,
-                                score: detail.goe.value,
-                                categoryType: judgeDetails.categoryType,
-                                index: judgeIndexByKey[judge.data.judgeKey]
-                            })
+                        if (judgeDetails.details) {
+                            let details = judgeDetails.details.details
+                            for (let detail of details) {
+                                dataPoints.push({
+                                    time: detail.goe.time - details[0].goe.time,
+                                    score: detail.goe.value,
+                                    categoryType: judgeDetails.categoryType,
+                                    index: judgeIndexByKey[judge.data.judgeKey]
+                                })
+                            }
                         }
                     }
                 }
@@ -698,7 +701,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
             let firstTime = Number.MAX_VALUE
             let lastTime = 0
             let teamData = Common.getSelectedTeamData()
-            if (teamData !== undefined && teamData.judgeInstances !== undefined) {
+            if (teamData !== undefined && teamData.judgeInstances !== undefined &&
+                teamData.judgePreProcessData && teamData.judgePreProcessData.aggregateDiffScores) {
                 for (let diff of teamData.judgePreProcessData.aggregateDiffScores) {
                     firstTime = Math.min(firstTime, diff.time)
                     lastTime = Math.max(lastTime, diff.time)
@@ -707,15 +711,17 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                 for (let judge of Object.values(teamData.judgeInstances)) {
                     let judgeDetails = judge.getFullCalcDetails(teamData.judgePreProcessData)
                     if (judgeDetails.categoryType !== "GoeDiff") {
-                        let details = judgeDetails.details.details
-                        for (let detail of details) {
-                            dataPoints.push({
-                                diffTime: detail.diff.time - teamData.judgePreProcessData.aggregateDiffScores[0].time,
-                                diffValue: detail.diff.value,
-                                goeTime: detail.goe.time - details[0].goe.time,
-                                goeValueNormalized: detail.goe.value / (judgeDetails.categoryType === "GoeTech" ? MainStore.configData.techValueMax : MainStore.configData.subValueMax),
-                                categoryType: judgeDetails.categoryType
-                            })
+                        if (judgeDetails.details && judgeDetails.details.details) {
+                            let details = judgeDetails.details.details
+                            for (let detail of details) {
+                                dataPoints.push({
+                                    diffTime: detail.diff.time - teamData.judgePreProcessData.aggregateDiffScores[0].time,
+                                    diffValue: detail.diff.value,
+                                    goeTime: detail.goe.time - details[0].goe.time,
+                                    goeValueNormalized: detail.goe.value / (judgeDetails.categoryType === "GoeTech" ? MainStore.configData.techValueMax : MainStore.configData.subValueMax),
+                                    categoryType: judgeDetails.categoryType
+                                })
+                            }
                         }
                     }
                 }
