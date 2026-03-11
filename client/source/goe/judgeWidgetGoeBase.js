@@ -30,32 +30,32 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
             sliderHeight: 100,
             sliderTop: 0,
             selectedEditMark: undefined,
-            newMarkTime: undefined
+            newMarkTime: undefined,
+            maxBottom: 105
         }
 
         this.timeUpdater = new Common.TimeUpdateHelper(() => this.onTimeUpdate())
     }
 
     onSliderControlClick(command) {
-        const moveRatio = 1.7
-        const zoomAmount = 20
-        const maxBottom = 130
+        const moveRatio = 3
+        const zoomAmount = 10
         let windowSize = this.state.windowBottom - this.state.windowTop
         if (command === "^") {
             let amount = Math.min(this.state.targetWindowTop, windowSize / moveRatio)
             this.state.targetWindowTop -= amount
             this.state.targetWindowBottom -= amount
         } else if (command === "v") {
-            let amount = Math.min(Math.max(maxBottom - this.state.targetWindowBottom, 0), windowSize / moveRatio)
+            let amount = Math.min(Math.max(this.state.maxBottom - this.state.targetWindowBottom, 0), windowSize / moveRatio)
             this.state.targetWindowTop += amount
             this.state.targetWindowBottom += amount
         } else if (command === "+") {
-            let mid = (this.state.windowBottom - this.state.windowTop) / 2
+            let mid = (this.state.windowBottom + this.state.windowTop) / 2
             let shrinkSize = windowSize / 2 - zoomAmount
             this.state.targetWindowTop = mid - shrinkSize
             this.state.targetWindowBottom = mid + shrinkSize
         } else if (command === "-") {
-            let mid = (this.state.windowBottom - this.state.windowTop) / 2
+            let mid = (this.state.windowBottom + this.state.windowTop) / 2
             let expandSize = windowSize / 2 + zoomAmount
             this.state.targetWindowTop = mid - expandSize
             this.state.targetWindowBottom = mid + expandSize
@@ -69,7 +69,7 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
         windowSize = this.state.targetWindowBottom - this.state.targetWindowTop
         this.state.sliderHeight = Math.min(100, Math.max(20, windowSize))
 
-        let actualMaxBottom = Math.max(maxBottom, this.state.targetWindowBottom)
+        let actualMaxBottom = Math.max(this.state.maxBottom, this.state.targetWindowBottom)
         let emptySize = this.state.targetWindowTop + actualMaxBottom - this.state.targetWindowBottom
         let topOffest = 0
         if (emptySize > 0) {
@@ -133,9 +133,12 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
 
         let rect = e.target.getBoundingClientRect()
         let yNormalized = Math.max(rect.height - (e.clientY - rect.height * .03), 0) / (rect.height - rect.top)
-        let windowSize = this.state.windowBottom - this.state.windowTop
-        let value = yNormalized * windowSize / 100 * baselineValueMax
-        value += this.state.windowTop / 100 * baselineValueMax
+        let newBottom = 100 - this.state.windowBottom
+        let newTop = 100 - this.state.windowTop
+        let windowSize = newTop - newBottom
+        let value = (yNormalized * windowSize + newBottom) / 100 * baselineValueMax
+
+        console.log(value, yNormalized, newBottom, newTop)
 
         value = Math.min(Math.max(0, value), baselineValueMax)
 
