@@ -516,21 +516,14 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
         if (MainStore.judgeIndex === undefined) {
             return this.getJudgeButtonsWidget()
         } else {
-            //let cn = `judgeWidgetBase kindleTest ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
+            let judgeData = this.getJudgeData()
             let cn = `judgeWidgetBase ${this.eventDataUpdater.isExpired() ? "expired" : ""}`
             return (
                 <div className={cn}>
                     {Common.getExpiredWidget(this.eventDataUpdater)}
-                    {this.getFinishedWidget()}
                     {this.getInfoWidget()}
-                    <Tabs selectedIndex={MainStore.judgeTabsSelectedIndex} onSelect={(index) => this.onJudgeTabsSelectedIndex(index)}>
-                        <TabList>
-                            <Tab>Judge</Tab>
-                        </TabList>
-                        <TabPanel>
-                            {this.getJudgeWidget()}
-                        </TabPanel>
-                    </Tabs>
+                    <div>Judge: {judgeData && judgeData.data ? Common.getPlayerNameString(judgeData.data.judgeKey) : "Can't find judge"}</div>
+                    {this.getJudgeWidget()}
                 </div>
             )
         }
