@@ -522,7 +522,7 @@ module.exports = class JudgeWidgetGoeBase extends JudgeWidgetBase {
                 <div className={cn}>
                     {Common.getExpiredWidget(this.eventDataUpdater)}
                     {this.getInfoWidget()}
-                    <div>Judge: {judgeData && judgeData.data ? Common.getPlayerNameString(judgeData.data.judgeKey) : "Can't find judge"}</div>
+                    <div className="judgeName">Judge: {judgeData && judgeData.data ? Common.getPlayerNameString(judgeData.data.judgeKey) : "Can't find judge"}</div>
                     {this.getJudgeWidget()}
                 </div>
             )

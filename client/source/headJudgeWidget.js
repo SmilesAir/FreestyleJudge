@@ -632,7 +632,8 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                                     time: detail.goe.time - details[0].goe.time,
                                     score: detail.goe.value,
                                     categoryType: judgeDetails.categoryType,
-                                    index: judgeIndexByKey[judge.data.judgeKey]
+                                    index: judgeIndexByKey[judge.data.judgeKey],
+                                    name: Common.getPlayerNameString(judge.data.judgeKey)
                                 })
                             }
                         }
@@ -650,13 +651,13 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                         break
                     case "GoeTech":
                         icon = "+"
-                        judgeIndex = data.index
+                        judgeIndex = data.index + 1
                         color = "cornflowerblue"
                         height = data.score / MainStore.configData.techValueMax
                         break;
                     case "GoeSub":
                         icon = "x"
-                        judgeIndex = data.index
+                        judgeIndex = data.index + 1
                         color = "fuchsia"
                         height = data.score / MainStore.configData.subValueMax
                         break
@@ -667,8 +668,10 @@ module.exports = @MobxReact.observer class HeadJudgeWidget extends React.Compone
                     "bottom": `${height * 90}%`,
                 }
 
+                let tooltip = `${icon}${judgeIndex ? judgeIndex : ""} ${data.name ? data.name : ""}: ${Math.round(data.time / 1000)}s ${Common.round1Decimals(data.score)}`
+
                 return (
-                    <div key={Math.random()} className="dataPoint" style={style}>
+                    <div key={Math.random()} className="dataPoint" style={style} title={tooltip}>
                         {icon}
                         <sup>{judgeIndex}</sup>
                     </div>
