@@ -1051,12 +1051,17 @@ module.exports.lockAndCalcPoolResults = function(poolKey) {
             for (let teamData of poolData.teamData) {
                 let score = 0
                 for (let judgeKey in poolData.judges) {
-                    let judge = teamData.judgeData[judgeKey]
-                    score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                    let judgeType = poolData.judges[judgeKey]
+                    if (judgeType !== "GoeDiff") {
+                        let judge = teamData.judgeData[judgeKey]
+                        score += judge !== undefined ? Common.calcJudgeScoreCategoryOnly(judgeKey, teamData) : 0
+                    }
                 }
 
                 teamData.teamScore = score
             }
+
+            Common.updatePoolData(poolKey, poolData)
         }
     })
 }
