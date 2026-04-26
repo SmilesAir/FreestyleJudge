@@ -245,6 +245,25 @@ module.exports.getEssentialDatabaseData = (e, c, cb) => { Common.handler(e, c, c
         essentialPlayerData[playerKey] = foundPlayerData
     }
 
+    if (eventData.eventData.poolMap !== undefined) {
+        for (let poolKey in eventData.eventData.poolMap) {
+            let poolData = eventData.eventData.poolMap[poolKey]
+            if (poolData.teamData !== undefined) {
+                for (let teamData of poolData.teamData) {
+                    for (let playerKey of teamData.players) {
+                        let foundPlayerData = playerData.players[playerKey]
+                        if (foundPlayerData === undefined) {
+                            console.warn(`Could not find player data for key ${playerKey}`)
+                            continue
+                        }
+
+                        essentialPlayerData[playerKey] = foundPlayerData
+                    }
+                }
+            }
+        }
+    }
+
     return {
         players: essentialPlayerData
     }
