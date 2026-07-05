@@ -331,7 +331,7 @@
         border: 1px gray solid;
         padding: 2px;
         width: 100%;
-        min-height: 2em;
+        min-height: 8em;
         flex-grow: 1;
         align-content: flex-start;
 
@@ -366,12 +366,14 @@
 }
 
 .scoresWidget {
-    .header {
+    .judgeHeader {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        width: 100%;
 
         .judgeName {
+            position: relative;
             font-size: 2em;
         }
     }

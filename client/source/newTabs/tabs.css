@@ -1,0 +1,47 @@
+.tabs {
+  display: grid;
+  grid-template-rows: min-content auto;
+  grid-template-areas:
+    'tablist'
+    'tabpanel';
+
+  --tab-color-subdued: #c0c0c0;
+  --tab-color: #000000;
+}
+
+div[role='tablist'] {
+  grid-area: tablist;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  min-height: 5em;
+}
+
+div[role='tablist'] > button[role='tab'] {
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid var(--tab-color-subdued);
+  border-radius: 4px 4px 0 0;
+  color: var(--tab-color-subdued);
+  flex: 1;
+  font-weight: bold;
+}
+
+div[role='tablist'] > button[role='tab'][aria-selected]:not([aria-selected='false']) {
+  color: var(--tab-color);
+  border-color: var(--tab-color);
+}
+
+div[role='tablist'] > button[role='tab']:hover {
+  color: black;
+  background-color: #e9ebeb;
+}
+
+div[role='tabpanel'] {
+  grid-area: tabpanel;
+  padding-top: 0.5rem;
+}
+
+div[role='tabpanel'][aria-hidden]:not([aria-hidden='false']) {
+  display: none;
+}

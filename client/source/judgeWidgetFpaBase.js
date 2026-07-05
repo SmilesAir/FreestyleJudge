@@ -3,6 +3,7 @@ const React = require("react")
 const MobxReact = require("mobx-react")
 const { runInAction } = require("mobx")
 const { Tab, Tabs, TabList, TabPanel } = require("react-tabs")
+const NewTabs = require("./newTabs/index.js").Tabs
 
 const MainStore = require("./mainStore.js")
 const Common = require("./common.js")
@@ -10,12 +11,16 @@ const JudgeWidgetBase = require("./judgeWidgetBase.js")
 
 require("./judgeWidgetBase.less")
 
+const useNewTabs = true
+
 module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidgetBase {
     constructor() {
         super()
 
         runInAction(() => {
-            MainStore.judgeTabsSelectedIndex = parseInt(window.localStorage.getItem("judgeTabsSelectedIndex"), 10) || 0
+            MainStore.judgeTabsSelectedIndex = useNewTabs ?
+                window.localStorage.getItem("judgeTabsSelectedIndex") || "Scores" :
+                parseInt(window.localStorage.getItem("judgeTabsSelectedIndex"), 10) || 1
         })
 
         this.state = {
@@ -38,7 +43,7 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
         Common.updateJudgeState({
             judgeKey: judgeData.judgeKey,
             isFinished: Common.isRoutineFinished() && judgeData.general !== 0,
-            isEditing: MainStore.judgeTabsSelectedIndex === 1,
+            isEditing: MainStore.judgeTabsSelectedIndex === (useNewTabs ? "Scores" : 1),
             updatedAt: Date.now(),
             teamIndex: this.state.teamIndex
         })
@@ -64,7 +69,7 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
 
     onRoutineStarted() {
         runInAction(() => {
-            MainStore.judgeTabsSelectedIndex = 0
+            MainStore.judgeTabsSelectedIndex = useNewTabs ? "Judge" : 0
         })
     }
 
@@ -196,7 +201,7 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
 
         return (
             <div className="scoresWidget">
-                <div className="header">
+                <div className="judgeHeader">
                     <div className="judgeName">
                         {judgeName}
                     </div>
@@ -384,6 +389,33 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
         )
     }
 
+    getJudgeTabsWidget() {
+        if (useNewTabs) {
+            return (
+                <NewTabs selectedTab={MainStore.judgeTabsSelectedIndex} onSelectTab={(index) => this.onJudgeTabsSelectedIndex(index)}
+                    tabs={[
+                        { id: "Judge", title: "Judge", content: this.getJudgeWidget() },
+                        { id: "Scores", title: "Scores", content: this.scoresWidget() }
+                    ]} />
+            )
+        } else {
+            return (
+                <Tabs selectedIndex={MainStore.judgeTabsSelectedIndex} onSelect={(index) => this.onJudgeTabsSelectedIndex(index)}>
+                    <TabList>
+                        <Tab>Judge</Tab>
+                        <Tab>Scores</Tab>
+                    </TabList>
+                    <TabPanel>
+                        {this.getJudgeWidget()}
+                    </TabPanel>
+                    <TabPanel>
+                        {this.scoresWidget()}
+                    </TabPanel>
+                </Tabs>
+            )
+        }
+    }
+
     render() {
         if (MainStore.eventData === undefined) {
             return <h1>No Event Data</h1>
@@ -400,18 +432,7 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
                     {this.getFinishedWidget()}
                     {this.getGeneralWidget()}
                     {this.getInfoWidget()}
-                    <Tabs selectedIndex={MainStore.judgeTabsSelectedIndex} onSelect={(index) => this.onJudgeTabsSelectedIndex(index)}>
-                        <TabList>
-                            <Tab>Judge</Tab>
-                            <Tab>Scores</Tab>
-                        </TabList>
-                        <TabPanel>
-                            {this.getJudgeWidget()}
-                        </TabPanel>
-                        <TabPanel>
-                            {this.scoresWidget()}
-                        </TabPanel>
-                    </Tabs>
+                    {this.getJudgeTabsWidget()}
                 </div>
             )
         }
