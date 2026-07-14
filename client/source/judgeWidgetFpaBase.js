@@ -395,7 +395,8 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
                 <NewTabs selectedTab={MainStore.judgeTabsSelectedIndex} onSelectTab={(index) => this.onJudgeTabsSelectedIndex(index)}
                     tabs={[
                         { id: "Judge", title: "Judge", content: this.getJudgeWidget() },
-                        { id: "Scores", title: "Scores", content: this.scoresWidget() }
+                        { id: "Scores", title: "Scores", content: this.scoresWidget() },
+                        { id: "JudgeName", title: "", content: this.scoresWidget() }
                     ]} />
             )
         } else {

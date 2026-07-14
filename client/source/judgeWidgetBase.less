@@ -1,8 +1,9 @@
 
 .judgeWidgetBase {
-    position: relative;
-    height: 100%;
+    flex-grow: 1;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
     li {
         font-size: 1.5em;
@@ -366,6 +367,9 @@
 }
 
 .scoresWidget {
+    display: flex;
+    flex-direction: column;
+
     .judgeHeader {
         display: flex;
         flex-direction: row;
@@ -382,12 +386,10 @@
 .scoreTeams {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: center;
-    height: 80%;
+    overflow-y: scroll;
 
     .teams {
-        overflow-y: scroll;
         width: 100%;
         min-height: 5em;
 
@@ -480,6 +482,5 @@
 
     .scoresInput {
         width: 100%;
-        height: 50%;
     }
 }

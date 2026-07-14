@@ -344,10 +344,10 @@ module.exports = class JudgeWidgetVariety extends JudgeWidgetFpaBase {
 
         return (
             <div className="scoreTeams">
+                {this.getScoresInput()}
                 <div className="teams">
                     {widgets}
                 </div>
-                {this.getScoresInput()}
             </div>
         )
     }
