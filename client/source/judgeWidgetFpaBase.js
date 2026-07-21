@@ -196,6 +196,18 @@ module.exports = @MobxReact.observer class JudgeWidgetFpaBase extends JudgeWidge
         throw new Error("scoresTeamWidget is not implemented in child")
     }
 
+    getScoresTeamWidgetInternal(widgets) {
+        //todo: This height is a super hack
+        return (
+            <div className="scoreTeams" style={{ maxHeight: window.innerHeight - 100 }}>
+                <div className="teams">
+                    {widgets}
+                </div>
+                {this.getScoresInput()}
+            </div>
+        )
+    }
+
     scoresWidget() {
         let judgeName = Common.getPlayerNameForCurrentJudgeIndex()
 

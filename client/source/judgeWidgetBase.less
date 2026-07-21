@@ -369,6 +369,7 @@
 .scoresWidget {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
 
     .judgeHeader {
         display: flex;
@@ -387,11 +388,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow-y: scroll;
+    flex-grow: 1;
 
     .teams {
         width: 100%;
         min-height: 5em;
+        overflow-y: scroll;
 
         .team {
             user-select: none;

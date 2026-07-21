@@ -17,7 +17,7 @@ module.exports = @MobxReact.observer class JudgeWidgetBase extends React.Compone
             this.onEventDataUpdatedBase()
         })
 
-        this.eventDataUpdater = new Common.EventDataUpdateHelper(10, 1, false, () => this.onEventDataUpdatedBase(), () => this.onUpdateExpired())
+        this.eventDataUpdater = new Common.EventDataUpdateHelper(30, 1, false, () => this.onEventDataUpdatedBase(), () => this.onUpdateExpired())
     }
 
     updateJudgeState() {
