@@ -416,7 +416,7 @@ module.exports.calcJudgeScoreCategoryOnly = function(judgeKey, teamData) {
 
     let judgeDataObj = teamData.judgeInstances[judgeKey]
     if (judgeDataObj !== undefined) {
-        return judgeDataObj.calcJudgeScoreCategoryOnly(teamData.judgePreProcessData)
+        return judgeDataObj.calcJudgeScoreCategoryOnly(teamData.judgePreProcessData, teamData.routineLengthSeconds)
     } else {
         console.error(`Can't find judge data for "${judgeKey}"`)
     }
@@ -450,7 +450,7 @@ module.exports.calcJudgeScoreEx = function(judgeKey, teamData) {
 
     let judgeDataObj = teamData.judgeInstances[judgeKey]
     if (judgeDataObj !== undefined) {
-        return judgeDataObj.calcJudgeScoreEx(teamData.judgePreProcessData)
+        return judgeDataObj.calcJudgeScoreEx(teamData.judgePreProcessData, teamData.routineLengthSeconds)
     } else {
         console.error(`Can't find judge data for "${judgeKey}"`)
     }
@@ -856,6 +856,19 @@ module.exports.getDivisionRulesId = function(division) {
     return divisionData.rulesId || defaultRulesId
 }
 
+module.exports.getRoutineLengthSecondsFromPoolKey = function(poolKey) {
+    if (MainStore.eventData === undefined || poolKey === undefined) {
+        return 0
+    }
+
+    let parts = poolKey.split("|")
+    if (parts.length !== 5) {
+        return 0
+    }
+
+    return MainStore.eventData.eventData.divisionData[parts[2]].roundData[parts[3]].lengthSeconds
+}
+
 module.exports.getDivisionRulesIdFromPoolKey = function(poolKey) {
     if (MainStore.eventData === undefined || poolKey === undefined) {
         return defaultRulesId
@@ -1011,6 +1024,7 @@ module.exports.lockAndCalcPoolResults = function(poolKey) {
 
             if (Common.getDataVersion() > 0) {
                 for (let teamData of poolData.teamData) {
+                    teamData.routineLengthSeconds = Common.getRoutineLengthSecondsFromPoolKey(poolKey)
                     let score = 0
                     for (let judgeKey in poolData.judges) {
                         let judge = teamData.judgeData[judgeKey]

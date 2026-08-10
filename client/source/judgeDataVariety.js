@@ -22,9 +22,10 @@ module.exports.JudgeDataClass = class extends JudgeDataFpaBase.JudgeDataFpaBase 
         this.data.quality = judgeData.rawScores && judgeData.rawScores.quality || 0
     }
 
-    calcJudgeScoreCategoryOnly() {
+    calcJudgeScoreCategoryOnly(judgePreProcessData, overrideRoutineLengthSeconds) {
         let constants = MainStore.constants.Variety
-        let base = this.routineLengthSeconds * constants.basePerSecond
+        let updatedRoutineLengthSeconds = overrideRoutineLengthSeconds !== undefined ? overrideRoutineLengthSeconds : this.routineLengthSeconds
+        let base = updatedRoutineLengthSeconds * constants.basePerSecond
         return this.data.quality * this.data.quantity / base * constants.varietyScaler
     }
 

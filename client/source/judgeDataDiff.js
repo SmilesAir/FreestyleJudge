@@ -62,12 +62,13 @@ module.exports.JudgeDataClass = class extends JudgeDataFpaBase.JudgeDataFpaBase 
         return scores
     }
 
-    generateGradientArray(count) {
+    generateGradientArray(count, overrideRoutineLengthSeconds) {
+        let updatedRoutineLengthSeconds = overrideRoutineLengthSeconds !== undefined ? overrideRoutineLengthSeconds : this.routineLengthSeconds
         let gradientArray = []
         for (let i = 0; i < count; ++i) {
             for (let line of MainStore.constants.Diff.gradientLines) {
-                let sX = line.sCountPerSecond * this.routineLengthSeconds - epsilon
-                let eX = line.eCountPerSecond * this.routineLengthSeconds - epsilon
+                let sX = line.sCountPerSecond * updatedRoutineLengthSeconds - epsilon
+                let eX = line.eCountPerSecond * updatedRoutineLengthSeconds - epsilon
                 if (i >= sX && i < eX) {
                     let dx = i - sX
                     let slope = (line.eY - line.sY) / (eX - sX)
@@ -94,9 +95,10 @@ module.exports.JudgeDataClass = class extends JudgeDataFpaBase.JudgeDataFpaBase 
         return avg / Math.max(1, scores.length)
     }
 
-    getGradientScore(diffScores, adjusted, reportTier1Only) {
+    getGradientScore(diffScores, adjusted, reportTier1Only, overrideRoutineLengthSeconds) {
         let sortedScores = this.sortScores(diffScores)
-        let gradientArray = this.generateGradientArray(sortedScores.length)
+        let updatedRoutineLengthSeconds = overrideRoutineLengthSeconds !== undefined ? overrideRoutineLengthSeconds : this.routineLengthSeconds
+        let gradientArray = this.generateGradientArray(sortedScores.length, updatedRoutineLengthSeconds)
         let totalScore = 0
         for (let i = 0; i < sortedScores.length; ++i) {
             if (reportTier1Only !== true || gradientArray[i] > .9) {
@@ -105,11 +107,11 @@ module.exports.JudgeDataClass = class extends JudgeDataFpaBase.JudgeDataFpaBase 
             }
         }
 
-        return totalScore / (4 / 60 * this.routineLengthSeconds) * MainStore.constants.Diff.diffScaler
+        return totalScore / (4 / 60 * updatedRoutineLengthSeconds) * MainStore.constants.Diff.diffScaler
     }
 
-    calcJudgeScoreCategoryOnly() {
-        let score = this.getGradientScore(this.data.diffScores, true)
+    calcJudgeScoreCategoryOnly(judgePreProcessData, overrideRoutineLengthSeconds) {
+        let score = this.getGradientScore(this.data.diffScores, true, false, overrideRoutineLengthSeconds)
         return score
     }
 
